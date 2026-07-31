@@ -1,0 +1,133 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Apple ships SF Pro. On Apple hardware the system stack resolves to the
+     real thing; everywhere else Inter is the closest neo-grotesque, and the
+     Helvetica/Arial tail covers the rest. One family for every role — Apple
+     does not pair a display serif. */
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    var(--font-inter), "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+  /* Apple's translucent chrome: a heavy blur plus saturation boost so colour
+     bleeding through the bar stays vivid instead of washing out grey. */
+  --chrome-bg: rgba(255, 255, 255, 0.72);
+  --chrome-blur: saturate(180%) blur(20px);
+}
+
+html {
+  scroll-behavior: smooth;
+  /* Anchored sections clear the fixed bar instead of hiding beneath it. */
+  scroll-padding-top: 4.5rem;
+}
+
+body {
+  @apply bg-white text-body text-ink antialiased;
+  font-family: var(--font-sans);
+}
+
+@layer components {
+  /* ---------- Layout ----------
+     Two widths, mirroring Apple: a wide 1440 shell for imagery and grids, and
+     a 980 measure for anything that is primarily read. */
+  .container-x {
+    @apply mx-auto w-full max-w-[1440px] px-6 lg:px-10;
+  }
+  .container-narrow {
+    @apply mx-auto w-full max-w-[980px] px-6;
+  }
+  /* Alternating grey band. Apple's pages are white-dominant with #f5f5f7
+     stretches, never the reverse. */
+  .band {
+    @apply bg-sand;
+  }
+
+  /* ---------- Chrome ---------- */
+  .chrome {
+    background: var(--chrome-bg);
+    -webkit-backdrop-filter: var(--chrome-blur);
+    backdrop-filter: var(--chrome-blur);
+  }
+
+  /* ---------- Buttons ----------
+     Apple's CTA is a compact pill at body size in *regular* weight — the
+     boldness comes from the fill, not the type. No shadow, no lift; hover
+     just brightens the fill (brightness keeps this palette-agnostic, so the
+     green theme behaves identically). */
+  .btn {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-full px-5 py-2.5 text-body transition-[filter,background-color,color,border-color] duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2;
+  }
+  .btn-primary {
+    @apply btn bg-brand-500 text-white hover:brightness-110;
+  }
+  /* Apple's secondary: same pill, blue outline, tinted on hover. */
+  .btn-secondary {
+    @apply btn border border-brand-500 text-brand-500 hover:bg-brand-500/[0.06];
+  }
+  /* Kept as an alias so existing markup stays valid. */
+  .btn-ghost {
+    @apply btn-secondary;
+  }
+  /* Compact variant for the sticky product sub-nav. */
+  .btn-sm {
+    @apply px-4 py-1.5 text-meta;
+  }
+
+  /* Apple's inline text link: blue, underline on hover, chevron supplied by
+     the markup so it can be omitted where it would be noise. */
+  .link-blue {
+    @apply inline-flex items-center gap-1 text-brand-600 hover:underline;
+  }
+
+  /* ---------- Type ----------
+     Apple's "eyebrow" is not a chip — it's a blue subhead set just above the
+     headline at intro size. */
+  .eyebrow {
+    @apply inline-block text-intro font-semibold text-brand-600;
+  }
+  .section-title {
+    @apply text-display-md font-semibold text-ink md:text-display-lg;
+  }
+  .section-lead {
+    @apply text-intro text-ink-soft;
+  }
+  /* Legal / disclaimer copy, Apple's smallest grey. */
+  .fine-print {
+    @apply text-caption text-ink-muted;
+  }
+}
+
+@layer utilities {
+  /* Apple hides the scrollbar on its horizontal shelves and relies on the
+     snap points plus arrow controls for affordance. */
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  /* Scroll-reveal content must never stay hidden. This does not rely on the
+     JS hook reporting the preference in time — the rule wins outright over
+     the inline opacity the animation library writes. */
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

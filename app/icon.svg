@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Favicon / app icon. Colours are literal here: this file is served as a
+       static asset, so it cannot read the Tailwind palette tokens. -->
+  <rect width="32" height="32" rx="7" fill="#ffffff" />
+  <rect x="2" y="12.5" width="28" height="7" rx="3.5" fill="#9ccbff" />
+  <rect x="12.5" y="2" width="7" height="13.4" rx="3.5" fill="#0071e3" />
+  <rect x="12.5" y="16.6" width="7" height="13.4" rx="3.5" fill="#0071e3" />
+</svg>
