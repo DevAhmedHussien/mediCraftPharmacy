@@ -1,10 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
-import { PageHeader } from "@/components/PageHeader";
+import { ClosingCta, PageHero } from "@/components/blocks";
+import { Icon } from "@/components/icons/set";
 import { ProductCard } from "@/components/ProductCard";
+import { closingCta, formulary } from "@/lib/content";
 import { categories, getCategory, productsByCategory } from "@/lib/data";
+import {
+  breadcrumbJsonLd,
+  itemListJsonLd,
+  jsonLdProps,
+  pageMetadata,
+} from "@/lib/seo";
 
 type Params = { params: { category: string } };
 
@@ -15,11 +22,22 @@ export function generateStaticParams() {
 export function generateMetadata({ params }: Params): Metadata {
   const category = getCategory(params.category);
   if (!category) return { title: "Products" };
-  return {
+
+  const items = productsByCategory(category.slug);
+  // The count makes each of the eleven category descriptions distinct, which
+  // matters: near-identical descriptions get collapsed in search results.
+  const description =
+    items.length > 0
+      ? `${category.blurb}. ${items.length} compounded ${
+          items.length === 1 ? "formulation" : "formulations"
+        } available by prescription from MediCraft Pharmacy.`
+      : `${category.blurb}. Contact our provider team for current formulary availability in this category.`;
+
+  return pageMetadata({
     title: category.name,
-    description: category.blurb,
-    alternates: { canonical: `/products/${category.slug}` },
-  };
+    description,
+    path: `/products/${category.slug}`,
+  });
 }
 
 export default function CategoryPage({ params }: Params) {
@@ -30,42 +48,83 @@ export default function CategoryPage({ params }: Params) {
 
   return (
     <>
-      <PageHeader
-        cover="/images/site/cover-products.jpg"
-        eyebrow="Products"
-        title={category.name}
-        subtitle={category.blurb}
-      >
-        {/* Light type: this link now sits on the cover's dark scrim, where the
-            brand-700 it used to carry would be unreadable. */}
+      <script
+        {...jsonLdProps(
+          breadcrumbJsonLd([
+            { name: "Products", path: "/products" },
+            { name: category.name, path: `/products/${category.slug}` },
+          ])
+        )}
+      />
+      {items.length > 0 && (
+        <script
+          {...jsonLdProps(
+            itemListJsonLd({
+              name: category.name,
+              items: items.map((p) => ({
+                name: p.name,
+                path: `/product/${p.slug}`,
+              })),
+            })
+          )}
+        />
+      )}
+
+      <PageHero eyebrow="Formulary" title={category.name} lead={category.blurb}>
         <Link
           href="/products"
-          className="inline-flex items-center gap-2 text-sm font-semibold text-brand-200 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-200 focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
+          className="link-arrow-invert mt-7 inline-flex text-meta"
         >
-          <ArrowLeft className="h-4 w-4" />
-          All products
+          <span aria-hidden>←</span> All categories
         </Link>
-      </PageHeader>
+      </PageHero>
 
-      <section className="bg-white py-14 md:py-20">
+      <section className="section">
         <div className="container-x">
           {items.length > 0 ? (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {items.map((p) => (
-                <ProductCard key={p.name} product={p} />
-              ))}
-            </div>
+            <>
+              <p className="font-mono text-caption font-medium uppercase tracking-wider text-ink-muted">
+                {items.length} {items.length === 1 ? "product" : "products"}
+              </p>
+              <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {items.map((p) => (
+                  <ProductCard key={p.slug} product={p} />
+                ))}
+              </div>
+            </>
           ) : (
-            <p className="text-ink-soft">
-              Formulations in this category are made to order.{" "}
-              <Link href="/providers" className="font-semibold text-brand-700 hover:underline">
-                Contact us
-              </Link>{" "}
-              to discuss a custom compound.
-            </p>
+            /* Nothing published in this specialty yet. The pharmacy still
+               compounds here, so this invites the enquiry instead of reading
+               as an empty shelf. */
+            <div className="rounded-tile border-2 border-dashed border-line bg-sand px-6 py-16 text-center">
+              <p className="text-[1.0625rem] font-bold text-ink">
+                {formulary.comingSoon.title}
+              </p>
+              <p className="mx-auto mt-2 max-w-md text-meta text-ink-soft text-pretty">
+                {formulary.comingSoon.body}
+              </p>
+              <Link
+                href={formulary.comingSoon.cta.href}
+                className="btn-primary mt-6 inline-flex"
+              >
+                {formulary.comingSoon.cta.label} <span aria-hidden>→</span>
+              </Link>
+            </div>
           )}
+
+          <aside className="mt-14 flex items-start gap-4 rounded-tile border border-line bg-sand px-6 py-5">
+            <Icon name="rx" className="mt-0.5 h-5 w-5 text-cyan-700" />
+            <p className="text-meta text-ink-soft text-pretty">
+              <strong className="font-bold text-ink">
+                {formulary.rxNotice.label}
+              </strong>{" "}
+              {formulary.rxNotice.body}
+            </p>
+          </aside>
         </div>
       </section>
+
+      <ClosingCta {...closingCta} />
     </>
   );
 }

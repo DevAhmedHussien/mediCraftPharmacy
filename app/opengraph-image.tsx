@@ -72,8 +72,12 @@ export default async function OpengraphImage() {
             </div>
           </div>
 
+          {/* Status line. It previously read "PCAB accredited · … · Ships
+              nationwide", both of which overstated the pharmacy: PCAB is in
+              progress, and licensure is Florida only today. A share card is
+              the most-copied surface on the site, so it says what is true. */}
           <div style={{ display: "flex", fontSize: 20, color: OG_COLORS.inkMuted }}>
-            PCAB accredited · USP 795 / 797 · Ships nationwide
+            503A compounding · USP 795 · 797 · 800 · PCAB accreditation in progress
           </div>
         </div>
 

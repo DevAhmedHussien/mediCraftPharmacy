@@ -1,80 +1,152 @@
 import type { Metadata } from "next";
-import { PageHeader } from "@/components/PageHeader";
-import { PartnershipCTA } from "@/components/sections/PartnershipCTA";
-import { pillars, stats } from "@/lib/data";
-import { site } from "@/lib/site";
+import { breadcrumbJsonLd, jsonLdProps, pageMetadata } from "@/lib/seo";
+import {
+  CheckList,
+  ClosingCta,
+  IconCard,
+  NavyPanel,
+  PageHero,
+  PanelMetrics,
+  SectionHead,
+  SpecRail,
+  Timeline,
+  TwoCol,
+} from "@/components/blocks";
+import { Reveal } from "@/components/ui/Reveal";
+import { about, closingCta } from "@/lib/content";
+import { media } from "@/lib/media";
 
-export const metadata: Metadata = {
-  title: "About",
-  description: `Learn about ${site.name} — a specialty compounding pharmacy pairing precision science with genuine patient care.`,
-  alternates: { canonical: "/about" },
-};
+export const metadata: Metadata = pageMetadata({
+  title: "About MediCraft",
+  description:
+    "MediCraft Pharmacy is a 503A compounding pharmacy in Palm Harbor, Florida — established 2025, opened 2026, built on a decade of quality engineering across 503A, 503B and cGMP environments.",
+  path: "/about",
+});
 
 export default function AboutPage() {
   return (
     <>
-      <PageHeader
-        cover="/images/site/cover-about.jpg"
-        eyebrow="About Us"
-        title="Where wellness is crafted, not manufactured"
-        subtitle={`${site.name} is a specialty compounding pharmacy pairing precision science with genuine care — custom medications built around every patient, delivered fast and backed by real clinical support.`}
+      <script {...jsonLdProps(breadcrumbJsonLd([{ name: "About MediCraft", path: "/about" }]))} />
+      <PageHero
+        media={media.glassware}
+        eyebrow={about.intro.eyebrow}
+        title={about.intro.title}
+        lead={about.intro.body[0]}
       />
 
-      <section className="bg-white py-14 md:py-20">
-        <div className="container-x grid gap-12 lg:grid-cols-2 lg:items-center">
-          <div>
-            <h2 className="section-title">Our story</h2>
-            <p className="mt-5 text-lg text-ink-soft">
-              {site.since}, we have partnered with providers and patients to
-              solve the problems commercial manufacturing can&apos;t — unusual
-              doses, allergen-free bases, discontinued medications, and
-              combination therapies that simplify a patient&apos;s day.
-            </p>
-            <p className="mt-4 text-lg text-ink-soft">
-              Every prescription is made in-house by licensed compounding
-              pharmacists, tracked digitally end to end, and released only after
-              it clears our quality process.
-            </p>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            {stats.map((s) => (
-              <div
-                key={s.label}
-                className="rounded-2xl border border-brand-100 bg-sand p-6 text-center"
-              >
-                <div className="font-display text-3xl font-semibold text-brand-700">
-                  {s.value}
-                </div>
-                <p className="mt-1 text-sm text-ink-muted">{s.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="py-14 md:py-20">
+      {/* ---- Who we are ---- */}
+      <section className="section">
         <div className="container-x">
-          <h2 className="section-title text-center">What sets us apart</h2>
-          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {pillars.map((p) => (
-              <div
-                key={p.title}
-                className="rounded-2xl border border-brand-100 bg-white p-6"
-              >
-                <span className="grid h-12 w-12 place-items-center rounded-xl bg-brand-600 text-white">
-                  <p.icon className="h-6 w-6" />
-                </span>
-                <h3 className="mt-5 font-display text-xl font-semibold text-ink">
-                  {p.title}
-                </h3>
-                <p className="mt-2 text-sm text-ink-soft">{p.body}</p>
+          <TwoCol>
+            <Reveal>
+              <p className="text-body text-ink-soft text-pretty">
+                {about.intro.body[1]}
+              </p>
+              <CheckList items={about.intro.checks} className="mt-8" />
+            </Reveal>
+
+            <Reveal delay={0.1}>
+              <NavyPanel badge={about.panel.badge} title={about.panel.title}>
+                <p className="mt-4 text-meta text-white/70 text-pretty">
+                  {about.panel.body}
+                </p>
+                <PanelMetrics items={about.panel.metrics} />
+              </NavyPanel>
+            </Reveal>
+          </TwoCol>
+        </div>
+      </section>
+
+      {/* ---- Journey ----
+          A real chronology, so it is set as a dated timeline: the order is the
+          information. Note two entries share 2026 — that is the owner's own
+          sequence (the pharmacy opened and the accreditation process began in
+          the same year), not a duplication. */}
+      <section className="band section">
+        <div className="container-x">
+          <Reveal>
+            <SectionHead
+              eyebrow={about.journey.eyebrow}
+              title={about.journey.title}
+            />
+          </Reveal>
+
+          <div className="mt-12 grid gap-12 lg:grid-cols-[1.15fr_1fr] lg:gap-16">
+            <Reveal>
+              <Timeline items={about.journey.timeline} />
+            </Reveal>
+
+            <Reveal delay={0.1}>
+              <div className="grid gap-5">
+                {about.principles.map((p) => (
+                  <IconCard key={p.title} {...p} />
+                ))}
               </div>
-            ))}
+            </Reveal>
           </div>
         </div>
       </section>
 
-      <PartnershipCTA />
+      {/* ---- Quality foundation ---- */}
+      <section className="section">
+        <div className="container-x">
+          <Reveal>
+            <NavyPanel
+              badge={about.foundation.eyebrow}
+              title={about.foundation.title}
+            >
+              <div className="mt-5 grid gap-8 lg:grid-cols-2 lg:gap-12">
+                <div className="space-y-4">
+                  {about.foundation.body.map((p) => (
+                    <p key={p.slice(0, 32)} className="text-meta text-white/70 text-pretty">
+                      {p}
+                    </p>
+                  ))}
+                </div>
+                <SpecRail items={about.foundation.specs} invert />
+              </div>
+            </NavyPanel>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ---- Facility heritage ---- */}
+      <section className="band section">
+        <div className="container-x">
+          <TwoCol>
+            <Reveal>
+              <SectionHead
+                eyebrow={about.facility.eyebrow}
+                title={about.facility.title}
+                size="sm"
+              />
+              <div className="prose-body mt-6">
+                {about.facility.body.map((p) => (
+                  <p key={p.slice(0, 32)}>{p}</p>
+                ))}
+              </div>
+              <CheckList items={about.facility.checks} className="mt-8" />
+            </Reveal>
+
+            <Reveal delay={0.1}>
+              <NavyPanel
+                badge={about.facility.panel.badge}
+                title={about.facility.panel.title}
+              >
+                <p className="mt-4 text-meta text-white/70 text-pretty">
+                  {about.facility.panel.body}
+                </p>
+                <p className="mt-4 text-caption leading-relaxed text-white/50 text-pretty">
+                  {about.facility.panel.note}
+                </p>
+                <PanelMetrics items={about.facility.panel.metrics} />
+              </NavyPanel>
+            </Reveal>
+          </TwoCol>
+        </div>
+      </section>
+
+      <ClosingCta {...closingCta} />
     </>
   );
 }

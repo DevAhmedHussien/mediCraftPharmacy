@@ -1,8 +1,33 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <!-- Favicon / app icon. Colours are literal here: this file is served as a
-       static asset, so it cannot read the Tailwind palette tokens. -->
-  <rect width="32" height="32" rx="7" fill="#ffffff" />
-  <rect x="2" y="12.5" width="28" height="7" rx="3.5" fill="#9ccbff" />
-  <rect x="12.5" y="2" width="7" height="13.4" rx="3.5" fill="#0071e3" />
-  <rect x="12.5" y="16.6" width="7" height="13.4" rx="3.5" fill="#0071e3" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!--
+    Favicon / browser tab icon: the MediCraft mark on the brand blue plate, as
+    the identity deck's icon variant shows it.
+
+    Colours are literal because this file is served as a static asset and
+    cannot read the Tailwind tokens — they are the deck's exact values:
+    blue #1B54FB, pestle cyan #23DCE1.
+
+    The mark's own geometry spans 89.5 x 62.43 units; it is centred on the
+    128-unit plate by translating (19.25, 32.79) and left unscaled, so the
+    proportions match the lockup used in the header.
+  -->
+  <rect width="128" height="128" rx="28" fill="#1b54fb" />
+  <g transform="translate(19.25, 32.79)">
+    <!-- Bowl: reversed to white on the blue plate. -->
+    <path
+      fill="#ffffff"
+      d="M 79.640625 62.425781 L 76.597657 45.160156 C 75.164063 47.351562 73.496094 49.410156 71.601563 51.304687 C 64.429688 58.476562 54.894531 62.425781 44.75 62.425781 C 34.605469 62.425781 25.070313 58.476562 17.894531 51.304687 C 16.003907 49.410156 14.332031 47.351562 12.902344 45.160156 L 9.859375 62.425781 L 0 62.425781 L 6.699219 24.449219 L 16.480469 24.449219 C 16.480469 40.039062 29.160157 52.71875 44.75 52.71875 C 60.335938 52.71875 73.019531 40.039062 73.019531 24.449219 L 82.800781 24.449219 L 89.496094 62.425781 Z"
+    />
+    <!-- Pestle knob and tapered handle. -->
+    <path
+      fill="#23dce1"
+      d="M 63.699219 1.125 C 62.964844 2.253906 63.832031 4.125 65.640625 5.300781 C 67.449219 6.480469 69.507813 6.523437 70.246094 5.394531 C 70.980469 4.265625 64.433594 0 63.699219 1.125"
+    />
+    <path
+      fill="#23dce1"
+      d="M 68.980469 4.570312 L 64.960938 1.949219 L 44.75 26.375 L 59.882813 22.734375 Z"
+    />
+    <!-- Mouth, painted last so it covers the pestle's junction with the bowl. -->
+    <ellipse fill="#23dce1" cx="44.748" cy="24.027" rx="25.326" ry="4.547" />
+  </g>
 </svg>

@@ -1,44 +1,36 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
 import type { ReactNode } from "react";
-
-type RevealProps = {
-  children: ReactNode;
-  delay?: number;
-  y?: number;
-  className?: string;
-};
+import { FadeIn } from "@/components/motion/Motion";
 
 /**
  * Scroll-triggered fade-up.
  *
- * Two escape hatches keep the content from ever depending on the animation:
+ * Now a thin alias over `FadeIn` in components/motion/Motion. The two had
+ * identical behaviour — same easing, same distance, same reduced-motion escape
+ * hatch — and keeping two implementations of one animation meant a change to
+ * the site's motion would have to be made twice and could drift.
  *
- * - Reduced motion: skips `motion` altogether and renders a plain, visible
- *   element. Softening the animation is not enough here — the content must not
- *   be gated behind a scroll trigger at all.
- * - No JavaScript: the server-rendered markup carries inline `opacity:0`, so
- *   the `<noscript>` stylesheet in the layout targets `[data-reveal]` and
- *   forces it visible.
+ * `FadeIn` is the one to reach for in new code; this alias exists because it is
+ * called in fifty-nine places and renaming those buys nothing.
+ *
+ * Both escape hatches still hold:
+ *   · reduced motion renders a plain, visible element with no scroll trigger
+ *   · without JavaScript the server markup carries inline `opacity:0`, and the
+ *     `<noscript>` stylesheet in the layout forces `[data-reveal]` visible
  */
-export function Reveal({ children, delay = 0, y = 28, className }: RevealProps) {
-  const reduce = useReducedMotion();
-
-  if (reduce) {
-    return <div className={className}>{children}</div>;
-  }
-
+export function Reveal({
+  children,
+  delay = 0,
+  className,
+}: {
+  children: ReactNode;
+  delay?: number;
+  className?: string;
+}) {
   return (
-    <motion.div
-      data-reveal=""
-      className={className}
-      initial={{ opacity: 0, y }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-80px" }}
-      transition={{ duration: 0.65, delay, ease: [0.22, 1, 0.36, 1] }}
-    >
+    <FadeIn delay={delay} className={className}>
       {children}
-    </motion.div>
+    </FadeIn>
   );
 }

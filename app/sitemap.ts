@@ -17,10 +17,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/about",
     "/quality",
     "/licenses",
-    "/support",
-    "/careers",
+    "/compounding",
     "/providers",
+    "/support",
+    "/contact",
+    "/careers",
     "/refill",
+    "/privacy",
+    "/terms",
   ];
 
   const staticEntries: MetadataRoute.Sitemap = staticPaths.map((path) => ({

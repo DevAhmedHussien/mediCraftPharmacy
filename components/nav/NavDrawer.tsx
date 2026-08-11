@@ -79,10 +79,9 @@ export function NavDrawer() {
           <SheetClose asChild>
             <Link
               href="/"
-              aria-label={`${site.name} — home`}
-              className="flex items-center rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
+              className="logo-lockup flex items-center rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
             >
-              <Logo markClassName="h-9 w-9" wordmarkClassName="text-lg" />
+              <Logo animate="none" className="h-10" />
             </Link>
           </SheetClose>
           <SheetTitle className="sr-only">{site.name} menu</SheetTitle>
@@ -228,32 +227,37 @@ function BackBar({ label, onClick }: { label: string; onClick: () => void }) {
 
 function DrawerCtas() {
   return (
-    <div className="mt-auto flex flex-col gap-2 border-t border-line p-6">
-      {navCtas.map((cta) =>
-        cta.external ? (
-          <a
-            key={cta.href}
+    <div className="mt-auto flex flex-col gap-2.5 border-t border-line p-6">
+      {navCtas.map((cta) => (
+        <SheetClose asChild key={cta.href}>
+          <Link
             href={cta.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-ghost justify-center text-sm"
+            className={cn(
+              "w-full justify-center",
+              cta.style === "primary" ? "btn-primary" : "btn-outline"
+            )}
           >
             {cta.label}
-          </a>
-        ) : (
-          <SheetClose asChild key={cta.href}>
-            <Link
-              href={cta.href}
-              className={cn(
-                "justify-center text-sm",
-                cta.style === "primary" ? "btn-primary" : "btn-ghost"
-              )}
-            >
-              {cta.label}
-            </Link>
-          </SheetClose>
-        )
-      )}
+          </Link>
+        </SheetClose>
+      ))}
+
+      {/* The topbar's utility links are hidden on phones, so the drawer is
+          where they have to live. */}
+      <a
+        href={site.loginUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-2 text-center text-meta font-medium text-brand-600 transition-colors hover:text-brand-500"
+      >
+        Provider Portal Login
+      </a>
+      <a
+        href={`tel:${site.phone.replace(/[^\d+]/g, "")}`}
+        className="text-center text-meta text-ink-soft transition-colors hover:text-ink"
+      >
+        {site.phone}
+      </a>
     </div>
   );
 }

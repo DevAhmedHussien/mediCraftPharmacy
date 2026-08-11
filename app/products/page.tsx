@@ -1,32 +1,51 @@
 import type { Metadata } from "next";
-import { PageHeader } from "@/components/PageHeader";
-import { PartnershipCTA } from "@/components/sections/PartnershipCTA";
-import { ProductsCatalog } from "@/components/sections/ProductsCatalog";
-import { StartHere } from "@/components/sections/StartHere";
-import { categories, products } from "@/lib/data";
+import {
+  breadcrumbJsonLd,
+  itemListJsonLd,
+  jsonLdProps,
+  pageMetadata,
+} from "@/lib/seo";
+import { ClosingCta, PageHero } from "@/components/blocks";
+import { Formulary } from "@/components/sections/Formulary";
+import { closingCta, formulary } from "@/lib/content";
+import { media } from "@/lib/media";
+import { products, productsGrouped } from "@/lib/data";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Products",
-  description:
-    "Browse Medicraft Pharmacy's full catalog of compounded therapies — filter by category and dosage form across weight management, hormones, peptides, dermatology, and more.",
-  alternates: { canonical: "/products" },
-};
+  description: "MediCraft Pharmacy",
+  path: "/products",
+});
 
 export default function ProductsPage() {
   return (
     <>
-      <PageHeader
-        cover="/images/site/cover-products.jpg"
-        eyebrow="Our Products"
-        title="Our Products"
-        subtitle="Every formulation is made to order and dosed for the individual. Filter by category or dosage form to find what you need."
+      <script
+        {...jsonLdProps(breadcrumbJsonLd([{ name: "Products", path: "/products" }]))}
+      />
+      {/* Marks the formulary as an ordered listing of named products rather
+          than prose that happens to mention them. */}
+      <script
+        {...jsonLdProps(
+          itemListJsonLd({
+            name: "MediCraft Pharmacy formulary",
+            items: products.map((p) => ({
+              name: p.name,
+              path: `/product/${p.slug}`,
+            })),
+          })
+        )}
+      />
+      <PageHero
+        media={media.dispensary}
+        eyebrow={formulary.eyebrow}
+        title={formulary.title}
+        lead={formulary.lead}
       />
 
-      <StartHere />
+      <Formulary groups={productsGrouped} />
 
-      <ProductsCatalog products={products} categories={categories} />
-
-      <PartnershipCTA />
+      <ClosingCta {...closingCta} />
     </>
   );
 }

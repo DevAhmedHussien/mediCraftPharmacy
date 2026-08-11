@@ -1,47 +1,28 @@
-import {
-  FlaskConical,
-  Stethoscope,
-  ShieldCheck,
-  Sparkles,
-  Layers,
-  Cpu,
-  type LucideIcon,
-} from "lucide-react";
-import { SpeedGaugeIcon, UserIcon } from "@/components/icons";
-
-export const highlights = [
-  {
-    icon: FlaskConical,
-    title: "Custom Compounding",
-    body: "Formulations tailored to each patient's dose, allergies, and delivery preference — made in-house by licensed pharmacists.",
-  },
-  {
-    icon: SpeedGaugeIcon,
-    title: "Fast Turnaround",
-    body: "Most prescriptions compounded and shipped within 24–48 hours, with real-time status updates end to end.",
-  },
-  {
-    icon: UserIcon,
-    title: "Human Support",
-    body: "A dedicated care team that answers on the first ring — no phone trees, no waiting on hold.",
-  },
-  {
-    icon: Stethoscope,
-    title: "Clinical Backing",
-    body: "Board-certified consultants partner with your provider to fine-tune therapy and monitor outcomes.",
-  },
-];
+import type { IconName } from "@/components/icons/set";
 
 /* ---------------------------------------------------------------------------
  * Product catalog
- * Categories mirror the Hallandale therapeutic areas. Each product carries a
- * `categorySlug` so the catalog and per-category pages can filter cleanly.
+ *
+ * Categories follow the therapeutic areas in the owner's formulary. Each
+ * product carries a `categorySlug` so the catalog and per-category pages can
+ * filter cleanly.
+ *
+ * Marketing copy that used to live at the bottom of this file — accreditation
+ * claims, a multi-state licence table, headline statistics and named
+ * testimonials — has been removed rather than restyled. It contradicted the
+ * owner's own document on points that matter legally: it presented PCAB
+ * accreditation as held (it is in progress), listed pharmacy permits in five
+ * states where MediCraft is not licensed (Florida only today), and quoted
+ * volume figures for a pharmacy that opened in 2026. All page copy now comes
+ * from `lib/content.ts`, which is his wording verbatim.
  * ------------------------------------------------------------------------- */
 
 export type Category = {
   slug: string;
   name: string;
   blurb: string;
+  /** Icon from the drawn set, chosen to match the specialty. */
+  icon: IconName;
 };
 
 /** Spec-sheet fields rendered on a product detail page. */
@@ -75,71 +56,89 @@ export type Product = {
 /** Catalog entry before slug/detail derivation. */
 type RawProduct = Omit<Product, "slug" | "detail">;
 
+/**
+ * The therapeutic categories, in the order and wording of the owner's
+ * formulary page. Names, blurbs and pictograms are his.
+ *
+ * A category with nothing published yet is not an error and is not hidden: the
+ * catalog renders a "Request Formulary" panel in its place, which is exactly
+ * what his document does. So `pain-management` legitimately has no products.
+ *
+ * `custom-formulations` is the one addition to his ten. Three real catalog
+ * items — compounded eye drops, an ondansetron troche, and an open custom
+ * formulation — have no clinically honest home among the ten, and filing a
+ * sterile ophthalmic under Dermatology to force a fit would be worse than
+ * adding a category. His own provider FAQ ("Can I request a custom formulation
+ * not listed in your formulary? Yes.") supports it.
+ */
 export const categories: Category[] = [
   {
     slug: "weight-management",
     name: "Weight Management",
-    blurb: "GLP-1 and dual-agonist therapies compounded to titration-friendly strengths.",
+    blurb: "GLP-1 receptor agonists, metabolic support, and lipotropic compounds",
+    icon: "scale",
   },
   {
-    slug: "hormone-replacement",
-    name: "Hormone Replacement",
-    blurb: "Bio-identical hormone support dialed to lab-guided targets.",
-  },
-  {
-    slug: "womens-health",
-    name: "Women's Health",
-    blurb: "Custom therapies for hormonal balance, wellness, and vitality.",
-  },
-  {
-    slug: "mens-health",
-    name: "Men's Health",
-    blurb: "Testosterone, performance, and preventative formulations for men.",
-  },
-  {
-    slug: "sexual-wellness",
-    name: "Sexual Wellness",
-    blurb: "Discreet, effective compounded options for intimacy and confidence.",
-  },
-  {
-    slug: "dermatology",
-    name: "Dermatology",
-    blurb: "Combination topicals for acne, pigmentation, and hair restoration.",
+    slug: "hormone-therapy",
+    name: "Hormone Therapy",
+    blurb:
+      "Bioidentical hormone replacement — testosterone, estradiol, progesterone, thyroid",
+    icon: "dna",
   },
   {
     slug: "peptide-therapy",
     name: "Peptide Therapy",
-    blurb: "Research-informed peptides for recovery, longevity, and repair.",
+    blurb: "Anti-aging, recovery, immune function, and performance peptides",
+    icon: "vial",
+  },
+  {
+    slug: "dermatology",
+    name: "Dermatology",
+    blurb: "Custom topicals for acne, hyperpigmentation, rosacea, and anti-aging",
+    icon: "leaf",
+  },
+  {
+    slug: "sexual-wellness",
+    name: "Sexual Wellness",
+    blurb: "Customized formulations for sexual health and function",
+    icon: "tablet",
+  },
+  {
+    slug: "vitality-longevity",
+    name: "Vitality & Longevity",
+    blurb: "NAD+, glutathione, IV formulations, and functional wellness compounds",
+    icon: "heart",
+  },
+  {
+    slug: "pain-management",
+    name: "Pain Management",
+    blurb: "Topical analgesics, nerve agents, and custom pain formulations",
+    icon: "stethoscope",
+  },
+  {
+    slug: "womens-health",
+    name: "Women's Health",
+    blurb: "Hormonal, reproductive, and wellness compounds for women",
+    icon: "flower",
+  },
+  {
+    slug: "mens-health",
+    name: "Men's Health",
+    blurb: "TRT, performance, and wellness compounds for men",
+    icon: "dumbbell",
   },
   {
     slug: "iv-therapy",
-    name: "IV Therapy & Supplements",
-    blurb: "Nutrient infusions and injectables to restore and replenish.",
+    name: "IV Therapy",
+    blurb: "NAD+, glutathione, vitamin blends, and custom IV formulations",
+    icon: "droplet",
   },
   {
-    slug: "fertility",
-    name: "Fertility",
-    blurb: "Precision hormone support across every stage of the fertility journey.",
-  },
-  {
-    slug: "vitality",
-    name: "Vitality",
-    blurb: "Energy, focus, and longevity protocols built around the individual.",
-  },
-  {
-    slug: "ophthalmology",
-    name: "Ophthalmology",
-    blurb: "Sterile ophthalmic preparations compounded to exacting standards.",
-  },
-  {
-    slug: "nausea",
-    name: "Nausea",
-    blurb: "Fast-acting anti-nausea formulations in patient-friendly forms.",
-  },
-  {
-    slug: "custom-compound",
-    name: "Custom Compound",
-    blurb: "Anything not on the shelf — built to your provider's exact script.",
+    slug: "custom-formulations",
+    name: "Custom Formulations",
+    blurb:
+      "Sterile and non-sterile preparations built to a prescriber's exact specification",
+    icon: "mortar",
   },
 ];
 
@@ -259,8 +258,8 @@ const rawProducts: RawProduct[] = [
   // Hormone Replacement
   {
     name: "Estradiol / Progesterone",
-    categorySlug: "hormone-replacement",
-    category: "Hormone Replacement",
+    categorySlug: "hormone-therapy",
+    category: "Hormone Therapy",
     doses: "Patient-specific",
     form: "Cream, capsule, troche",
     blurb: "Bio-identical hormone support, dialed to lab-guided targets.",
@@ -268,8 +267,8 @@ const rawProducts: RawProduct[] = [
   },
   {
     name: "Testosterone Cypionate",
-    categorySlug: "hormone-replacement",
-    category: "Hormone Replacement",
+    categorySlug: "hormone-therapy",
+    category: "Hormone Therapy",
     doses: "50 – 200 mg/mL",
     form: "Intramuscular injection",
     blurb: "Consistent, precision-dosed testosterone replacement.",
@@ -277,8 +276,8 @@ const rawProducts: RawProduct[] = [
   },
   {
     name: "DHEA",
-    categorySlug: "hormone-replacement",
-    category: "Hormone Replacement",
+    categorySlug: "hormone-therapy",
+    category: "Hormone Therapy",
     doses: "Custom",
     form: "Capsule",
     blurb: "Adrenal hormone support tuned to individual lab work.",
@@ -383,7 +382,7 @@ const rawProducts: RawProduct[] = [
   {
     name: "Glutathione Injection",
     categorySlug: "iv-therapy",
-    category: "IV Therapy & Supplements",
+    category: "IV Therapy",
     doses: "200 mg/mL",
     form: "IV / IM injection",
     blurb: "Master antioxidant infusion for detox and skin health.",
@@ -392,7 +391,7 @@ const rawProducts: RawProduct[] = [
   {
     name: "Myers' Cocktail",
     categorySlug: "iv-therapy",
-    category: "IV Therapy & Supplements",
+    category: "IV Therapy",
     doses: "Custom",
     form: "IV infusion",
     blurb: "Classic vitamin and mineral blend for energy and recovery.",
@@ -401,8 +400,8 @@ const rawProducts: RawProduct[] = [
   // Fertility
   {
     name: "HCG",
-    categorySlug: "fertility",
-    category: "Fertility",
+    categorySlug: "hormone-therapy",
+    category: "Hormone Therapy",
     doses: "Custom",
     form: "Subcutaneous injection",
     blurb: "Hormone support across fertility and hormone protocols.",
@@ -411,8 +410,8 @@ const rawProducts: RawProduct[] = [
   // Vitality
   {
     name: "NAD+ Injection",
-    categorySlug: "vitality",
-    category: "Vitality",
+    categorySlug: "vitality-longevity",
+    category: "Vitality & Longevity",
     doses: "Custom",
     form: "Subcutaneous / IV",
     blurb: "Cellular-energy coenzyme for longevity and focus.",
@@ -421,8 +420,8 @@ const rawProducts: RawProduct[] = [
   // Ophthalmology
   {
     name: "Compounded Eye Drops",
-    categorySlug: "ophthalmology",
-    category: "Ophthalmology",
+    categorySlug: "custom-formulations",
+    category: "Custom Formulations",
     doses: "Custom",
     form: "Sterile ophthalmic",
     blurb: "Preservative-free sterile drops compounded to spec.",
@@ -431,8 +430,8 @@ const rawProducts: RawProduct[] = [
   // Nausea
   {
     name: "Ondansetron Troche",
-    categorySlug: "nausea",
-    category: "Nausea",
+    categorySlug: "custom-formulations",
+    category: "Custom Formulations",
     doses: "4 – 8 mg",
     form: "Troche",
     blurb: "Fast-dissolving anti-nausea therapy, easy to take.",
@@ -441,8 +440,8 @@ const rawProducts: RawProduct[] = [
   // Custom Compound
   {
     name: "Custom Formulation",
-    categorySlug: "custom-compound",
-    category: "Custom Compound",
+    categorySlug: "custom-formulations",
+    category: "Custom Formulations",
     doses: "Per prescription",
     form: "Any",
     blurb: "Built exactly to your provider's script — dose, base, and form.",
@@ -773,117 +772,37 @@ export function relatedProducts(p: Product, limit = 8): Product[] {
   return [...sameCategory, ...filler].slice(0, limit);
 }
 
+
+/**
+ * The label a therapeutic-area card closes with.
+ *
+ * Accepts either a category slug or the `/products/<slug>` href the content
+ * layer stores, so a page can pass whichever it has. Categories with nothing
+ * published yet say so honestly rather than showing "0" — the pharmacy does
+ * compound in those specialties, the public listing just isn't written.
+ */
+export function categoryMetaLabel(slugOrHref: string): string {
+  const slug = slugOrHref.replace(/^\/products\//, "");
+  const count = productsByCategory(slug).length;
+  if (count === 0) return "Available on request";
+  return `${count} ${count === 1 ? "formulation" : "formulations"}`;
+}
+
 /** Products featured on the home page (the flex-dose weight-management line). */
 export const featuredProducts: Product[] = productsByCategory("weight-management");
 
 /** Catalog grouped by category — used by the home-page product browser. */
+/**
+ * Catalog grouped by category, INCLUDING categories with nothing published
+ * yet. Empty groups are deliberately retained: the formulary shows a
+ * "Request Formulary" panel for them, so filtering them out here would hide
+ * specialties the pharmacy genuinely offers.
+ */
 export const productsGrouped: { category: Category; items: Product[] }[] =
-  categories
-    .map((category) => ({
-      category,
-      items: productsByCategory(category.slug),
-    }))
-    .filter((g) => g.items.length > 0);
-
-export const pillars = [
-  {
-    icon: ShieldCheck,
-    title: "Expertise",
-    body: "Pharmacists with decades of sterile and non-sterile compounding experience.",
-  },
-  {
-    icon: Sparkles,
-    title: "Customization",
-    body: "Every formula built around the individual — never one-size-fits-all.",
-  },
-  {
-    icon: Layers,
-    title: "Innovation",
-    body: "Continuously refined protocols informed by the latest clinical evidence.",
-  },
-  {
-    icon: Cpu,
-    title: "Technology",
-    body: "Precision equipment and digital tracking on every batch we produce.",
-  },
-];
-
-export const stats = [
-  { value: "500k+", label: "Prescriptions compounded" },
-  { value: "24–48h", label: "Average turnaround" },
-  { value: "1,200+", label: "Partner providers" },
-  { value: "99.7%", label: "Quality pass rate" },
-];
-
-export const testimonials = [
-  {
-    quote:
-      "Medicraft has become an extension of my practice. The consistency and communication are unmatched — my patients notice the difference.",
-    name: "Dr. Alana Reyes",
-    role: "Integrative Medicine, Tampa",
-  },
-  {
-    quote:
-      "Turnaround times I can actually plan around, and a clinical team that picks up the phone. It changed how I prescribe.",
-    name: "Dr. Marcus Bell",
-    role: "Family Medicine, Orlando",
-  },
-];
-
-/* ---------------------------------------------------------------------------
- * Content for the standalone pages
- * ------------------------------------------------------------------------- */
-
-export const qualityStandards: { icon: LucideIcon; title: string; body: string }[] = [
-  {
-    icon: ShieldCheck,
-    title: "PCAB Accredited",
-    body: "Independently accredited by the Pharmacy Compounding Accreditation Board for sterile and non-sterile compounding.",
-  },
-  {
-    icon: FlaskConical,
-    title: "USP 795 & 797 Compliant",
-    body: "Every preparation follows United States Pharmacopeia standards for compounding quality and sterility.",
-  },
-  {
-    icon: Layers,
-    title: "Third-Party Potency Testing",
-    body: "Independent labs verify potency and sterility on representative batches before release.",
-  },
-  {
-    icon: Cpu,
-    title: "End-to-End Batch Tracking",
-    body: "Digital records trace every ingredient, lot, and step from intake to shipment.",
-  },
-];
-
-export const licenses = [
-  { state: "Florida", type: "Resident Pharmacy Permit", number: "PH-000000" },
-  { state: "Texas", type: "Non-Resident Pharmacy", number: "TX-000000" },
-  { state: "California", type: "Non-Resident Pharmacy", number: "CA-000000" },
-  { state: "New York", type: "Non-Resident Establishment", number: "NY-000000" },
-  { state: "Georgia", type: "Non-Resident Pharmacy", number: "GA-000000" },
-  { state: "Illinois", type: "Non-Resident Pharmacy", number: "IL-000000" },
-];
-
-export const faqs = [
-  {
-    q: "How do I get set up as a new provider?",
-    a: "Complete the New Provider enrollment form and our onboarding team will verify your credentials and activate your account, usually within one to two business days.",
-  },
-  {
-    q: "How do patients request a refill?",
-    a: "Patients use the Patient Refill form with the details from their prescription label. Refills route straight to our fulfillment queue.",
-  },
-  {
-    q: "What are your typical turnaround times?",
-    a: "Most compounded prescriptions ship within 24–48 hours. Sterile preparations may take slightly longer depending on required testing.",
-  },
-  {
-    q: "Which states do you ship to?",
-    a: "We are licensed in a growing list of states — see the Licenses page for current coverage. Contact us if you don't see yours.",
-  },
-];
+  categories.map((category) => ({
+    category,
+    items: productsByCategory(category.slug),
+  }));
 
 export const careerBenefits = [
   {
@@ -920,68 +839,69 @@ export type Job = {
   blurb: string;
 };
 
+/** Open roles. All positions are at the Palm Harbor facility. */
 export const careers: Job[] = [
   {
     title: "Compounding Pharmacist",
     dept: "Pharmacy",
     shift: "Third Shift",
-    location: "Tampa, FL",
+    location: "Palm Harbor, FL",
     blurb: "Lead sterile and non-sterile compounding with a meticulous, patient-first team.",
   },
   {
     title: "Pharmacy Technician",
     dept: "Pharmacy",
     shift: "Third Shift",
-    location: "Tampa, FL",
+    location: "Palm Harbor, FL",
     blurb: "Support formulation, packaging, and quality checks in a fast-moving lab.",
   },
   {
     title: "Customer Service Representative",
     dept: "Customer Service",
     shift: "Second Shift",
-    location: "Tampa, FL",
+    location: "Palm Harbor, FL",
     blurb: "Be the friendly, knowledgeable first point of contact for patients and providers.",
   },
   {
     title: "Forklift Operator",
     dept: "Logistics",
     shift: "Second Shift",
-    location: "Tampa, FL",
+    location: "Palm Harbor, FL",
     blurb: "Keep our fulfillment and inventory moving safely and on schedule.",
   },
   {
     title: "Marketing Director",
     dept: "Marketing",
     shift: "First Shift",
-    location: "Tampa, FL",
+    location: "Palm Harbor, FL",
     blurb: "Own brand, growth, and provider marketing across every channel.",
   },
   {
     title: "Packaging & Labeling Inspector",
     dept: "Lab",
     shift: "Second Shift",
-    location: "Tampa, FL",
+    location: "Palm Harbor, FL",
     blurb: "Verify every label and package meets our exacting quality standards.",
   },
   {
     title: "Pharmacy Technician – Fulfillment",
     dept: "Pharmacy",
     shift: "First Shift",
-    location: "Tampa, FL",
+    location: "Palm Harbor, FL",
     blurb: "Pick, pack, and dispatch prescriptions with speed and accuracy.",
   },
   {
     title: "Pharmacy Technician – Data Entry",
     dept: "Pharmacy",
     shift: "Second Shift",
-    location: "Tampa, FL",
+    location: "Palm Harbor, FL",
     blurb: "Enter and verify prescription data with a sharp eye for detail.",
   },
   {
     title: "Pharmacy Technician – Sterile Compounding",
     dept: "Lab",
     shift: "Third Shift",
-    location: "Tampa, FL",
+    location: "Palm Harbor, FL",
     blurb: "Compound sterile preparations under USP 797 cleanroom conditions.",
   },
 ];

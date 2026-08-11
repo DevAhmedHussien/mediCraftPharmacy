@@ -1,135 +1,117 @@
-"use client";
-
 import Link from "next/link";
-import { motion, useReducedMotion } from "framer-motion";
-import { site } from "@/lib/site";
+import { ArrowRight } from "lucide-react";
+import { Icon } from "@/components/icons/set";
+import { AmbientVideo } from "@/components/media/AmbientVideo";
+import { RevealWords } from "@/components/motion/Motion";
+import { hero } from "@/lib/content";
 
 /**
- * Overlay hero, the way Apple opens a product page: the video is the frame and
- * the type sits centred on top of it.
+ * The home hero.
  *
- * Layout — the video stays in normal flow inside a `relative` wrapper, so the
- * video itself establishes the hero's height; the copy is `absolute inset-0`
- * and centred against that same box. Nothing is hard-coded to a pixel height,
- * so the two can never drift apart.
+ * Three layers, back to front:
  *
- * Robustness — each animated element carries `data-reveal`, the hook the
- * layout's <noscript> stylesheet and the reduced-motion rule use to force
- * content visible. Without it a JS failure would leave the whole hero, video
- * included, stuck at opacity 0.
+ *   1. Ambient lab footage — a gloved hand pipetting into a well tray. It is
+ *      the work the pharmacy actually does, at low opacity so it reads as
+ *      atmosphere rather than as a video player. Silent, looped, and replaced
+ *      by its own poster frame for anyone who asked for reduced motion.
+ *   2. A navy scrim. This is what holds the headline at full contrast over
+ *      moving footage — the type never depends on which frame is showing.
+ *   3. The copy, and the specification plate.
  *
- * Legibility — footage brightness varies frame to frame, so the type sits on a
- * fixed gradient scrim rather than trusting the video. The scrim is set at
- * 65-75% so that even against a pure-white frame the headline clears 5.2:1 and
- * the description 4.6:1. On that dark ground the accent steps up from
- * brand-500 to brand-300. Note that is one stop further than the palette's
- * brand-400 rule for solid dark: 400 clears 6.9:1 on flat #1d1d1f, but only
- * 2.2:1 through a 65% scrim over a bright frame, so it is not safe here.
+ * The headline is the owner's thesis, with "Crafted" carried in the pestle
+ * cyan, and it arrives a word at a time — the one orchestrated type moment on
+ * the site.
+ *
+ * Below it his four figures are set as a specification plate rather than the
+ * usual row of big numbers with small labels. These are credentials a
+ * prescriber verifies, not growth metrics, and this pharmacy's whole argument
+ * is that it documents everything — so the facts are presented as the artifact
+ * the business actually issues.
  */
 export function Hero() {
-  const reduce = useReducedMotion();
-
-  const container = {
-    hidden: {},
-    show: { transition: { staggerChildren: 0.08, delayChildren: 0.15 } },
-  };
-  const item = {
-    hidden: { opacity: 0, y: reduce ? 0 : 16 },
-    show: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
-    },
-  };
-
   return (
-    <section id="top" className="pt-16 md:pt-20">
+    <section className="hero pb-16 pt-14 md:pb-20 md:pt-20">
+      {/* Layer 1 — footage, at full opacity. Visibility is controlled entirely
+          by the scrim above it rather than by dimming the video itself: that
+          way the footage stays crisp where it shows and fully hidden where the
+          type needs the contrast. */}
+      <div data-layer className="absolute inset-0 -z-10 overflow-hidden">
+        <AmbientVideo className="h-full w-full object-cover" />
+      </div>
+
+      {/* Layer 2 — a directional scrim. Opaque navy on the left, where the
+          headline and lead sit, opening to 60% on the right so the lab is
+          actually visible. The headline never depends on which frame shows. */}
+      <div
+        data-layer
+        aria-hidden
+        className="absolute inset-0 -z-10 bg-gradient-to-r from-navy from-25% via-navy/92 to-navy/60"
+      />
+      {/* A vertical pass as well, so the spec plate sits on a settled ground. */}
+      <div
+        data-layer
+        aria-hidden
+        className="absolute inset-0 -z-10 bg-gradient-to-b from-navy/50 via-transparent to-navy/85"
+      />
+
       <div className="container-x">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          data-reveal=""
-          className="relative overflow-hidden rounded-panel bg-ink"
-        >
-          {/*
-           * The video drives the box. The aspect ratio opens up as the viewport
-           * narrows — a 16/9 frame on a phone is only ~200px tall, nowhere near
-           * enough for a headline, paragraph and two actions.
-           */}
-          <video
-            className="aspect-[4/5] max-h-[860px] min-h-[540px] w-full object-cover sm:aspect-[16/10] lg:aspect-[16/9]"
-            autoPlay
-            muted
-            loop
-            playsInline
-            poster="/images/site/hero-poster.webp"
-            aria-label="Medicraft Pharmacy compounding lab"
-          >
-            <source src="/video/hero.mp4" type="video/mp4" />
-          </video>
+        <div className="max-w-3xl">
+          <p className="panel-badge">
+            <Icon name="flask" className="h-3.5 w-3.5" strokeWidth={1.9} />
+            {hero.badge}
+          </p>
 
-          {/* Scrim. Weighted to the centre, where the type sits. */}
-          <div
-            aria-hidden
-            className="absolute inset-0 bg-gradient-to-b from-ink/65 via-ink/75 to-ink/75"
-          />
+          <h1 className="text-display-lg font-black text-white text-balance md:text-display-xl">
+            <RevealWords text={hero.headline.before.trim()} />{" "}
+            <em className="not-italic text-cyan-300">
+              <RevealWords text={hero.headline.accent} />
+            </em>
+            <RevealWords text={hero.headline.after} />
+          </h1>
 
-          {/* Copy — centred on the video, not beneath it. */}
-          <div className="absolute inset-0 flex items-center justify-center p-6">
-            <motion.div
-              variants={container}
-              initial="hidden"
-              animate="show"
-              className="max-w-3xl text-center"
+          <p className="mt-6 max-w-2xl text-intro text-white/80 text-pretty">
+            {hero.lead}
+          </p>
+
+          <div className="mt-9 flex flex-wrap gap-3">
+            <Link href={hero.actions.primary.href} className="btn-accent btn-lg group">
+              {hero.actions.primary.label}
+              <ArrowRight
+                className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5"
+                strokeWidth={2.2}
+              />
+            </Link>
+            <Link
+              href={hero.actions.secondary.href}
+              className="btn-outline-invert btn-lg"
             >
-              <motion.p
-                data-reveal=""
-                variants={item}
-                className="text-intro font-semibold text-brand-300"
-              >
-                {site.since} · PCAB accredited
-              </motion.p>
-
-              <motion.h1
-                data-reveal=""
-                variants={item}
-                className="mt-2 text-display-md font-semibold text-white sm:text-display-lg md:text-display-2xl"
-              >
-                Wellness is crafted,
-                <br className="hidden sm:block" /> not manufactured.
-              </motion.h1>
-
-              <motion.p
-                data-reveal=""
-                variants={item}
-                className="mx-auto mt-5 max-w-xl text-body text-white/90 sm:text-intro"
-              >
-                A specialty compounding pharmacy pairing precision science with genuine
-                care — custom medications built around every patient, delivered fast and
-                backed by real clinical support.
-              </motion.p>
-
-              <motion.div
-                data-reveal=""
-                variants={item}
-                className="mt-8 flex flex-wrap items-center justify-center gap-x-8 gap-y-4"
-              >
-                <Link href="/providers" className="btn-primary">
-                  Become a provider
-                </Link>
-                <Link
-                  href="/products"
-                  /* brand-200 rather than 300: this link is 17px, so it is not
-                     "large text" and needs 4.5:1, which 300 misses at 4.33. */
-                  className="inline-flex items-center gap-1 text-body text-brand-200 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-200 focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
-                >
-                  Explore products <span aria-hidden>›</span>
-                </Link>
-              </motion.div>
-            </motion.div>
+              {hero.actions.secondary.label}
+            </Link>
           </div>
-        </motion.div>
+        </div>
+
+        {/* ---- Specification plate ---- */}
+        <div className="spec-plate mt-14 md:mt-16">
+          <div className="spec-plate-head">
+            <span className="spec-plate-head-label">{hero.spec.docLabel}</span>
+            <span className="spec-plate-head-meta">{hero.spec.docMeta}</span>
+          </div>
+
+          {/* A description list, because that is what this is: four fields and
+              their values. The note qualifies the value, so it sits inside the
+              same <dd> rather than becoming a row of its own. */}
+          <dl className="spec-plate-grid">
+            {hero.spec.fields.map((f) => (
+              <div key={f.field} className="spec-cell">
+                <dt className="spec-cell-label">{f.field}</dt>
+                <dd>
+                  <span className="spec-cell-value">{f.value}</span>
+                  <span className="spec-cell-note">{f.note}</span>
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </div>
       </div>
     </section>
   );

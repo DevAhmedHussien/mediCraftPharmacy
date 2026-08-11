@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ClosingCta } from "@/components/blocks";
+import { Icon } from "@/components/icons/set";
 import { ProductCard } from "@/components/ProductCard";
-import { PartnershipCTA } from "@/components/sections/PartnershipCTA";
 import { CarouselItem, ProductCarousel } from "@/components/ui/ProductCarousel";
+import { closingCta, formulary } from "@/lib/content";
 import { site } from "@/lib/site";
 import { getProduct, productSpecs, products, relatedProducts } from "@/lib/data";
 
@@ -90,26 +92,26 @@ export default function ProductPage({ params }: Params) {
       />
 
       {/*
-       * Apple's local product bar: sits under the global nav, keeps the product
-       * name and the primary action within reach for the whole page. Pure CSS
-       * sticky — no scroll listener.
+       * Local product bar. Sits directly under the global chrome and keeps the
+       * compound's identity and the prescribe action in reach for the whole
+       * page. Pure CSS sticky — no scroll listener.
        */}
-      <div className="chrome sticky top-12 z-40 border-b border-line/60">
-        <div className="container-x flex h-12 items-center justify-between gap-4">
-          <p className="truncate text-meta font-semibold text-ink">{product.name}</p>
+      <div className="chrome sticky top-[var(--chrome-h-condensed)] z-40 border-b border-line">
+        <div className="container-x flex h-14 items-center justify-between gap-4">
+          <p className="truncate text-meta font-bold text-ink">{product.name}</p>
           <div className="flex shrink-0 items-center gap-4">
-            <span className="hidden text-caption text-ink-muted sm:inline">
-              {product.form} · {product.doses}
+            <span className="hidden font-mono text-caption text-ink-muted sm:inline">
+              {product.doses} · {product.form}
             </span>
-            <Link href="/providers" className="btn-primary btn-sm">
+            <Link href="/providers#apply" className="btn-primary btn-sm">
               Prescribe
             </Link>
           </div>
         </div>
       </div>
 
-      {/* Hero */}
-      <section className="pt-12 md:pt-16">
+      {/* ---- Header ---- */}
+      <section className="pt-10 md:pt-14">
         <div className="container-x">
           <nav aria-label="Breadcrumb">
             <ol className="flex flex-wrap items-center gap-1.5 text-caption text-ink-muted">
@@ -141,68 +143,96 @@ export default function ProductPage({ params }: Params) {
           </nav>
         </div>
 
-        <div className="container-narrow mt-10 text-center">
-          <Link href={`/products/${product.categorySlug}`} className="eyebrow">
-            {product.category}
-          </Link>
-          <h1 className="mt-2 text-display-md font-semibold text-ink md:text-display-lg">
-            {product.name}
-          </h1>
-          <p className="mx-auto mt-5 max-w-xl text-intro text-ink-soft">{product.blurb}</p>
+        <div className="container-x mt-10">
+          <div className="grid items-start gap-10 lg:grid-cols-2 lg:gap-14">
+            {/*
+             * `object-contain` on a plate rather than `cover`: the render is a
+             * tall packshot, so cropping it to a landscape frame would clip the
+             * vial. `priority` because this is the page's hero image.
+             */}
+            <div className="relative aspect-square overflow-hidden rounded-panel border border-line bg-white">
+              <Image
+                src={product.image}
+                alt={`${product.name} — ${product.form}, ${product.doses}, ${product.detail.size} ${product.detail.packaging.toLowerCase()}`}
+                fill
+                priority
+                sizes="(min-width: 1024px) 600px, 100vw"
+                className="object-contain p-6"
+              />
+            </div>
 
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-            <Link href="/providers" className="btn-primary">
-              Prescribe this compound
-            </Link>
-            <Link href="/refill" className="link-blue text-body">
-              Patient refill <span aria-hidden>›</span>
-            </Link>
-          </div>
+            <div>
+              <Link
+                href={`/products/${product.categorySlug}`}
+                className="eyebrow hover:text-cyan-600"
+              >
+                {product.category}
+              </Link>
 
-          <p className="fine-print mx-auto mt-5 max-w-md">
-            Available by prescription only. Compounded to order and confirmed with the
-            prescriber before release.
-          </p>
-        </div>
+              <h1 className="mt-4 text-display-sm font-black text-ink text-balance md:text-display-md">
+                {product.name}
+              </h1>
 
-        <div className="container-narrow mt-12">
-          {/*
-           * `object-contain` on a white plate, not `cover`: the render is a tall
-           * packshot, so cropping it to a landscape frame would clip the vial.
-           * The plate matches the render's own white background, so the letterbox
-           * is invisible. `priority` because this is the page's hero image.
-           */}
-          <div className="relative aspect-[4/3] overflow-hidden rounded-panel bg-white">
-            <Image
-              src={product.image}
-              alt={`${product.name} — ${product.form}, ${product.doses}, ${product.detail.size} ${product.detail.packaging.toLowerCase()}`}
-              fill
-              priority
-              sizes="(min-width: 980px) 980px, 100vw"
-              className="object-contain"
-            />
+              <p className="mt-4 text-intro text-ink-soft text-pretty">
+                {product.blurb}
+              </p>
+
+              {/* The three facts a prescriber checks first, set as data. */}
+              <dl className="mt-8 grid grid-cols-3 gap-4 border-y border-line py-5">
+                {[
+                  { label: "Strength", value: product.doses },
+                  { label: "Form", value: product.form },
+                  { label: "Route", value: product.detail.route },
+                ].map((f) => (
+                  <div key={f.label}>
+                    <dt className="text-label font-medium uppercase text-ink-muted">
+                      {f.label}
+                    </dt>
+                    <dd className="mt-1.5 font-mono text-meta font-medium text-ink">
+                      {f.value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+
+              <div className="mt-8 flex flex-wrap items-center gap-4">
+                <Link href="/providers#apply" className="btn-primary btn-lg">
+                  Prescribe this compound
+                </Link>
+                <Link href="/refill" className="link-arrow">
+                  Patient refill <span aria-hidden>→</span>
+                </Link>
+              </div>
+
+              <p className="fine-print mt-5 max-w-md">
+                Available by prescription only. Compounded to order and confirmed
+                with the prescriber before release.
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Specs */}
-      <section className="band mt-16 py-16 md:mt-24 md:py-24">
-        <div className="container-narrow">
-          <h2 className="section-title text-center">Specifications</h2>
+      {/* ---- Specifications ---- */}
+      <section className="band mt-16 py-16 md:mt-24 md:py-20">
+        <div className="container-x">
+          <h2 className="section-title-sm">Specifications</h2>
 
-          <dl className="mt-12 grid gap-x-16 sm:grid-cols-2">
+          <dl className="mt-8 grid gap-x-16 md:grid-cols-2">
             {specs.map((s) => (
               <div
                 key={s.label}
-                className="flex items-baseline justify-between gap-6 border-b border-line py-4"
+                className="flex items-baseline justify-between gap-6 border-b border-line py-3.5"
               >
                 <dt className="text-meta text-ink-soft">{s.label}</dt>
-                <dd className="text-right text-meta font-semibold text-ink">{s.value}</dd>
+                <dd className="text-right font-mono text-meta font-medium text-ink">
+                  {s.value}
+                </dd>
               </div>
             ))}
           </dl>
 
-          <div className="mt-14 grid gap-10 sm:grid-cols-2">
+          <div className="mt-12 grid gap-10 md:grid-cols-2">
             <IngredientList
               heading="Active ingredients"
               items={product.detail.activeIngredients}
@@ -215,30 +245,44 @@ export default function ProductPage({ params }: Params) {
         </div>
       </section>
 
-      {/* Copy */}
-      <section className="py-16 md:py-24">
-        <div className="container-narrow">
-          <h2 className="section-title">Description</h2>
-          <p className="mt-5 text-intro text-ink-soft">{product.detail.description}</p>
+      {/* ---- Description ---- */}
+      <section className="section">
+        <div className="container-narrow px-0 md:px-0">
+          <h2 className="section-title-sm">Description</h2>
+          <p className="mt-4 text-body text-ink-soft text-pretty">
+            {product.detail.description}
+          </p>
 
-          <h2 className="section-title mt-16">Prescriber directions</h2>
-          <p className="mt-5 text-intro text-ink-soft">{product.detail.directions}</p>
+          <h2 className="section-title-sm mt-14">Prescriber directions</h2>
+          <p className="mt-4 text-body text-ink-soft text-pretty">
+            {product.detail.directions}
+          </p>
+
+          <aside className="mt-12 flex items-start gap-4 rounded-tile border border-line bg-sand px-6 py-5">
+            <Icon name="rx" className="mt-0.5 h-5 w-5 text-cyan-700" />
+            <p className="text-meta text-ink-soft text-pretty">
+              <strong className="font-bold text-ink">
+                {formulary.rxNotice.label}
+              </strong>{" "}
+              {formulary.rxNotice.body}
+            </p>
+          </aside>
         </div>
       </section>
 
-      {/* Related shelf */}
+      {/* ---- Related ---- */}
       {related.length > 0 && (
-        <section className="band py-16 md:py-24">
+        <section className="band py-16 md:py-20">
           <div className="container-x">
             <ProductCarousel
               label={`Products related to ${product.name}`}
-              heading={<h2 className="section-title">Related products</h2>}
+              heading={<h2 className="section-title-sm">Related compounds</h2>}
               action={
                 <Link
                   href={`/products/${product.categorySlug}`}
-                  className="link-blue text-body"
+                  className="link-arrow"
                 >
-                  All {product.category} <span aria-hidden>›</span>
+                  All {product.category} <span aria-hidden>→</span>
                 </Link>
               }
             >
@@ -252,7 +296,7 @@ export default function ProductPage({ params }: Params) {
         </section>
       )}
 
-      <PartnershipCTA />
+      <ClosingCta {...closingCta} />
     </>
   );
 }
@@ -260,10 +304,10 @@ export default function ProductPage({ params }: Params) {
 function IngredientList({ heading, items }: { heading: string; items: string[] }) {
   return (
     <div>
-      <h3 className="text-body font-semibold text-ink">{heading}</h3>
+      <h3 className="text-[1.0625rem] font-bold text-ink">{heading}</h3>
       <ul className="mt-3 space-y-2">
         {items.map((i) => (
-          <li key={i} className="text-meta text-ink-soft">
+          <li key={i} className="font-mono text-caption text-ink-soft">
             {i}
           </li>
         ))}

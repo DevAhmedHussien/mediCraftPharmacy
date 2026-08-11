@@ -29,94 +29,158 @@ function resolveOrigin(): string {
   return withProtocol.replace(/\/+$/, "");
 }
 
+/* ===========================================================================
+   Name, address, phone and the rest of the brand's factual record.
+
+   Every value here comes from the owner's own identity document
+   ("medicraft-identity 5.html") rather than from placeholder data. Two things
+   to be aware of before launch:
+
+   · PHONE NUMBERS ARE STILL PLACEHOLDERS. The source document carries
+     (800) 000-0000 in the topbar and (727) 000-0000 on the contact page.
+     Both are stand-ins. Replace `phone` below with the real line.
+   · The source document also gives two different opening times — 9:30–6:30 in
+     the topbar, 8:00–6:00 in the contact block. The contact block wins here
+     because it is the one that enumerates all seven days, but confirm it.
+   ========================================================================= */
 export const site = {
-  name: "Medicraft Pharmacy",
-  shortName: "Medicraft",
+  name: "MediCraft Pharmacy",
+  shortName: "MediCraft",
   tagline: "Precision compounding, crafted for every patient",
+  /** The owner's positioning line, used as the hero headline. */
+  headline: "Wellness Is Crafted, Not Manufactured.",
   description:
-    "Medicraft Pharmacy is a Florida-based specialty compounding pharmacy delivering physician-grade custom medications — GLP-1 weight management, hormone therapy, peptides and more — with fast turnaround and dedicated clinical support for providers and patients nationwide.",
+    "MediCraft Pharmacy — 503A sterile and non-sterile precision compounding in Palm Harbor, Florida. Provider-focused, quality-engineered, patient-specific formulations.",
   url: resolveOrigin(),
 
-  // Primary NAP (name / address / phone) — used across the UI and structured data
-  phone: "(813) 555-0142",
-  tollFree: "(888) 555-0142",
-  fax: "(813) 555-0143",
-  email: "care@medicraftpharmacy.com",
-  address: "3201 W Kennedy Blvd, Suite 200, Tampa, FL 33609",
+  // --- Primary NAP (name / address / phone) ---
+  phone: "(727) 000-0000", // TODO: replace with the real number before launch
+  email: "info@medicraftpharmacy.com",
+  providerEmail: "providers@medicraftpharmacy.com",
+  privacyEmail: "privacy@medicraftpharmacy.com",
+  legalEmail: "legal@medicraftpharmacy.com",
+
+  address: "Palm Harbor, Florida",
   addressParts: {
-    street: "3201 W Kennedy Blvd, Suite 200",
-    city: "Tampa",
+    city: "Palm Harbor",
     state: "FL",
-    zip: "33609",
     country: "US",
   },
-  geo: { lat: 27.9466, lng: -82.4732 },
-  hours: "Mon–Fri: 9:30 AM – 6:30 PM  •  Sat: 9:00 AM – 1:00 PM",
-  since: "Since 2011",
+  /** Palm Harbor, Pinellas County. */
+  geo: { lat: 28.078, lng: -82.7637 },
+
+  hoursShort: "Mon–Fri 8 AM–6 PM ET  ·  Sat 9 AM–1 PM ET",
+  hours: [
+    { days: "Monday – Friday", time: "8:00 AM – 6:00 PM ET" },
+    { days: "Saturday", time: "9:00 AM – 1:00 PM ET" },
+    { days: "Sunday", time: "Closed", closed: true },
+  ],
+  afterHours:
+    "For urgent prescription inquiries outside business hours, please leave a voicemail and we will respond first thing the next business day.",
+
+  /** LLC established 2025; pharmacy opened to patients and providers in 2026. */
+  established: "2026",
+  llcEstablished: "2025",
   priceRange: "$$",
 
-  // Florida locations (example data — swap for your real sites)
-  locations: [
-    {
-      name: "Tampa — Main Compounding Lab",
-      street: "3201 W Kennedy Blvd, Suite 200",
-      city: "Tampa",
-      state: "FL",
-      zip: "33609",
-      phone: "(813) 555-0142",
-    },
-    {
-      name: "Doral — Miami Fulfillment Center",
-      street: "8400 NW 25th St, Suite 110",
-      city: "Doral",
-      state: "FL",
-      zip: "33122",
-      phone: "(305) 555-0188",
-    },
-    {
-      name: "Orlando — Provider Office",
-      street: "1900 Summit Tower Blvd, Suite 400",
-      city: "Orlando",
-      state: "FL",
-      zip: "32810",
-      phone: "(407) 555-0164",
-    },
-  ],
-
-  // External portal links (mirrors the Hallandale structure — swap for real URLs)
   loginUrl: "https://portal.medicraftpharmacy.com/login",
   social: {
+    linkedin: "https://linkedin.com/company/medicraftpharmacy",
     instagram: "https://instagram.com/medicraftpharmacy",
     facebook: "https://facebook.com/medicraftpharmacy",
-    linkedin: "https://linkedin.com/company/medicraftpharmacy",
   },
 };
 
-/** Primary header navigation — real routes. */
+/** The utility strip above the header. */
+export const topbar = {
+  location: "Palm Harbor, Florida",
+  hours: "Mon–Fri 8 AM–6 PM  ·  Sat 9 AM–1 PM",
+};
+
+/**
+ * Every primary route, in the section order of the owner's document: who we
+ * are → how we prove it → where we can serve → who we serve → what we make.
+ * Used by the mobile drawer and the sitemap, which have room for all of it.
+ */
 export const nav = [
+  { label: "About MediCraft", href: "/about" },
+  { label: "Quality Standards", href: "/quality" },
+  { label: "State Coverage", href: "/licenses" },
+  { label: "For Providers", href: "/providers" },
+  { label: "Our Compounding", href: "/compounding" },
   { label: "Products", href: "/products" },
-  { label: "About", href: "/about" },
-  { label: "Quality", href: "/quality" },
-  { label: "Licenses", href: "/licenses" },
-  { label: "Support", href: "/support" },
-  { label: "Careers", href: "/careers" },
+  { label: "Resources & FAQ", href: "/support" },
+  { label: "Contact", href: "/contact" },
 ];
 
-/** Call-to-action links shown at the right edge of the navbar. */
+/**
+ * The subset that fits the desktop header bar — the same five the owner's
+ * document puts in its header, plus Products, which carries the category
+ * dropdown. Resources and Contact are reachable from the topbar and footer
+ * instead of crowding the bar to the point where labels start truncating.
+ */
+export const headerNav = [
+  { label: "About", href: "/about" },
+  { label: "Quality", href: "/quality" },
+  { label: "State Coverage", href: "/licenses" },
+  { label: "For Providers", href: "/providers" },
+  { label: "Compounding", href: "/compounding" },
+];
+
+/** Call-to-action links at the right edge of the header. */
 export const navCtas = [
-  { label: "Patient Refill", href: "/refill", style: "ghost" as const },
-  { label: "New Provider", href: "/providers", style: "primary" as const },
-  { label: "Login", href: site.loginUrl, style: "text" as const, external: true },
+  { label: "Patient Refill", href: "/refill", style: "outline" as const },
+  { label: "Provider Portal", href: "/providers", style: "primary" as const },
 ];
 
-/** Footer column of quick links. */
-export const footerLinks = [
-  { label: "Products", href: "/products" },
-  { label: "About", href: "/about" },
-  { label: "Quality", href: "/quality" },
-  { label: "Licenses", href: "/licenses" },
-  { label: "Support", href: "/support" },
-  { label: "Careers", href: "/careers" },
-  { label: "New Provider", href: "/providers" },
-  { label: "Patient Refill", href: "/refill" },
+/** Footer link columns, as grouped in the owner's document. */
+export const footerColumns = [
+  {
+    heading: "Company",
+    links: [
+      { label: "About MediCraft", href: "/about" },
+      { label: "Quality Standards", href: "/quality" },
+      { label: "Our Team", href: "/quality#leadership" },
+      { label: "Careers", href: "/careers" },
+      { label: "Contact Us", href: "/contact" },
+    ],
+  },
+  {
+    heading: "Providers",
+    links: [
+      { label: "Open an Account", href: "/providers" },
+      { label: "Provider Portal", href: "/providers" },
+      { label: "Formulary Guide", href: "/products" },
+      { label: "Clinical Resources", href: "/support#resources" },
+      { label: "State Coverage", href: "/licenses" },
+    ],
+  },
+  {
+    heading: "Patients",
+    links: [
+      { label: "Patient Refill", href: "/refill" },
+      { label: "Shipping Info", href: "/licenses#shipping" },
+      { label: "FAQs", href: "/support" },
+      { label: "Safety Information", href: "/compounding" },
+      { label: "Contact Support", href: "/contact" },
+    ],
+  },
 ];
+
+/**
+ * The accreditation pills in the footer.
+ *
+ * `inProgress` is load-bearing, not cosmetic: PCAB accreditation and
+ * LegitScript certification have *not* been granted yet, and the owner's
+ * document is careful to say so everywhere. The UI must never render these as
+ * held credentials.
+ */
+export const footerBadges = [
+  { label: "PCAB — In Progress", inProgress: true },
+  { label: "503A Compounding", inProgress: false },
+  { label: "USP 795 · 797 · 800 Compliant", inProgress: false },
+  { label: "LegitScript — In Progress", inProgress: true },
+];
+
+/** Flat list kept for any consumer that just wants every route. */
+export const footerLinks = footerColumns.flatMap((c) => c.links);

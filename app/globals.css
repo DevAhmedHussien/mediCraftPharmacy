@@ -2,24 +2,45 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  /* Apple ships SF Pro. On Apple hardware the system stack resolves to the
-     real thing; everywhere else Inter is the closest neo-grotesque, and the
-     Helvetica/Arial tail covers the rest. One family for every role — Apple
-     does not pair a display serif. */
-  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
-    var(--font-inter), "Helvetica Neue", Helvetica, Arial, sans-serif;
+/* ===========================================================================
+   MediCraft — clinical authority.
 
-  /* Apple's translucent chrome: a heavy blur plus saturation boost so colour
-     bleeding through the bar stays vivid instead of washing out grey. */
-  --chrome-bg: rgba(255, 255, 255, 0.72);
-  --chrome-blur: saturate(180%) blur(20px);
+   The through-line of the owner's copy is documented proof: every batch
+   tested, every package filmed, SOPs written by a former Board of Pharmacy
+   inspector. So the system borrows the register of pharmaceutical
+   documentation — tracked-out micro-labels, monospaced regulatory data, and
+   hairline rules — and spends its one piece of boldness on the mark, which
+   grinds like the mortar and pestle it draws.
+   ========================================================================= */
+
+:root {
+  --font-sans: var(--font-satoshi), system-ui, -apple-system, sans-serif;
+
+  /* The sticky header sits under a translucent white; the saturation boost
+     keeps the brand blue vivid when it scrolls beneath instead of going grey. */
+  --chrome-bg: rgba(255, 255, 255, 0.86);
+  --chrome-blur: saturate(160%) blur(16px);
+
+  /* Height of the fixed chrome at rest. The document is inset by this, so it
+     must match the *expanded* bar — otherwise the page jumps at scroll 0. The
+     utility strip is hidden below `md`, hence two values. */
+  --chrome-h: 4.5rem;
+  /* Height once the bar has condensed. Sticky sub-bars (the formulary filter,
+     the product bar) offset by this, because by the time they matter the user
+     has scrolled and the bar has already shrunk — so they sit flush. */
+  --chrome-h-condensed: 3.75rem;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --chrome-h: 6.75rem;
+  }
 }
 
 html {
   scroll-behavior: smooth;
-  /* Anchored sections clear the fixed bar instead of hiding beneath it. */
-  scroll-padding-top: 4.5rem;
+  scroll-padding-top: calc(var(--chrome-h) + 1rem);
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -27,80 +48,633 @@ body {
   font-family: var(--font-sans);
 }
 
+/* The chrome is fixed, so the document is inset by its height once here rather
+   than every page remembering to leave room for it. */
+main {
+  padding-top: var(--chrome-h);
+}
+
+/* Selection picks up the brand rather than the browser default. */
+::selection {
+  background: theme("colors.brand.500");
+  color: #fff;
+}
+
 @layer components {
-  /* ---------- Layout ----------
-     Two widths, mirroring Apple: a wide 1440 shell for imagery and grids, and
-     a 980 measure for anything that is primarily read. */
+  /* ---------------------------------------------------------------------
+     Layout shell
+     ------------------------------------------------------------------ */
   .container-x {
-    @apply mx-auto w-full max-w-[1440px] px-6 lg:px-10;
+    @apply mx-auto w-full max-w-[1280px] px-5 sm:px-8 lg:px-10;
   }
+  /* Reading measure — long-form regulatory prose stays under ~72 characters. */
   .container-narrow {
-    @apply mx-auto w-full max-w-[980px] px-6;
+    @apply mx-auto w-full max-w-[820px] px-5 sm:px-8;
   }
-  /* Alternating grey band. Apple's pages are white-dominant with #f5f5f7
-     stretches, never the reverse. */
+  /* Vertical rhythm. One class per band so section padding can never be
+     fought over by two competing selectors. */
+  .section {
+    @apply py-16 md:py-24;
+  }
+  .section-tight {
+    @apply py-12 md:py-16;
+  }
   .band {
     @apply bg-sand;
   }
+  .band-navy {
+    @apply bg-navy text-white;
+  }
 
-  /* ---------- Chrome ---------- */
+  /* ---------------------------------------------------------------------
+     The section head device.
+
+     Every section opens the same way: the mortar's mouth — the flattened
+     cyan ellipse lifted straight out of the logo — then a tracked-out
+     eyebrow, then the title. Repeating the mark's own geometry as the
+     structural marker is what ties the page back to the identity, and it is
+     the one ornament the system allows itself.
+     ------------------------------------------------------------------ */
+  .eyebrow {
+    @apply inline-flex items-center gap-2.5 text-label font-medium uppercase text-cyan-700;
+  }
+  .eyebrow::before {
+    content: "";
+    /* 18×5 is the logo's mouth ratio (rx 25.33 / ry 4.55) held exactly. */
+    @apply block h-[5px] w-[18px] shrink-0 rounded-full bg-cyan-400;
+  }
+  /* On navy the accessible cyan is too dark — use the artwork value. */
+  .band-navy .eyebrow,
+  .eyebrow-invert {
+    @apply text-cyan-300;
+  }
+
+  /*
+   * Headings carry the identity blue.
+   *
+   * The deck sets the entire "MediCraft Pharmacy" wordmark in #1B54FB, so the
+   * display type follows it rather than defaulting to near-black. Body copy
+   * stays on the ink ramp — putting prose in blue as well would cost legibility
+   * across pages this long and leave nothing for the headings to contrast with.
+   * brand-500 is the exact logo blue and clears 4.5:1 on white (5.66:1).
+   */
+  .section-title {
+    @apply text-display-md font-black text-brand-500 md:text-display-lg;
+  }
+  .section-title-sm {
+    @apply text-display-sm font-black text-brand-500 md:text-display-md;
+  }
+  .band-navy .section-title,
+  .band-navy .section-title-sm {
+    @apply text-white;
+  }
+  .section-lead {
+    @apply max-w-[62ch] text-intro text-ink-soft;
+  }
+  .band-navy .section-lead {
+    @apply text-white/70;
+  }
+  /* Standard head block: eyebrow, title, lead, stacked with fixed gaps. */
+  .section-head {
+    @apply flex flex-col items-start gap-4;
+  }
+
+  .prose-body {
+    @apply space-y-4 text-body text-ink-soft;
+  }
+
+  /* ---------------------------------------------------------------------
+     Buttons — squared-off with a small radius, not pills. A pill reads
+     consumer; this audience is prescribers signing their name to a
+     compounder's quality.
+     ------------------------------------------------------------------ */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-5 py-3 text-meta font-bold transition duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2;
+  }
+  .btn-primary {
+    @apply btn bg-brand-500 text-white shadow-[0_1px_2px_rgba(13,25,62,0.12)] hover:bg-brand-600 active:translate-y-px;
+  }
+  /* The cyan CTA — used on navy, where it is the highest-contrast thing
+     available. Navy type on cyan, never white. */
+  .btn-accent {
+    @apply btn bg-cyan-400 text-navy hover:bg-cyan-300 active:translate-y-px;
+  }
+  .btn-outline {
+    @apply btn border-[1.5px] border-ink/20 bg-transparent text-ink hover:border-ink hover:bg-ink hover:text-white;
+  }
+  .btn-outline-invert {
+    @apply btn border-[1.5px] border-white/35 bg-transparent text-white hover:border-white hover:bg-white hover:text-navy;
+  }
+  .btn-sm {
+    @apply px-4 py-2 text-caption;
+  }
+  .btn-lg {
+    @apply px-7 py-3.5 text-body;
+  }
+
+  .link-arrow {
+    @apply inline-flex items-center gap-1.5 font-bold text-brand-600 transition-colors hover:text-brand-500;
+  }
+  .link-arrow-invert {
+    @apply inline-flex items-center gap-1.5 font-bold text-cyan-300 transition-colors hover:text-cyan-200;
+  }
+
+  /* ---------------------------------------------------------------------
+     Cards
+     ------------------------------------------------------------------ */
+  /*
+   * Card. `overflow-hidden` so the accent rule below can sit flush in the top
+   * edge, and `transition` on transform/shadow/border only — never on layout
+   * properties, so hovering a grid of twelve cards costs no reflow.
+   */
+  .card {
+    @apply relative flex flex-col overflow-hidden rounded-tile border border-line bg-white p-7 shadow-card transition-[transform,box-shadow,border-color] duration-300;
+  }
+  /* A brand rule that draws in from the left along the card's top edge. It
+     replaces the usual "lift and glow" as the primary hover signal, which on a
+     clinical layout reads calmer and more deliberate. */
+  .card-hover::before {
+    content: "";
+    @apply pointer-events-none absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 bg-brand-500 transition-transform duration-500;
+  }
+  .card-hover:hover::before,
+  .card-hover:focus-visible::before {
+    @apply scale-x-100;
+  }
+  .card-hover {
+    @apply hover:-translate-y-[3px] hover:border-brand-200 hover:shadow-lift;
+  }
+  /* Icon plate. Square with a generous radius so it echoes the logo's
+     containing square from the deck's icon variants. */
+  .card-icon {
+    @apply mb-5 flex h-12 w-12 items-center justify-center rounded-[0.75rem] transition-colors duration-300;
+  }
+  .card-hover:hover .card-icon-blue {
+    @apply bg-brand-500 text-white;
+  }
+  .card-hover:hover .card-icon-cyan {
+    @apply bg-cyan-500 text-white;
+  }
+  .card-hover:hover .card-icon-navy {
+    @apply bg-navy text-white;
+  }
+  .card-icon-blue {
+    @apply bg-brand-500/10 text-brand-600;
+  }
+  .card-icon-cyan {
+    @apply bg-cyan-400/20 text-cyan-700;
+  }
+  .card-icon-navy {
+    @apply bg-navy/[0.07] text-navy;
+  }
+  /* brand-600 rather than brand-500: these are set at body size, where the
+     deeper blue holds up better (7.47:1 on white). */
+  .card-title {
+    @apply mb-2.5 text-[1.0625rem] font-bold text-brand-600;
+  }
+  /* Keeps a two-line title clear of the corner arrow on linked cards. */
+  a.card .card-title {
+    @apply pr-8;
+  }
+  /*
+   * The body carries the gap to whatever closes the card. It must not absorb
+   * the leftover vertical space itself, or the `mt-auto` footers below have
+   * none left to claim — hence a fixed margin here rather than `flex-1`.
+   */
+  .card-body {
+    @apply mb-5 text-meta text-ink-soft;
+  }
+  /* Where the body *is* the last thing in the card, that trailing margin would
+     just be dead space inside the padding. */
+  .card > .card-body:last-child {
+    @apply mb-0;
+  }
+
+  /*
+   * Both card footers sit on the bottom edge via `mt-auto`, so a row of cards
+   * with bodies of very different lengths still lines its rules up. `mt-auto`
+   * collapses to zero when there is no slack, and the body's own margin keeps
+   * the two apart in that case.
+   *
+   * credential — a list of qualifications (leadership cards)
+   * meta       — a single closing fact, e.g. a formulation count
+   */
+  .card-credential {
+    @apply mt-auto border-t border-line pt-3.5 font-mono text-caption font-medium text-cyan-700;
+  }
+  .card-meta {
+    @apply mt-auto border-t border-line pt-4 font-mono text-caption uppercase tracking-wider text-ink-muted;
+  }
+
+  /* ---------------------------------------------------------------------
+     Navy panel — the recurring dark counterweight. The HTML used this for
+     "visual panels" and quality banners; here it is one component.
+     ------------------------------------------------------------------ */
+  .panel-navy {
+    @apply relative overflow-hidden rounded-panel bg-navy p-8 text-white md:p-10;
+    background-image: linear-gradient(140deg, #0d193e 0%, #152f83 62%, #1b54fb 130%);
+  }
+  /*
+   * No bloom here. This panel appears a dozen times across the site, so a
+   * decorative glow on each one stopped being atmosphere and became a tic —
+   * and with the hero's specification plate now carrying the visual interest,
+   * the panels are better off quiet. The hero keeps the one bloom on the site.
+   */
+  .panel-navy > * {
+    @apply relative z-10;
+  }
+  .panel-badge {
+    @apply mb-5 inline-flex items-center gap-2 rounded-full border border-cyan-400/40 bg-cyan-400/15 px-3.5 py-1.5 text-label font-semibold uppercase text-cyan-200;
+  }
+  .panel-title {
+    @apply text-display-sm font-black leading-[1.15] text-white md:text-[2rem];
+  }
+
+  /* Metric grid inside a navy panel. */
+  .metric {
+    @apply rounded-[0.75rem] border border-white/10 bg-white/[0.06] p-4;
+  }
+  .metric-value {
+    @apply text-[1.5rem] font-black leading-none text-cyan-300;
+  }
+  .metric-label {
+    @apply mt-1.5 block text-caption leading-snug text-white/60;
+  }
+
+  /* ---------------------------------------------------------------------
+     Spec rail — the signature data treatment.
+
+     A regulatory fact gets a monospaced label, a hairline, and a plain-
+     language explanation underneath, the way a batch record or a vial label
+     sets it. This is where "documented proof" becomes visible.
+     ------------------------------------------------------------------ */
+  .spec {
+    @apply flex gap-4 border-t border-line py-5 transition-colors duration-200 first:border-t-0 first:pt-0;
+  }
+  .spec:hover .spec-mark {
+    @apply text-cyan-500;
+  }
+  .spec-mark {
+    @apply mt-0.5 shrink-0 font-mono text-caption font-semibold uppercase tracking-wider text-cyan-700;
+  }
+  .spec-title {
+    @apply text-meta font-bold text-brand-600;
+  }
+  .spec-body {
+    @apply mt-1 text-meta text-ink-soft;
+  }
+  /* Inverted, for spec rails inside navy panels. */
+  .spec-invert {
+    @apply border-white/10;
+  }
+  .spec-invert .spec-mark {
+    @apply text-cyan-300;
+  }
+  .spec-invert .spec-title {
+    @apply text-white;
+  }
+  .spec-invert .spec-body {
+    @apply text-white/65;
+  }
+
+  /* ---------------------------------------------------------------------
+     Check list — the owner's copy leans on these heavily.
+     ------------------------------------------------------------------ */
+  .check-list {
+    @apply space-y-3;
+  }
+  .check-list > li {
+    @apply relative pl-8 text-meta text-ink-soft;
+  }
+  .check-list > li::before {
+    content: "";
+    /* A cyan tick drawn as a masked SVG so it inherits no font metrics and
+       stays crisp at any zoom. */
+    @apply absolute left-0 top-[0.3em] h-[1.05em] w-[1.05em] bg-cyan-500;
+    -webkit-mask: var(--tick) center / contain no-repeat;
+    mask: var(--tick) center / contain no-repeat;
+  }
+  .check-list-invert > li {
+    @apply text-white/75;
+  }
+  .check-list-invert > li::before {
+    @apply bg-cyan-300;
+  }
+
+  /* ---------------------------------------------------------------------
+     Timeline — used for the company journey, where order genuinely carries
+     information the reader needs (2025 → 2026 → 2027 → Beyond).
+     ------------------------------------------------------------------ */
+  .timeline {
+    @apply relative space-y-9 border-l-2 border-line pl-8;
+  }
+  .timeline-item {
+    @apply relative;
+  }
+  .timeline-item::before {
+    content: "";
+    @apply absolute -left-[2.3125rem] top-1.5 h-3.5 w-3.5 rounded-full border-[3px] border-white bg-brand-500;
+    box-shadow: 0 0 0 2px theme("colors.brand.200");
+  }
+  .timeline-year {
+    @apply mb-1 block font-mono text-caption font-bold uppercase tracking-[0.12em] text-brand-600;
+  }
+  .timeline-title {
+    @apply mb-1.5 text-[1.0625rem] font-bold text-brand-600;
+  }
+
+  /* ---------------------------------------------------------------------
+     Numbered steps / process cards. Numbers are used only where the content
+     really is a sequence — provider onboarding, raw-material qualification,
+     and the fulfilment checkpoints.
+     ------------------------------------------------------------------ */
+  .step {
+    @apply flex gap-5;
+  }
+  .step-num {
+    @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.7rem] bg-brand-500 text-meta font-black text-white;
+  }
+  .process-card {
+    @apply relative rounded-tile border border-line bg-white p-6 shadow-card;
+  }
+  .process-num {
+    @apply mb-3 block font-mono text-caption font-bold text-cyan-700;
+  }
+  .process-title {
+    @apply mb-2 text-meta font-bold text-brand-600;
+  }
+
+  /* ---------------------------------------------------------------------
+     Chips, pills, badges
+     ------------------------------------------------------------------ */
+  .chip {
+    @apply inline-flex items-center gap-2 rounded-full border border-line bg-white px-4 py-2 text-caption font-bold text-ink-soft transition;
+  }
+  .chip-active {
+    @apply border-brand-500 bg-brand-500 text-white;
+  }
+  .badge-pill {
+    @apply inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3 py-1 text-caption font-medium text-white/80;
+  }
+  /* "In progress" needs to read as honest rather than as an accreditation
+     already held — amber, not cyan, and the copy always says so. */
+  .badge-progress {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-amber-400/40 bg-amber-400/15 px-3 py-1 text-caption font-semibold text-amber-200;
+  }
+
+  /* Callout — a tinted aside with a brand rule down the left edge. */
+  .callout {
+    @apply rounded-r-tile border-l-[3px] border-brand-500 bg-brand-50 px-6 py-5 text-meta text-ink-soft;
+  }
+  .callout-cyan {
+    @apply rounded-r-tile border-l-[3px] border-cyan-500 bg-cyan-50 px-6 py-5 text-meta text-ink-soft;
+  }
+
+  .hairline {
+    @apply border-t border-line;
+  }
+  .fine-print {
+    @apply text-caption text-ink-muted;
+  }
+
+
+  /* ---------------------------------------------------------------------
+     Photography.
+
+     One frame for every still on the site: a hairline border, the panel
+     radius, and a slow scale on hover where the image is a link. The scrim
+     gradient is what lets type sit over a photograph without a heavy box —
+     it darkens only the edge the type occupies.
+     ------------------------------------------------------------------ */
+  .figure {
+    @apply relative overflow-hidden rounded-panel border border-line bg-sand;
+  }
+  .figure img {
+    @apply object-cover;
+  }
+  /* Applied to a group-hover parent to animate the image inside. */
+  .figure-zoom img {
+    @apply transition-transform ease-out;
+    transition-duration: 900ms;
+  }
+  .group:hover .figure-zoom img {
+    @apply scale-[1.04];
+  }
+  /* Bottom-up scrim, for type laid over a still. */
+  .figure-scrim::after {
+    content: "";
+    @apply pointer-events-none absolute inset-0;
+    background: linear-gradient(
+      to top,
+      rgba(13, 25, 62, 0.88) 0%,
+      rgba(13, 25, 62, 0.45) 40%,
+      rgba(13, 25, 62, 0.05) 100%
+    );
+  }
+  /* A caption strip, set as document metadata. */
+  .figure-caption {
+    @apply absolute inset-x-0 bottom-0 flex items-center gap-2.5 px-6 py-5 font-mono text-caption uppercase tracking-wider text-white/80;
+  }
+
+
+  /* ---------------------------------------------------------------------
+     Accreditation ticker.
+
+     One track carrying two copies of the list, translated -50% — when copy one
+     has left the frame, copy two is exactly where it started. Seamless, with no
+     measurement and no JavaScript.
+
+     `transform` only, so the animation never triggers layout, and the track is
+     `w-max` so its width is driven by content rather than a magic number.
+     ------------------------------------------------------------------ */
+  .marquee {
+    @apply flex overflow-hidden;
+    /* Fades both ends so items enter and leave rather than being clipped. */
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 6rem,
+      #000 calc(100% - 6rem),
+      transparent
+    );
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 6rem,
+      #000 calc(100% - 6rem),
+      transparent
+    );
+  }
+  .marquee-track {
+    @apply flex w-max animate-marquee;
+  }
+  /* Stops for anyone who wants to actually read an item. */
+  .marquee:hover .marquee-track,
+  .marquee:focus-within .marquee-track {
+    animation-play-state: paused;
+  }
+  .marquee-list {
+    @apply flex w-max items-center;
+  }
+  .marquee-item {
+    @apply flex shrink-0 items-center gap-4 whitespace-nowrap text-[1.25rem] font-black tracking-[-0.02em] text-white md:text-[1.625rem];
+  }
+  /* The logo's mouth ellipse, holding its 18:5 ratio, doing the separating. */
+  .marquee-sep {
+    @apply mx-8 block h-[5px] w-[18px] shrink-0 rounded-full bg-cyan-400 md:mx-11;
+  }
+
+  /* ---------------------------------------------------------------------
+     Skip link — off-screen until focused, then pinned over the chrome.
+     ------------------------------------------------------------------ */
+  .skip-link {
+    @apply sr-only;
+  }
+  .skip-link:focus-visible {
+    @apply not-sr-only fixed left-4 top-4 z-[100] rounded-lg bg-brand-500 px-5 py-3 text-meta font-bold text-white shadow-lift outline-none ring-2 ring-white;
+  }
+  /* `main` is a focus target for the skip link but must not show a ring when
+     reached by mouse. */
+  main:focus {
+    @apply outline-none;
+  }
+
+  /* ---------------------------------------------------------------------
+     Chrome
+     ------------------------------------------------------------------ */
   .chrome {
     background: var(--chrome-bg);
     -webkit-backdrop-filter: var(--chrome-blur);
     backdrop-filter: var(--chrome-blur);
   }
-
-  /* ---------- Buttons ----------
-     Apple's CTA is a compact pill at body size in *regular* weight — the
-     boldness comes from the fill, not the type. No shadow, no lift; hover
-     just brightens the fill (brightness keeps this palette-agnostic, so the
-     green theme behaves identically). */
-  .btn {
-    @apply inline-flex items-center justify-center gap-1.5 rounded-full px-5 py-2.5 text-body transition-[filter,background-color,color,border-color] duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2;
+  /*
+   * Top-level navigation. `relative` so the indicator can anchor to it, and no
+   * background on hover — the underline is the only feedback, which keeps the
+   * bar quiet while still telling a visitor where they are.
+   */
+  .nav-link {
+    @apply relative flex items-center rounded-md px-3.5 py-2 text-meta font-medium text-ink-soft transition-colors duration-200 hover:text-brand-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500;
   }
-  .btn-primary {
-    @apply btn bg-brand-500 text-white hover:brightness-110;
+  .nav-link-active {
+    @apply font-bold text-brand-600;
   }
-  /* Apple's secondary: same pill, blue outline, tinted on hover. */
-  .btn-secondary {
-    @apply btn border border-brand-500 text-brand-500 hover:bg-brand-500/[0.06];
+  /* Grows from the centre on hover; already full width when the route is
+     active. Transform-only, so it never triggers layout. */
+  .nav-underline {
+    @apply pointer-events-none absolute inset-x-3 -bottom-px h-[2px] origin-center scale-x-0 rounded-full bg-brand-500 transition-transform duration-300;
   }
-  /* Kept as an alias so existing markup stays valid. */
-  .btn-ghost {
-    @apply btn-secondary;
+  .nav-link:hover .nav-underline,
+  .nav-link:focus-visible .nav-underline {
+    @apply scale-x-100;
   }
-  /* Compact variant for the sticky product sub-nav. */
-  .btn-sm {
-    @apply px-4 py-1.5 text-meta;
-  }
-
-  /* Apple's inline text link: blue, underline on hover, chevron supplied by
-     the markup so it can be omitted where it would be noise. */
-  .link-blue {
-    @apply inline-flex items-center gap-1 text-brand-600 hover:underline;
+  .nav-underline-on {
+    @apply scale-x-100;
   }
 
-  /* ---------- Type ----------
-     Apple's "eyebrow" is not a chip — it's a blue subhead set just above the
-     headline at intro size. */
-  .eyebrow {
-    @apply inline-block text-intro font-semibold text-brand-600;
+  /* ---------------------------------------------------------------------
+     Hero
+     ------------------------------------------------------------------ */
+  /* ---------------------------------------------------------------------
+     Hero.
+
+     Near-flat navy, not a blue gradient sweep. A diagonal navy→blue gradient
+     is the default B2B hero and it was doing the visual work here that the
+     content should be doing; reduced to a shallow vertical tone shift, the
+     hero reads as a document ground and the cyan figures on the spec plate
+     become the only bright thing in it.
+     ------------------------------------------------------------------ */
+  .hero {
+    @apply relative overflow-hidden bg-navy text-white;
+    background-image: linear-gradient(180deg, #0a1330 0%, #0d193e 55%, #101f4d 100%);
   }
-  .section-title {
-    @apply text-display-md font-semibold text-ink md:text-display-lg;
+  /* One faint bloom, low and off-centre. Everything else is flat. */
+  .hero::after {
+    content: "";
+    @apply pointer-events-none absolute -bottom-52 left-[8%] h-[30rem] w-[30rem] rounded-full;
+    background: radial-gradient(circle, rgba(35, 220, 225, 0.13) 0%, transparent 70%);
   }
-  .section-lead {
-    @apply text-intro text-ink-soft;
+  /* Lifts the hero's content above the background layers. Elements marked
+     `data-layer` opt out — those are the video and the scrims, which have to
+     stay behind. */
+  .hero > *:not([data-layer]) {
+    @apply relative z-10;
   }
-  /* Legal / disclaimer copy, Apple's smallest grey. */
-  .fine-print {
-    @apply text-caption text-ink-muted;
+
+  /* ---------------------------------------------------------------------
+     Specification plate — the site's signature.
+
+     The four figures the owner puts in his hero are credentials, not growth
+     metrics, so they are set the way this pharmacy actually issues a fact:
+     as a specification sheet. A header strip identifies the document, mono
+     column heads label each field, hairline rules divide the cells, and the
+     value sits in the pestle cyan. It is the same information a stat row
+     would carry, in the register of the business that issues it.
+     ------------------------------------------------------------------ */
+  /* The plate sits on a flat tint of its own rather than a translucent white,
+     so the cell rules below can be drawn deterministically. */
+  .spec-plate {
+    @apply overflow-hidden rounded-tile border border-white/15;
+    background: #111e49;
+  }
+  .spec-plate-head {
+    @apply flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b border-white/15 px-5 py-2.5;
+    background: #16255a;
+  }
+  .spec-plate-head-label {
+    @apply inline-flex items-center gap-2.5 font-mono text-label font-medium uppercase text-cyan-300;
+  }
+  /* The mortar's mouth again, as the document's bullet. */
+  .spec-plate-head-label::before {
+    content: "";
+    @apply block h-[4px] w-[15px] shrink-0 rounded-full bg-cyan-400;
+  }
+  .spec-plate-head-meta {
+    @apply font-mono text-label uppercase text-white/55;
+  }
+  /*
+   * Hairline cell grid, drawn with a 1px gap over a rule-coloured ground
+   * rather than per-cell borders. That way the rules are exact at any column
+   * count and at every breakpoint, with no nth-child arithmetic to get wrong
+   * when the grid reflows from four columns to two.
+   */
+  .spec-plate-grid {
+    @apply grid grid-cols-2 gap-px md:grid-cols-4;
+    background: rgba(255, 255, 255, 0.14);
+  }
+  .spec-plate-grid-3 {
+    @apply grid grid-cols-1 gap-px sm:grid-cols-3;
+    background: rgba(255, 255, 255, 0.14);
+  }
+  .spec-cell {
+    @apply px-5 py-5;
+    background: #111e49;
+  }
+  .spec-cell-label {
+    @apply block font-mono text-label font-medium uppercase text-white/55;
+  }
+  .spec-cell-value {
+    @apply mt-2.5 block text-[1.75rem] font-black leading-none text-cyan-300;
+  }
+  .spec-cell-note {
+    @apply mt-1.5 block text-caption leading-snug text-white/60;
+  }
+
+  /* Trust bar — the strip of accreditation signals under the hero. */
+  .trust-item {
+    @apply flex items-center gap-3 text-meta font-medium text-ink-soft;
+  }
+  .trust-icon {
+    @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-500/10 text-[0.95rem];
   }
 }
 
 @layer utilities {
-  /* Apple hides the scrollbar on its horizontal shelves and relies on the
-     snap points plus arrow controls for affordance. */
+  /* The tick mark used by .check-list, as a data URI so it needs no request. */
+  .check-list,
+  .check-list-invert {
+    --tick: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M8.2 14.6 4 10.4l1.4-1.4 2.8 2.8 6.4-6.4L16 6.8z'/%3E%3C/svg%3E");
+  }
+
   .no-scrollbar {
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -108,13 +682,100 @@ body {
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
+
+  /* Balanced headline wrapping — stops a display line from dropping one word. */
+  .text-balance {
+    text-wrap: balance;
+  }
+  .text-pretty {
+    text-wrap: pretty;
+  }
 }
 
-/* Reduce motion for accessibility */
+/* ===========================================================================
+   The mark in motion.
+
+   A mortar and pestle animates one way: the pestle drops in and grinds.
+   Rotation is about the point where the pestle meets the bowl — the mouth
+   ellipse is painted over that junction, so the tip stays anchored while the
+   handle sweeps, exactly as it would in the hand.
+
+   On load the mark assembles once. On hover or keyboard focus of the lockup
+   the pestle grinds twice. There is no perpetual loop: a logo that never
+   stops moving is noise on every page of the site.
+   ========================================================================= */
+
+.logo-mark .logo-bowl,
+.logo-mark .logo-pestle,
+.logo-mark .logo-mouth {
+  /* Rotate/scale about the bowl mouth, not the SVG's own origin. */
+  transform-box: fill-box;
+}
+.logo-mark .logo-pestle {
+  transform-origin: 0% 100%; /* the pestle's tip, buried in the bowl */
+}
+.logo-mark .logo-mouth {
+  transform-origin: center;
+}
+
+.logo-mark[data-animate="load"] .logo-bowl {
+  animation: bowl-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.logo-mark[data-animate="load"] .logo-mouth {
+  animation: mouth-settle 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.16s both;
+}
+.logo-mark[data-animate="load"] .logo-pestle {
+  animation: pestle-drop 0.85s cubic-bezier(0.3, 1.3, 0.5, 1) 0.1s both;
+}
+
+/* Hover / focus grind. Driven from the lockup so the whole link is the
+   target, and repeated on focus-visible so keyboard users get it too. */
+.logo-lockup:hover .logo-pestle,
+.logo-lockup:focus-visible .logo-pestle {
+  animation: pestle-grind 1.1s ease-in-out 2;
+}
+.logo-lockup:hover .logo-mouth,
+.logo-lockup:focus-visible .logo-mouth {
+  animation: mouth-ripple 0.55s ease-in-out 4;
+}
+
+/* The one place a continuous grind is appropriate: an oversized mark used as
+   a deliberate brand moment, where the motion is the point. */
+.logo-mark[data-animate="grind"] .logo-pestle {
+  animation: pestle-grind 3.4s ease-in-out infinite;
+}
+.logo-mark[data-animate="grind"] .logo-mouth {
+  animation: mouth-ripple 1.7s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  /* Scroll-reveal content must never stay hidden. This does not rely on the
-     JS hook reporting the preference in time — the rule wins outright over
-     the inline opacity the animation library writes. */
+  /*
+   * The ticker cannot simply have its duration collapsed — that would leave the
+   * track parked at -50% with half the credentials off-screen. It becomes a
+   * static, centred, wrapping list instead, and the duplicate copy is removed
+   * so nothing reads twice.
+   */
+  .marquee {
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  .marquee-track {
+    @apply w-full flex-wrap justify-center;
+    animation: none !important;
+  }
+  .marquee-list {
+    @apply w-full flex-wrap justify-center gap-y-4;
+  }
+  .marquee-track > .marquee-list[aria-hidden="true"] {
+    display: none;
+  }
+  .marquee-item:last-child .marquee-sep {
+    display: none;
+  }
+
+  /* Scroll-reveal content must never stay hidden — this wins outright over
+     the inline opacity the reveal hook writes, without depending on JS
+     reporting the preference in time. */
   [data-reveal] {
     opacity: 1 !important;
     transform: none !important;
@@ -122,6 +783,9 @@ body {
   html {
     scroll-behavior: auto;
   }
+  /* Everything, including the mark, renders in its finished state and stays
+     there — `animation-fill-mode: both` on the logo keyframes means collapsing
+     the duration lands it on the resting frame rather than hiding it. */
   *,
   *::before,
   *::after {

@@ -1,139 +1,144 @@
 import Link from "next/link";
 import { Logo } from "@/components/brand/Logo";
-import { GlobeIcon } from "@/components/icons";
-import { footerLinks, site } from "@/lib/site";
+import { Icon } from "@/components/icons/set";
+import { footerBlurb } from "@/lib/content";
+import { footerBadges, footerColumns, site } from "@/lib/site";
 
-/** Card marks we accept. All five artworks are a uniform 36×22, so explicit
- *  dimensions keep the row from shifting as they load. */
-const paymentMethods = [
-  { src: "/images/payment/visa.webp", label: "Visa" },
-  { src: "/images/payment/mastercard.webp", label: "Mastercard" },
-  { src: "/images/payment/amex.webp", label: "American Express" },
-  { src: "/images/payment/discover.webp", label: "Discover" },
-  { src: "/images/payment/diners.webp", label: "Diners Club" },
+/** Social links, with the wordmark each account is actually listed under in
+ *  the owner's document. */
+const SOCIALS = [
+  { label: "in", name: "LinkedIn", href: site.social.linkedin },
+  { label: "ig", name: "Instagram", href: site.social.instagram },
+  { label: "f", name: "Facebook", href: site.social.facebook },
 ];
 
-/**
- * Apple's footer: the grey band (#f5f5f7), everything at 12px, hairline rules
- * between the fine print, the link columns, and the copyright row. No dark
- * fill and no oversized logo — Apple keeps the whole thing quiet.
- */
 export function Footer() {
-  const columns = [
-    { heading: "Explore", links: footerLinks },
-    {
-      heading: "Contact",
-      links: [
-        { label: site.phone, href: `tel:${site.phone}` },
-        { label: site.tollFree, href: `tel:${site.tollFree}` },
-        { label: site.email, href: `mailto:${site.email}` },
-      ],
-    },
-  ];
+  const year = new Date().getFullYear();
 
   return (
-    <footer className="band text-caption text-ink-soft">
-      <div className="container-x py-8">
-        <Link
-          href="/"
-          aria-label={`${site.name} — home`}
-          className="inline-flex rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
-        >
-          <Logo
-            markClassName="h-9 w-9 sm:h-8 sm:w-8"
-            wordmarkClassName="text-lg"
-          />
-        </Link>
+    <footer className="bg-navy text-white/70">
+      <div className="container-x py-16">
+        <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
+          {/* ---- Brand ---- */}
+          <div>
+            {/* The reversed lockup: white bowl and wordmark, cyan pestle — the
+                on-dark variant the identity deck specifies. */}
+            <Link
+              href="/"
+              className="logo-lockup inline-flex rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-navy"
+            >
+              <Logo tone="invert" animate="none" className="h-11" />
+            </Link>
 
-        <p className="mt-5 max-w-4xl leading-relaxed">
-          {site.tagline}. A specialty compounding pharmacy serving providers and patients
-          nationwide. All medications are compounded to order and dispensed by
-          prescription only.
-        </p>
+            <p className="mt-6 max-w-sm text-meta leading-relaxed">{footerBlurb}</p>
 
-        <div className="mt-6 grid gap-8 border-t border-line pt-6 sm:grid-cols-2 lg:grid-cols-4">
-          {columns.map((col) => (
-            <div key={col.heading}>
-              <h2 className="font-semibold text-ink">{col.heading}</h2>
-              <ul className="mt-3 space-y-2">
-                {col.links.map((item) => (
-                  <li key={item.href}>
-                    {item.href.startsWith("/") ? (
-                      <Link href={item.href} className="hover:underline">
-                        {item.label}
-                      </Link>
-                    ) : (
-                      <a href={item.href} className="hover:underline">
-                        {item.label}
-                      </a>
-                    )}
+            <p className="mt-4 text-meta font-medium text-white">{site.address}</p>
+
+            <div className="mt-6 space-y-1.5 text-meta">
+              <p>
+                <a
+                  href={`tel:${site.phone.replace(/[^\d+]/g, "")}`}
+                  className="transition-colors hover:text-white"
+                >
+                  {site.phone}
+                </a>
+              </p>
+              <p>
+                <a
+                  href={`mailto:${site.email}`}
+                  className="text-cyan-300 transition-colors hover:text-cyan-200"
+                >
+                  {site.email}
+                </a>
+              </p>
+            </div>
+          </div>
+
+          {/* ---- Link columns ---- */}
+          {footerColumns.map((col) => (
+            <nav key={col.heading} aria-labelledby={`footer-${col.heading}`}>
+              <h2
+                id={`footer-${col.heading}`}
+                className="text-label font-semibold uppercase text-white"
+              >
+                {col.heading}
+              </h2>
+              <ul className="mt-5 space-y-3">
+                {col.links.map((link) => (
+                  <li key={link.label}>
+                    <Link
+                      href={link.href}
+                      className="text-meta transition-colors hover:text-white"
+                    >
+                      {link.label}
+                    </Link>
                   </li>
                 ))}
               </ul>
-            </div>
+            </nav>
           ))}
-
-          <div>
-            <h2 className="font-semibold text-ink">Visit us</h2>
-            <ul className="mt-3 space-y-2">
-              <li>{site.address}</li>
-              <li>{site.hours}</li>
-              <li className="flex items-start gap-1.5">
-                <GlobeIcon className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                Licensed to ship nationwide
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h2 className="font-semibold text-ink">Follow</h2>
-            <ul className="mt-3 space-y-2">
-              {[
-                { label: "Instagram", href: site.social.instagram },
-                { label: "Facebook", href: site.social.facebook },
-                { label: "LinkedIn", href: site.social.linkedin },
-              ].map((s) => (
-                <li key={s.href}>
-                  <a
-                    href={s.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:underline"
-                  >
-                    {s.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
         </div>
 
-        <div className="mt-6 flex flex-col gap-4 border-t border-line pt-6 text-ink-muted md:flex-row md:items-center md:justify-between">
-          <div className="flex flex-col gap-1">
-            <p>
-              Copyright © {new Date().getFullYear()} {site.name}. All rights reserved.{" "}
-              {site.since}.
-            </p>
-            <p>PCAB Accredited · USP 795 / 797 Compliant</p>
-          </div>
+        {/* ---- Accreditation status ----
+            These are deliberately not styled as awarded credentials. The two
+            that are still pending carry an explicit "In Progress" label,
+            because the owner's copy is careful never to overstate them. */}
+        <div className="mt-14 flex flex-wrap gap-2.5 border-t border-white/10 pt-8">
+          {footerBadges.map((badge) => (
+            <span
+              key={badge.label}
+              className={badge.inProgress ? "badge-progress" : "badge-pill"}
+            >
+              {badge.inProgress && (
+                <Icon name="hourglass" className="h-3 w-3" strokeWidth={1.8} />
+              )}
+              {badge.label}
+            </span>
+          ))}
+        </div>
 
-          <ul aria-label="Accepted payment methods" className="flex items-center gap-2">
-            {paymentMethods.map((m) => (
-              <li key={m.src}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={m.src}
-                  alt={m.label}
-                  width={36}
-                  height={22}
-                  loading="lazy"
-                  decoding="async"
-                  className="h-[22px] w-9 rounded-[3px]"
-                />
-              </li>
+        {/* ---- Bottom row ---- */}
+        <div className="mt-8 flex flex-col gap-6 border-t border-white/10 pt-8 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-2.5">
+            {SOCIALS.map((s) => (
+              <a
+                key={s.name}
+                href={s.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`${site.name} on ${s.name}`}
+                className="grid h-9 w-9 place-items-center rounded-lg bg-white/10 text-caption font-bold text-white transition-colors hover:bg-brand-500"
+              >
+                <span aria-hidden>{s.label}</span>
+              </a>
             ))}
-          </ul>
+          </div>
+
+          <p className="fine-print text-white/50">
+            © {year} {site.name} · EST. {site.established} · All rights reserved.
+          </p>
+
+          <div className="flex items-center gap-5 text-caption">
+            <Link href="/privacy" className="transition-colors hover:text-white">
+              Privacy Policy
+            </Link>
+            <Link href="/terms" className="transition-colors hover:text-white">
+              Terms of Use
+            </Link>
+          </div>
         </div>
+
+        {/* Regulatory footer — a compounding pharmacy should state this
+            plainly, and the owner's document does so on the products page. */}
+        {/* white/50, not /40 — regulatory text has to clear 4.5:1, and this is
+            the disclosure a reader is most likely to need. */}
+        <p className="mt-8 max-w-4xl text-caption leading-relaxed text-white/50">
+          MediCraft Pharmacy is a 503A compounding pharmacy. All compounded
+          medications require a valid prescription from a licensed healthcare
+          provider for a specific, identified patient. Compounded medications are
+          not FDA-approved. Information on this site is provided for general
+          educational purposes and is not medical advice.
+        </p>
       </div>
     </footer>
   );

@@ -3,8 +3,11 @@
 import { useFormStatus } from "react-dom";
 import { CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 
+/* Squared-off inputs on a hairline border, matching the button system. The
+   focus ring is the brand blue at full strength — this is a clinical form and
+   the active field should be unmistakable. */
 const inputClass =
-  "w-full rounded-xl border border-brand-200 bg-white px-4 py-3 text-sm text-ink outline-none transition-colors focus:border-brand-500 focus:ring-2 focus:ring-brand-100";
+  "w-full rounded-lg border-[1.5px] border-line bg-white px-4 py-3 text-meta text-ink outline-none transition-colors placeholder:text-ink-muted focus:border-brand-500 focus:ring-2 focus:ring-brand-100 aria-[invalid=true]:border-red-400";
 
 function Label({ htmlFor, label, optional }: { htmlFor: string; label: string; optional?: boolean }) {
   return (
@@ -17,7 +20,7 @@ function Label({ htmlFor, label, optional }: { htmlFor: string; label: string; o
 
 function FieldError({ message }: { message?: string }) {
   if (!message) return null;
-  return <p className="mt-1.5 text-xs font-medium text-red-600">{message}</p>;
+  return <p className="mt-1.5 text-caption font-medium text-red-600">{message}</p>;
 }
 
 export function TextField({
@@ -134,12 +137,12 @@ export function RadioGroup({
 }) {
   return (
     <fieldset>
-      <legend className="mb-2 block text-sm font-medium text-ink-soft">{label}</legend>
+      <legend className="mb-2.5 block text-caption font-bold text-ink">{label}</legend>
       <div className="grid gap-2 sm:grid-cols-2">
         {options.map((o) => (
           <label
             key={o}
-            className="flex cursor-pointer items-center gap-3 rounded-xl border border-brand-200 bg-white px-4 py-3 text-sm text-ink-soft transition-colors hover:border-brand-400 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50"
+            className="flex cursor-pointer items-center gap-3 rounded-lg border-[1.5px] border-line bg-white px-4 py-3 text-meta text-ink-soft transition-colors hover:border-brand-300 has-[:checked]:border-brand-500 has-[:checked]:bg-brand-50"
           >
             <input type="radio" name={name} value={o} className="accent-brand-600" />
             {o}
@@ -172,10 +175,10 @@ export function FormAlert({ ok, message }: { ok: boolean; message?: string }) {
   return (
     <div
       role="status"
-      className={`flex items-start gap-3 rounded-xl p-4 text-sm ${
+      className={`flex items-start gap-3 rounded-lg p-4 text-meta ${
         ok
-          ? "border border-brand-200 bg-brand-50 text-brand-800"
-          : "border border-red-200 bg-red-50 text-red-700"
+          ? "border-[1.5px] border-cyan-300 bg-cyan-50 text-cyan-800"
+          : "border-[1.5px] border-red-200 bg-red-50 text-red-700"
       }`}
     >
       {ok ? (
@@ -191,10 +194,10 @@ export function FormAlert({ ok, message }: { ok: boolean; message?: string }) {
 export function SectionTitle({ step, title }: { step: number; title: string }) {
   return (
     <div className="flex items-center gap-3">
-      <span className="grid h-7 w-7 place-items-center rounded-full bg-brand-600 text-xs font-semibold text-white">
+      <span className="grid h-8 w-8 place-items-center rounded-[0.6rem] bg-brand-500 text-caption font-black text-white">
         {step}
       </span>
-      <h3 className="font-display text-lg font-semibold text-ink">{title}</h3>
+      <h3 className="text-[1.0625rem] font-bold text-ink">{title}</h3>
     </div>
   );
 }
