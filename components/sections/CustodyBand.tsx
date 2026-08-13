@@ -1,38 +1,35 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import Image from "next/image";
 import { FadeIn } from "@/components/motion/Motion";
 import { quality } from "@/lib/content";
-import { media } from "@/lib/media";
 
 /**
  * Full-bleed band carrying the chain-of-custody claim.
  *
- * This section wants motion — the claim *is* that everything is filmed — but it
- * deliberately uses a still. There is only one clip in the project, and running
- * the same 14-second loop here and in the hero reads as an asset shortage
- * rather than as two considered decisions. Drop a second clip of the packing
- * and sealing line into public/video and this is the section to put it in.
+ * The brief calls this the highest-differentiation section on the site and its
+ * most under-illustrated (§4.10, P1). The frame it wants is specific: a packing
+ * station from a slightly elevated three-quarter angle **with the overhead
+ * camera visibly in frame** — because "the entire claim is 'we filmed it'. If
+ * the viewer cannot see the camera, the claim is just text."
+ *
+ * Until that is shot, this runs on the brand gradient rather than a stock
+ * substitute (§6). A stock packing bench with no camera in it would illustrate
+ * the opposite of the claim.
  */
 export function CustodyBand() {
   const { panel } = quality.custody;
 
   return (
     <section className="relative isolate overflow-hidden bg-navy py-20 text-white md:py-28">
-      <div className="absolute inset-0 -z-10">
-        <Image
-          src={media.pipetting.src}
-          alt=""
-          fill
-          sizes="100vw"
-          className="object-cover"
-        />
-      </div>
-      {/* Scrim. Heavier at the top where the heading sits. */}
       <div
         aria-hidden
-        className="absolute inset-0 -z-10 bg-gradient-to-b from-navy via-navy/85 to-navy/95"
+        className="absolute inset-0 -z-10"
+        style={{
+          backgroundImage:
+            "linear-gradient(150deg, #070f26 0%, #142b6b 55%, #1b54fb 130%)",
+        }}
       />
+      <span aria-hidden className="hero-grid" />
 
       <div className="container-x">
         <FadeIn className="max-w-3xl">

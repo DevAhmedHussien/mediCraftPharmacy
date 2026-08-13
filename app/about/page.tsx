@@ -14,7 +14,6 @@ import {
 } from "@/components/blocks";
 import { Reveal } from "@/components/ui/Reveal";
 import { about, closingCta } from "@/lib/content";
-import { media } from "@/lib/media";
 
 export const metadata: Metadata = pageMetadata({
   title: "About MediCraft",
@@ -28,7 +27,6 @@ export default function AboutPage() {
     <>
       <script {...jsonLdProps(breadcrumbJsonLd([{ name: "About MediCraft", path: "/about" }]))} />
       <PageHero
-        media={media.glassware}
         eyebrow={about.intro.eyebrow}
         title={about.intro.title}
         lead={about.intro.body[0]}

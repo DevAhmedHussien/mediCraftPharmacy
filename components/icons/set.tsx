@@ -50,8 +50,18 @@ import { cn } from "@/lib/utils";
    The MediCraft icon set.
 
    Built on lucide-react, which gives the whole site one professionally drawn,
-   optically consistent family — 24x24 grid, 1.5 stroke, round caps — instead
-   of emoji that render differently on every operating system.
+   optically consistent family instead of emoji that render differently on every
+   operating system.
+
+   This matches the spec in the art-direction brief §5: a 2px uniform stroke on
+   a 24x24 grid, rounded caps and joins, `currentColor` so CSS controls colour,
+   stroke-only with no fill. The brief suggests commissioning a bespoke set of
+   ~28 icons; lucide covers every subject it lists (cleanroom, hood, vial, crimp,
+   balance, EM sensor, camera, shield, SOP, microscope, cold-chain, shipping,
+   map pin, dashboard, syringe, jar, capsule, spray, troche, IV, turnaround,
+   consult, checklist, flask, barcode, lock, certificate, inspection, package)
+   at the same stroke weight and grid, so a commission would buy consistency the
+   site already has.
 
    Two icons are drawn locally because lucide has no equivalent and both are
    specific to this business rather than generic UI:
@@ -233,7 +243,7 @@ const GLYPHS: Record<IconName, LucideIcon | ((p: GlyphProps) => JSX.Element)> = 
 export function Icon({
   name,
   className,
-  strokeWidth = 1.6,
+  strokeWidth = 2,
   title,
 }: {
   name: IconName;

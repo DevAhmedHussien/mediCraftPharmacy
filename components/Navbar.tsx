@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowRight, ChevronDown, Phone } from "lucide-react";
@@ -10,7 +9,6 @@ import { Icon } from "@/components/icons/set";
 import { NavDrawer } from "@/components/nav/NavDrawer";
 import { headerNav, navCtas, site, topbar } from "@/lib/site";
 import { categories, productsByCategory } from "@/lib/data";
-import { media } from "@/lib/media";
 import { cn } from "@/lib/utils";
 
 /**
@@ -258,17 +256,12 @@ function MegaPanel() {
           </div>
 
           {/* Featured panel. Gives the menu a visual anchor and points at the
-              action a prescriber is actually here to take. */}
-          <div className="relative hidden overflow-hidden rounded-panel lg:block">
-            <Image
-              src={media.dispensary.src}
-              alt=""
-              fill
-              sizes="380px"
-              className="object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-navy via-navy/80 to-navy/25" />
-            <div className="relative flex h-full flex-col justify-end p-6">
+              action a prescriber is actually here to take. Gradient rather than
+              a photograph, per the art-direction brief §6 — a stock dispensary
+              shelf here would be the site's most-seen unverified image. */}
+          <div className="gradient-plate hidden lg:block">
+            <span aria-hidden className="gradient-plate-grid" />
+            <div className="relative z-10 flex h-full flex-col justify-end p-6">
               <p className="panel-badge mb-3">Provider accounts</p>
               <p className="text-[1.0625rem] font-bold leading-snug text-white text-balance">
                 Request the current formulary for your specialty

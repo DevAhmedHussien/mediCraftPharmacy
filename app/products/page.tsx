@@ -8,7 +8,6 @@ import {
 import { ClosingCta, PageHero } from "@/components/blocks";
 import { Formulary } from "@/components/sections/Formulary";
 import { closingCta, formulary } from "@/lib/content";
-import { media } from "@/lib/media";
 import { products, productsGrouped } from "@/lib/data";
 
 export const metadata: Metadata = pageMetadata({
@@ -37,7 +36,6 @@ export default function ProductsPage() {
         )}
       />
       <PageHero
-        media={media.dispensary}
         eyebrow={formulary.eyebrow}
         title={formulary.title}
         lead={formulary.lead}

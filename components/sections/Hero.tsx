@@ -1,22 +1,26 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Icon } from "@/components/icons/set";
-import { AmbientVideo } from "@/components/media/AmbientVideo";
 import { RevealWords } from "@/components/motion/Motion";
 import { hero } from "@/lib/content";
 
 /**
  * The home hero.
  *
- * Three layers, back to front:
+ * The ground is the brand gradient, not photography — and that is a decision,
+ * not a gap. The art-direction brief (§6) forbids filling this slot with stock
+ * cleanroom footage until the facility is certified and shot, because a
+ * prescriber who tours the real building and finds it does not match the site
+ * has been handed a reason to doubt the compliance claims as well. Its
+ * first-preference substitute is exactly this: a gradient and typography
+ * composition in brand colours. "An honest gradient beats a dishonest
+ * photograph."
  *
- *   1. Ambient lab footage — a gloved hand pipetting into a well tray. It is
- *      the work the pharmacy actually does, at low opacity so it reads as
- *      atmosphere rather than as a video player. Silent, looped, and replaced
- *      by its own poster frame for anyone who asked for reduced motion.
- *   2. A navy scrim. This is what holds the headline at full contrast over
- *      moving footage — the type never depends on which frame is showing.
- *   3. The copy, and the specification plate.
+ * The P1 frame that belongs here once shot: a gowned compounder's gloved hands
+ * working under the laminar airflow hood, mid-action, three-quarter rear angle,
+ * subject in the right third so the headline keeps the left 60%. Drop it into
+ * `heroVideo` / `media` and restore the <AmbientVideo> layer — the scrim and
+ * safe-area geometry below are already built for it.
  *
  * The headline is the owner's thesis, with "Crafted" carried in the pestle
  * cyan, and it arrives a word at a time — the one orchestrated type moment on
@@ -31,28 +35,11 @@ import { hero } from "@/lib/content";
 export function Hero() {
   return (
     <section className="hero pb-16 pt-14 md:pb-20 md:pt-20">
-      {/* Layer 1 — footage, at full opacity. Visibility is controlled entirely
-          by the scrim above it rather than by dimming the video itself: that
-          way the footage stays crisp where it shows and fully hidden where the
-          type needs the contrast. */}
-      <div data-layer className="absolute inset-0 -z-10 overflow-hidden">
-        <AmbientVideo className="h-full w-full object-cover" />
-      </div>
-
-      {/* Layer 2 — a directional scrim. Opaque navy on the left, where the
-          headline and lead sit, opening to 60% on the right so the lab is
-          actually visible. The headline never depends on which frame shows. */}
-      <div
-        data-layer
-        aria-hidden
-        className="absolute inset-0 -z-10 bg-gradient-to-r from-navy from-25% via-navy/92 to-navy/60"
-      />
-      {/* A vertical pass as well, so the spec plate sits on a settled ground. */}
-      <div
-        data-layer
-        aria-hidden
-        className="absolute inset-0 -z-10 bg-gradient-to-b from-navy/50 via-transparent to-navy/85"
-      />
+      {/* The HEPA ceiling grid, drawn in CSS — the texture the brief asks for as
+          a material ground (§4.5). It gives the gradient substance without
+          pretending to be a photograph of a facility that is still in buildout.
+          When the P1 hood shot lands, this is the layer it replaces. */}
+      <span data-layer aria-hidden className="hero-grid" />
 
       <div className="container-x">
         <div className="max-w-3xl">

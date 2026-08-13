@@ -3,7 +3,6 @@ import { breadcrumbJsonLd, jsonLdProps, pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import {
   CheckList,
-  Figure,
   IconCard,
   NavyPanel,
   PageHero,
@@ -13,10 +12,10 @@ import {
 import { Stagger, StaggerItem } from "@/components/motion/Motion";
 import { StickyStack } from "@/components/motion/StickyStack";
 import { ProviderForm } from "@/components/forms/ProviderForm";
+import { GradientPlate } from "@/components/media/GradientPlate";
 import { Reveal } from "@/components/ui/Reveal";
 import { providers } from "@/lib/content";
 import { categoryMetaLabel } from "@/lib/data";
-import { media } from "@/lib/media";
 
 export const metadata: Metadata = pageMetadata({
   title: "For Providers",
@@ -30,7 +29,6 @@ export default function ProvidersPage() {
     <>
       <script {...jsonLdProps(breadcrumbJsonLd([{ name: "For Providers", path: "/providers" }]))} />
       <PageHero
-        media={media.pharmacist}
         eyebrow={providers.intro.eyebrow}
         title={providers.intro.title}
         lead={providers.intro.body[0]}
@@ -77,7 +75,6 @@ export default function ProvidersPage() {
           <div className="mt-12">
             <StickyStack
               steps={providers.onboarding.steps}
-              image={media.pharmacist}
               eyebrow="Under ten minutes"
             />
           </div>
@@ -107,11 +104,11 @@ export default function ProvidersPage() {
             </Reveal>
 
             <Reveal delay={0.1}>
-              <Figure
-                media={media.support}
+              <GradientPlate
                 ratio="4/3"
-                caption="Provider support, Mon–Fri"
-                sizes="(min-width: 1024px) 46vw, 100vw"
+                icon="graduation"
+                label="Providers — Phase 1 · P1"
+                subject="A pharmacist and a clinician in conversation over a formulation document — a working discussion, neither looking at camera. Not a handshake."
               />
             </Reveal>
           </div>

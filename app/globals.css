@@ -539,6 +539,51 @@ main {
     @apply outline-none;
   }
 
+
+  /* ---------------------------------------------------------------------
+     Gradient plate — the honest stand-in for an un-shot photographic slot.
+     Brief §6: "an honest gradient beats a dishonest photograph."
+     ------------------------------------------------------------------ */
+  .gradient-plate {
+    @apply relative isolate overflow-hidden rounded-panel border border-navy-soft/60;
+    background-image: linear-gradient(140deg, #0a1330 0%, #142b6b 58%, #1b54fb 128%);
+  }
+  /*
+   * HEPA ceiling grid, drawn rather than photographed — brief §4.5 asks for that
+   * texture as a card ground. Two repeating-linear-gradients cross to form the
+   * grid; the mask fades it out toward the caption so the type stays clean.
+   */
+  .gradient-plate-grid {
+    @apply pointer-events-none absolute inset-0 -z-10;
+    background-image:
+      repeating-linear-gradient(
+        to right,
+        rgba(255, 255, 255, 0.075) 0 1px,
+        transparent 1px 44px
+      ),
+      repeating-linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.075) 0 1px,
+        transparent 1px 44px
+      );
+    -webkit-mask-image: linear-gradient(to top, transparent 12%, #000 55%);
+    mask-image: linear-gradient(to top, transparent 12%, #000 55%);
+  }
+  /* A single cyan bloom, top-right — the same one-atmosphere rule the hero uses. */
+  .gradient-plate::after {
+    content: "";
+    @apply pointer-events-none absolute -right-20 -top-20 -z-10 h-56 w-56 rounded-full;
+    background: radial-gradient(circle, rgba(35, 220, 225, 0.2) 0%, transparent 70%);
+  }
+
+  /* ---------------------------------------------------------------------
+     Coverage map — Palm Harbor origin pulse (brief §4.14).
+     ------------------------------------------------------------------ */
+  .origin-pulse-ring {
+    @apply fill-cyan-400/35;
+    animation: origin-pulse 2.8s ease-out infinite;
+  }
+
   /* ---------------------------------------------------------------------
      Chrome
      ------------------------------------------------------------------ */
@@ -587,6 +632,28 @@ main {
     @apply relative overflow-hidden bg-navy text-white;
     background-image: linear-gradient(180deg, #0a1330 0%, #0d193e 55%, #101f4d 100%);
   }
+  /*
+   * The HEPA ceiling grid as a CSS texture, shared by the hero and the custody
+   * band. Brief §4.5 asks for this pattern as a material ground; drawn rather
+   * than photographed, it costs nothing and cannot misrepresent the facility.
+   */
+  .hero-grid {
+    @apply pointer-events-none absolute inset-0 z-0;
+    background-image:
+      repeating-linear-gradient(
+        to right,
+        rgba(255, 255, 255, 0.06) 0 1px,
+        transparent 1px 52px
+      ),
+      repeating-linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.06) 0 1px,
+        transparent 1px 52px
+      );
+    -webkit-mask-image: radial-gradient(120% 90% at 78% 20%, #000 0%, transparent 72%);
+    mask-image: radial-gradient(120% 90% at 78% 20%, #000 0%, transparent 72%);
+  }
+
   /* One faint bloom, low and off-centre. Everything else is flat. */
   .hero::after {
     content: "";
@@ -770,6 +837,11 @@ main {
     display: none;
   }
   .marquee-item:last-child .marquee-sep {
+    display: none;
+  }
+  /* The origin marker keeps its dot and drops the ring animation entirely,
+     rather than being frozen mid-expansion at an arbitrary radius. */
+  .origin-pulse-ring {
     display: none;
   }
 

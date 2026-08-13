@@ -155,6 +155,13 @@ const config: Config = {
           "0%, 100%": { transform: "scaleY(1)" },
           "50%": { transform: "scaleY(1.22)" },
         },
+        /* The Palm Harbor origin marker on the coverage map: a ring that
+           expands out of the dot and fades. Scale + opacity only. */
+        "origin-pulse": {
+          "0%": { transform: "scale(0.35)", opacity: "0.75" },
+          "70%": { opacity: "0" },
+          "100%": { transform: "scale(1)", opacity: "0" },
+        },
         "bowl-rise": {
           "0%": { opacity: "0", transform: "translateY(4px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },

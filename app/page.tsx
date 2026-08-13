@@ -7,7 +7,6 @@ import { TrustMarquee } from "@/components/sections/TrustMarquee";
 import {
   CheckList,
   ClosingCta,
-  Figure,
   IconCard,
   NavyPanel,
   PanelMetrics,
@@ -15,10 +14,10 @@ import {
   SpecRail,
   TwoCol,
 } from "@/components/blocks";
+import { GradientPlate } from "@/components/media/GradientPlate";
 import { FadeIn, Stagger, StaggerItem } from "@/components/motion/Motion";
 import { about, closingCta, providers, quality } from "@/lib/content";
 import { categoryMetaLabel } from "@/lib/data";
-import { media } from "@/lib/media";
 import { site } from "@/lib/site";
 import { pageMetadata } from "@/lib/seo";
 
@@ -69,11 +68,11 @@ export default function HomePage() {
             </FadeIn>
 
             <FadeIn delay={0.1} className="space-y-6">
-              <Figure
-                media={media.pipetting}
+              <GradientPlate
                 ratio="3/2"
-                caption="Palm Harbor, Florida"
-                sizes="(min-width: 1024px) 48vw, 100vw"
+                icon="microscope"
+                label="Facility — Phase 2"
+                subject="Cleanroom environmental wide: the anteroom doorway looking through into the classified space, one gowned figure small in frame, architecture dominant."
               />
               <NavyPanel badge={about.panel.badge} title={about.panel.title}>
                 <p className="mt-4 text-meta text-white/70 text-pretty">

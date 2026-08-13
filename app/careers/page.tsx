@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { breadcrumbJsonLd, jsonLdProps, pageMetadata } from "@/lib/seo";
 import { Building2, Clock, MapPin } from "lucide-react";
-import { Figure, PageHero, SectionHead } from "@/components/blocks";
+import { PageHero, SectionHead } from "@/components/blocks";
 import { Stagger, StaggerItem } from "@/components/motion/Motion";
 import { CareerForm } from "@/components/forms/CareerForm";
+import { GradientPlate } from "@/components/media/GradientPlate";
 import { Reveal } from "@/components/ui/Reveal";
 import { careerBenefits, careers } from "@/lib/data";
-import { media } from "@/lib/media";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = pageMetadata({
@@ -20,7 +20,6 @@ export default function CareersPage() {
     <>
       <script {...jsonLdProps(breadcrumbJsonLd([{ name: "Careers", path: "/careers" }]))} />
       <PageHero
-        media={media.team}
         eyebrow="Careers"
         title={`Join the ${site.shortName} Team`}
         lead="Help others feel their best. Every role here sits inside a quality system built by people who have spent careers setting the standards others follow."
@@ -44,7 +43,12 @@ export default function CareersPage() {
           </Reveal>
 
           <Reveal delay={0.1}>
-            <Figure media={media.careersTeam} ratio="4/3" caption="Palm Harbor facility" />
+            <GradientPlate
+              ratio="4/3"
+              icon="building"
+              label="Facility — Phase 2"
+              subject="4190 Corporate Ct at blue hour with interior lights on and signage installed, shot straight-on or slight three-quarter."
+            />
           </Reveal>
         </div>
       </section>

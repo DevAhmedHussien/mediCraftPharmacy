@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { breadcrumbJsonLd, jsonLdProps, pageMetadata } from "@/lib/seo";
 import {
   CheckList,
-  Figure,
   ClosingCta,
   IconCard,
   NavyPanel,
@@ -11,9 +10,9 @@ import {
   TwoCol,
 } from "@/components/blocks";
 import { Stagger, StaggerItem } from "@/components/motion/Motion";
+import { GradientPlate } from "@/components/media/GradientPlate";
 import { Reveal } from "@/components/ui/Reveal";
 import { closingCta, compounding } from "@/lib/content";
-import { media } from "@/lib/media";
 
 export const metadata: Metadata = pageMetadata({
   title: "Our Compounding",
@@ -27,7 +26,6 @@ export default function CompoundingPage() {
     <>
       <script {...jsonLdProps(breadcrumbJsonLd([{ name: "Our Compounding", path: "/compounding" }]))} />
       <PageHero
-        media={media.glassware}
         eyebrow={compounding.intro.eyebrow}
         title={compounding.intro.title}
         lead={compounding.intro.lead}
@@ -48,7 +46,12 @@ export default function CompoundingPage() {
             </Reveal>
 
             <Reveal delay={0.1} className="space-y-6">
-              <Figure media={media.glassware} ratio="3/2" caption="Non-sterile compounding" />
+              <GradientPlate
+                ratio="3/2"
+                icon="scale"
+                label="Compounding — Phase 1"
+                subject="A pharmacist calculating a dose by hand: pen, worksheet, calculator and a precision balance in frame."
+              />
               <NavyPanel
                 badge={compounding.customized.panel.badge}
                 title={compounding.customized.panel.title}

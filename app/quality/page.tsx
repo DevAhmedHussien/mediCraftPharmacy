@@ -8,7 +8,6 @@ import {
   IconCard,
   NavyPanel,
   PageHero,
-  Figure,
   PanelMetrics,
   SectionHead,
   SpecRail,
@@ -17,9 +16,9 @@ import {
 import { Stagger, StaggerItem } from "@/components/motion/Motion";
 import { ScrollProgress } from "@/components/motion/ScrollProgress";
 import { StickyStack } from "@/components/motion/StickyStack";
+import { GradientPlate } from "@/components/media/GradientPlate";
 import { Reveal } from "@/components/ui/Reveal";
 import { closingCta, quality } from "@/lib/content";
-import { media } from "@/lib/media";
 
 export const metadata: Metadata = pageMetadata({
   title: "Quality Standards",
@@ -34,7 +33,6 @@ export default function QualityPage() {
       <ScrollProgress />
       <script {...jsonLdProps(breadcrumbJsonLd([{ name: "Quality Standards", path: "/quality" }]))} />
       <PageHero
-        media={media.pipetting}
         eyebrow={quality.banner.eyebrow}
         title={quality.banner.title}
         lead={quality.banner.body}
@@ -182,7 +180,6 @@ export default function QualityPage() {
             <div className="mt-10">
               <StickyStack
                 steps={quality.custody.recorded.steps}
-                image={media.pipetting}
                 eyebrow="On every order"
               />
             </div>
@@ -190,7 +187,12 @@ export default function QualityPage() {
 
           <div className="mt-16 grid gap-10 lg:grid-cols-[1fr_1.1fr] lg:gap-14">
             <Reveal>
-              <Figure media={media.dispensary} ratio="4/3" caption="Cold-chain packing" />
+              <GradientPlate
+                ratio="4/3"
+                icon="clipboard"
+                label="Quality — Phase 1"
+                subject="Macro of a gloved hand initialing a batch record, or a bound SOP volume open on stainless. Document text illegible or a purpose-made dummy form."
+              />
             </Reveal>
             <Reveal delay={0.1}>
               <h3 className="section-title-sm">{quality.custody.why.title}</h3>
@@ -222,7 +224,6 @@ export default function QualityPage() {
           <div className="mt-12">
             <StickyStack
               steps={quality.sourcing.steps}
-              image={media.glassware}
               eyebrow="Before it enters the cleanroom"
             />
           </div>

@@ -12,7 +12,6 @@ import {
 import { ScrollProgress } from "@/components/motion/ScrollProgress";
 import { Reveal } from "@/components/ui/Reveal";
 import { closingCta, resources } from "@/lib/content";
-import { media } from "@/lib/media";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = pageMetadata({
@@ -51,7 +50,6 @@ export default function ResourcesPage() {
       />
 
       <PageHero
-        media={media.support}
         eyebrow={resources.intro.eyebrow}
         title={resources.intro.title}
         lead={resources.intro.lead}

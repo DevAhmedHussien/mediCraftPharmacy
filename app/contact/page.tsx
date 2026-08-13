@@ -6,7 +6,6 @@ import { Icon, type IconName } from "@/components/icons/set";
 import { ContactForm } from "@/components/forms/ContactForm";
 import { Reveal } from "@/components/ui/Reveal";
 import { contact } from "@/lib/content";
-import { media } from "@/lib/media";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = pageMetadata({
@@ -53,7 +52,6 @@ export default function ContactPage() {
     <>
       <script {...jsonLdProps(breadcrumbJsonLd([{ name: "Contact", path: "/contact" }]))} />
       <PageHero
-        media={media.support}
         eyebrow={contact.intro.eyebrow}
         title={contact.intro.title}
         lead={contact.intro.lead}

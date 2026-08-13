@@ -9,12 +9,12 @@ import {
   PageHero,
   SectionHead,
   TwoCol,
-  Figure,
 } from "@/components/blocks";
 import { Icon } from "@/components/icons/set";
+import { CoverageMap } from "@/components/sections/CoverageMap";
 import { Reveal } from "@/components/ui/Reveal";
 import { closingCta, coverage } from "@/lib/content";
-import { media } from "@/lib/media";
+import { GradientPlate } from "@/components/media/GradientPlate";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = pageMetadata({
@@ -29,7 +29,6 @@ export default function CoveragePage() {
     <>
       <script {...jsonLdProps(breadcrumbJsonLd([{ name: "State Coverage", path: "/licenses" }]))} />
       <PageHero
-        media={media.map}
         eyebrow={coverage.intro.eyebrow}
         title={coverage.intro.title}
         lead={coverage.intro.body}
@@ -68,25 +67,36 @@ export default function CoveragePage() {
             />
           </Reveal>
 
-          <Reveal delay={0.05} className="mt-8">
-            <ul className="flex flex-wrap gap-3">
-              {coverage.licensed.states.map((state) => (
-                <li
-                  key={state}
-                  className="inline-flex items-center gap-2.5 rounded-lg border-[1.5px] border-brand-500 bg-brand-50 px-5 py-3 text-body font-bold text-brand-700"
-                >
-                  <Icon name="pin" className="h-[1.1rem] w-[1.1rem]" />
-                  {state}
-                </li>
-              ))}
-            </ul>
+          {/*
+           * Brief §4.14 bans the stock US map outright and requires a
+           * data-driven vector component the team can update without a
+           * designer. This renders from lib/coverage.ts — flipping one status
+           * there updates the map, the legend and the counts together.
+           */}
+          <Reveal delay={0.05} className="mt-10">
+            <div className="grid gap-10 lg:grid-cols-[1.35fr_1fr] lg:gap-14">
+              <CoverageMap />
+
+              <div>
+                <ul className="flex flex-wrap gap-3">
+                  {coverage.licensed.states.map((state) => (
+                    <li
+                      key={state}
+                      className="inline-flex items-center gap-2.5 rounded-lg border-[1.5px] border-brand-500 bg-brand-50 px-5 py-3 text-body font-bold text-brand-700"
+                    >
+                      <Icon name="pin" className="h-[1.1rem] w-[1.1rem]" />
+                      {state}
+                    </li>
+                  ))}
+                </ul>
+
+                <Callout label={coverage.licensed.noteLabel} className="mt-6">
+                  {coverage.licensed.note}
+                </Callout>
+              </div>
+            </div>
           </Reveal>
 
-          <Reveal delay={0.1} className="mt-8">
-            <Callout label={coverage.licensed.noteLabel} className="max-w-2xl">
-              {coverage.licensed.note}
-            </Callout>
-          </Reveal>
         </div>
       </section>
 
@@ -107,10 +117,11 @@ export default function CoveragePage() {
             </Reveal>
 
             <Reveal delay={0.1} className="space-y-6">
-              <Figure
-                media={media.map}
+              <GradientPlate
                 ratio="3/2"
-                caption="49-state licensure in progress"
+                icon="truck"
+                label="Shipping — Phase 1"
+                subject="Validated cold-chain shipper, open mid-pack: gel packs, insulated liner and a temperature indicator strip in frame, shot slightly overhead."
               />
               <NavyPanel
                 badge={coverage.shipping.panel.badge}
