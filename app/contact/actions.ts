@@ -1,6 +1,7 @@
 "use server";
 
-import { isEmail, requireFields, type FormState } from "@/lib/forms";
+import type { FormState } from "@/lib/forms";
+import { contactSchema, validate } from "@/lib/forms.schema";
 
 /**
  * Contact form handler.
@@ -15,24 +16,12 @@ export async function submitContact(
   _prev: FormState,
   data: FormData
 ): Promise<FormState> {
-  const errors = requireFields(data, [
-    { name: "firstName", label: "First name" },
-    { name: "lastName", label: "Last name" },
-    { name: "email", label: "Email address" },
-    { name: "message", label: "Message" },
-  ]);
-
-  const email = (data.get("email") ?? "").toString();
-  if (!errors.email && !isEmail(email)) {
-    errors.email = "Enter a valid email address.";
-  }
-
-  if (Object.keys(errors).length > 0) {
-    return { ok: false, message: "Please correct the highlighted fields.", errors };
-  }
+  const result = validate(contactSchema, data);
+  if (!result.ok) return result.state;
 
   // TODO: deliver the enquiry — e.g. send to site.email via a transactional
   // email provider, or POST into the pharmacy's CRM. Nothing is sent yet.
+  console.log("[contact] enquiry", result.data);
 
   return {
     ok: true,

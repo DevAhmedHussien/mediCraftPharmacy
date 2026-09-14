@@ -32,6 +32,28 @@ export const hero = {
     secondary: { label: "Learn About Compounding", href: "/compounding" },
   },
   /**
+   * Prescriber social proof, sitting between the calls to action and the
+   * specification plate.
+   *
+   * The three chips are credential classes, not individual people — MD, PA and
+   * NP are the prescriber types the pharmacy serves, so no invented headshots
+   * or names are implied.
+   *
+   * TODO — VERIFY BEFORE LAUNCH. "200+ prescribers" is a countable claim about
+   * a pharmacy the same content dates to 2026, and it is the one number on this
+   * page a prescriber could challenge. It is carried through from the owner's
+   * own source document; confirm the figure is real, or cut the block. The
+   * standard applied everywhere else in this file is that nothing is asserted
+   * that the business cannot document.
+   */
+  socialProof: {
+    credentials: ["MD", "PA", "NP"],
+    before: "Trusted by ",
+    count: "200+ prescribers",
+    after: " across the US",
+  },
+
+  /**
    * The hero's four figures, set as a specification plate rather than a stat
    * row. His values are unchanged; each of his labels is split into the field
    * name that heads the column and the note that qualifies the value.
@@ -68,11 +90,14 @@ export const hero = {
 };
 
 export const trustBar = [
+  { icon: "mortar" as IconName, label: "503A Compounding Certified" },
   { icon: "hourglass" as IconName, label: "PCAB Accreditation In Progress" },
   { icon: "flask" as IconName, label: "USP 795/797/800 Compliant" },
   { icon: "microscope" as IconName, label: "ISO Class Cleanrooms" },
+  { icon: "shield" as IconName, label: "Third-Party Tested Every Batch" },
   { icon: "camera" as IconName, label: "Video-Verified Fulfillment" },
   { icon: "clipboard" as IconName, label: "FDA-Registered Third-Party Testing" },
+  { icon: "stethoscope" as IconName, label: "Provider-Focused Clinical Support" },
   { icon: "truck" as IconName, label: "Nationwide Shipping" },
 ];
 

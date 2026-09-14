@@ -1,26 +1,50 @@
 "use client";
 
+import { useId } from "react";
 import { useFormStatus } from "react-dom";
 import { CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 
-/* Squared-off inputs on a hairline border, matching the button system. The
-   focus ring is the brand blue at full strength — this is a clinical form and
-   the active field should be unmistakable. */
-const inputClass =
-  "w-full rounded-lg border-[1.5px] border-line bg-white px-4 py-3 text-meta text-ink outline-none transition-colors placeholder:text-ink-muted focus:border-brand-500 focus:ring-2 focus:ring-brand-100 aria-[invalid=true]:border-red-400";
+import { Button } from "@/components/ui/button";
+import { Input, Select, Textarea } from "@/components/ui/input";
+import { FieldError, Label } from "@/components/ui/label";
 
-function Label({ htmlFor, label, optional }: { htmlFor: string; label: string; optional?: boolean }) {
-  return (
-    <label htmlFor={htmlFor} className="mb-1.5 block text-sm font-medium text-ink-soft">
-      {label}
-      {optional && <span className="ml-1 text-xs text-ink-muted">(optional)</span>}
-    </label>
-  );
-}
+/* ===========================================================================
+   The form field set.
 
-function FieldError({ message }: { message?: string }) {
-  if (!message) return null;
-  return <p className="mt-1.5 text-caption font-medium text-red-600">{message}</p>;
+   These are the composed, form-specific wrappers — label + control + error, in
+   the one arrangement every MediCraft form uses. The controls themselves and
+   their styling now live in components/ui, so a field rendered outside a form
+   looks identical without copying a class string.
+
+   All four forms on this site are server actions that work with JavaScript
+   disabled. Two consequences run through this file:
+
+     · `required` is set on the control, so the browser blocks an empty submit
+       on its own and the server action is the backstop rather than the only
+       check
+     · errors arrive as props from the action's returned state — there is no
+       client validation library here, and adding one would mean the form
+       stopped working for anyone whose JS failed to load
+
+   Each field derives its own ids with `useId()` rather than reusing `name`.
+   Two fields with the same name on one page — the phone field on the contact
+   and refill forms, say — would otherwise produce duplicate DOM ids and a
+   label that points at the wrong control.
+   ========================================================================= */
+
+/** Wires a control to its label and, when present, its error message. */
+function useFieldIds(error?: string) {
+  const id = useId();
+  const errorId = `${id}-error`;
+
+  return {
+    id,
+    errorId,
+    /* Only point at the error node when there is one; a dangling
+       aria-describedby is announced as an empty description by some readers. */
+    describedBy: error ? errorId : undefined,
+    invalid: !!error,
+  };
 }
 
 export function TextField({
@@ -30,6 +54,7 @@ export function TextField({
   optional = false,
   error,
   autoComplete,
+  placeholder,
 }: {
   name: string;
   label: string;
@@ -37,20 +62,26 @@ export function TextField({
   optional?: boolean;
   error?: string;
   autoComplete?: string;
+  placeholder?: string;
 }) {
+  const { id, errorId, describedBy, invalid } = useFieldIds(error);
+
   return (
     <div>
-      <Label htmlFor={name} label={label} optional={optional} />
-      <input
-        id={name}
+      <Label htmlFor={id} optional={optional}>
+        {label}
+      </Label>
+      <Input
+        id={id}
         name={name}
         type={type}
         required={!optional}
         autoComplete={autoComplete}
-        aria-invalid={!!error}
-        className={inputClass}
+        placeholder={placeholder}
+        aria-invalid={invalid}
+        aria-describedby={describedBy}
       />
-      <FieldError message={error} />
+      <FieldError id={errorId} message={error} />
     </div>
   );
 }
@@ -70,17 +101,23 @@ export function SelectField({
   optional?: boolean;
   error?: string;
 }) {
+  const { id, errorId, describedBy, invalid } = useFieldIds(error);
+
   return (
     <div>
-      <Label htmlFor={name} label={label} optional={optional} />
-      <select
-        id={name}
+      <Label htmlFor={id} optional={optional}>
+        {label}
+      </Label>
+      <Select
+        id={id}
         name={name}
         required={!optional}
         defaultValue=""
-        aria-invalid={!!error}
-        className={inputClass}
+        aria-invalid={invalid}
+        aria-describedby={describedBy}
       >
+        {/* `disabled` on the placeholder means it can be the initial value but
+            cannot be chosen back once the user has picked something real. */}
         <option value="" disabled>
           {placeholder}
         </option>
@@ -89,8 +126,8 @@ export function SelectField({
             {o}
           </option>
         ))}
-      </select>
-      <FieldError message={error} />
+      </Select>
+      <FieldError id={errorId} message={error} />
     </div>
   );
 }
@@ -101,29 +138,45 @@ export function TextArea({
   rows = 4,
   optional = false,
   error,
+  placeholder,
 }: {
   name: string;
   label: string;
   rows?: number;
   optional?: boolean;
   error?: string;
+  placeholder?: string;
 }) {
+  const { id, errorId, describedBy, invalid } = useFieldIds(error);
+
   return (
     <div>
-      <Label htmlFor={name} label={label} optional={optional} />
-      <textarea
-        id={name}
+      <Label htmlFor={id} optional={optional}>
+        {label}
+      </Label>
+      <Textarea
+        id={id}
         name={name}
         rows={rows}
         required={!optional}
-        aria-invalid={!!error}
-        className={inputClass}
+        placeholder={placeholder}
+        aria-invalid={invalid}
+        aria-describedby={describedBy}
       />
-      <FieldError message={error} />
+      <FieldError id={errorId} message={error} />
     </div>
   );
 }
 
+/**
+ * A set of mutually exclusive options, styled as selectable cards.
+ *
+ * The whole card is the <label>, so the hit area is the card rather than the
+ * 16px radio inside it — these are read on phones. `has-[:checked]` styles the
+ * card from the real input's state, which keeps the native radio as the single
+ * source of truth: no click handler, no local state, and it posts and restores
+ * correctly with no JavaScript.
+ */
 export function RadioGroup({
   name,
   label,
@@ -135,9 +188,13 @@ export function RadioGroup({
   options: string[];
   error?: string;
 }) {
+  const { errorId } = useFieldIds(error);
+
   return (
-    <fieldset>
-      <legend className="mb-2.5 block text-caption font-bold text-ink">{label}</legend>
+    <fieldset aria-describedby={error ? errorId : undefined}>
+      <legend className="mb-2.5 block text-caption font-bold text-ink">
+        {label}
+      </legend>
       <div className="grid gap-2 sm:grid-cols-2">
         {options.map((o) => (
           <label
@@ -149,15 +206,32 @@ export function RadioGroup({
           </label>
         ))}
       </div>
-      <FieldError message={error} />
+      <FieldError id={errorId} message={error} />
     </fieldset>
   );
 }
 
+/**
+ * The submit control.
+ *
+ * `useFormStatus` reads the pending state of the enclosing <form>, which is
+ * why this has to be its own component rather than markup inside each form —
+ * the hook reports nothing for a form rendered by the same component that
+ * calls it.
+ */
 export function SubmitButton({ children }: { children: React.ReactNode }) {
   const { pending } = useFormStatus();
+
   return (
-    <button type="submit" disabled={pending} className="btn-primary w-full disabled:opacity-70">
+    <Button
+      type="submit"
+      block
+      disabled={pending}
+      /* aria-disabled as well as disabled: some screen readers skip a disabled
+         control entirely, so the label change alone would go unannounced. */
+      aria-disabled={pending}
+      className="disabled:opacity-70"
+    >
       {pending ? (
         <>
           <Loader2 className="h-4 w-4 animate-spin" />
@@ -166,12 +240,20 @@ export function SubmitButton({ children }: { children: React.ReactNode }) {
       ) : (
         children
       )}
-    </button>
+    </Button>
   );
 }
 
+/**
+ * The form-level result banner.
+ *
+ * `role="status"` rather than `role="alert"` even for failures: the field-level
+ * FieldError nodes are the alerts, and firing both would make a screen reader
+ * announce the same failure twice.
+ */
 export function FormAlert({ ok, message }: { ok: boolean; message?: string }) {
   if (!message) return null;
+
   return (
     <div
       role="status"

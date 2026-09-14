@@ -75,6 +75,32 @@ export function Hero() {
               {hero.actions.secondary.label}
             </Link>
           </div>
+
+          {/* ---- Prescriber social proof ----
+              The chips are overlapped by a third of their width, which is what
+              makes them read as a group rather than three separate badges.
+              They are decorative shorthand for the credential classes named in the
+              sentence beside them, so the group is aria-hidden and the count
+              is the part a screen reader hears. */}
+          <div className="mt-10 flex items-center gap-4">
+            <ul aria-hidden className="flex">
+              {hero.socialProof.credentials.map((c) => (
+                <li
+                  key={c}
+                  className="-ml-2.5 flex h-9 w-9 items-center justify-center rounded-full border border-white/25 bg-navy-soft font-mono text-[0.6875rem] font-medium tracking-wide text-cyan-300 first:ml-0"
+                >
+                  {c}
+                </li>
+              ))}
+            </ul>
+            <p className="text-meta text-white/70">
+              {hero.socialProof.before}
+              <strong className="font-bold text-white">
+                {hero.socialProof.count}
+              </strong>
+              {hero.socialProof.after}
+            </p>
+          </div>
         </div>
 
         {/* ---- Specification plate ---- */}

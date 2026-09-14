@@ -1,3 +1,17 @@
+/* ===========================================================================
+   Form constants and the shared action/component contract.
+
+   This module is imported by client components, so it must stay free of zod —
+   and of anything else heavy. The validation schemas live next door in
+   lib/forms.schema.ts and are imported only by the server actions.
+
+   That split is not organisational tidiness. When the schemas lived here, every
+   page carrying a form pulled zod into its client bundle just to read
+   `initialFormState` or `US_STATES` from the same file: /contact went from
+   152 kB to 179 kB of first-load JS, /providers from 162 kB to 188 kB, for a
+   library that only ever executes on the server. Keep this file zod-free.
+   ========================================================================= */
+
 /** Shared shape returned by every server action to its form. */
 export type FormState = {
   ok: boolean;
@@ -6,6 +20,10 @@ export type FormState = {
 };
 
 export const initialFormState: FormState = { ok: false };
+
+/* --- Option lists --------------------------------------------------------
+   Rendered as <option>s by the fields and re-validated against the schemas on
+   the server. */
 
 export const US_STATES = [
   "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado",
@@ -40,26 +58,10 @@ export const ORG_TYPES = [
 
 export const REFERRAL_SOURCES = ["Google", "Referral", "Trade Show", "Other"];
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const ZIP_RE = /^\d{5}(-\d{4})?$/;
-
-/** Validate a batch of required fields; returns a field→message error map. */
-export function requireFields(
-  data: FormData,
-  fields: { name: string; label: string }[]
-): Record<string, string> {
-  const errors: Record<string, string> = {};
-  for (const f of fields) {
-    const value = (data.get(f.name) ?? "").toString().trim();
-    if (!value) errors[f.name] = `${f.label} is required.`;
-  }
-  return errors;
-}
-
-export function isEmail(value: string) {
-  return EMAIL_RE.test(value.trim());
-}
-
-export function isZip(value: string) {
-  return ZIP_RE.test(value.trim());
-}
+/** Resume upload limits — stated to the applicant in the field's own label. */
+export const RESUME_MAX_BYTES = 25 * 1024 * 1024;
+export const RESUME_TYPES = [
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+];

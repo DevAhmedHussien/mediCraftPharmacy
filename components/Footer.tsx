@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/brand/Logo";
 import { Icon } from "@/components/icons/set";
+import { Badge } from "@/components/ui/badge";
 import { footerBlurb } from "@/lib/content";
 import { footerBadges, footerColumns, site } from "@/lib/site";
 
@@ -85,15 +86,15 @@ export function Footer() {
             because the owner's copy is careful never to overstate them. */}
         <div className="mt-14 flex flex-wrap gap-2.5 border-t border-white/10 pt-8">
           {footerBadges.map((badge) => (
-            <span
+            <Badge
               key={badge.label}
-              className={badge.inProgress ? "badge-progress" : "badge-pill"}
+              variant={badge.inProgress ? "progress" : "onDark"}
             >
               {badge.inProgress && (
                 <Icon name="hourglass" className="h-3 w-3" strokeWidth={1.8} />
               )}
               {badge.label}
-            </span>
+            </Badge>
           ))}
         </div>
 
