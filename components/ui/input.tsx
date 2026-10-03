@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
    The field surface — one definition, shared by <Input>, <Textarea> and
    <Select>.
 
-   This string previously lived inline in components/forms/Fields.tsx, which
+   This string previously lived inline in components/ui/form/native.tsx, which
    meant a field rendered anywhere else on the site (a newsletter box, a search
    input, a filter) had no way to match it except by copying the string. It is
    exported so those cases compose rather than duplicate.
@@ -15,12 +15,19 @@ import { cn } from "@/lib/utils";
    colour change. These are clinical intake forms where a prescriber is typing
    a DEA number, and the active field should never be ambiguous.
 
+   The size is 16px on phones and the design's 14px from `md` up, and the
+   breakpoint is not cosmetic: Safari on iOS zooms the whole page when a field
+   under 16px takes focus, leaving the form scrolled sideways and the rest of
+   the page off screen. Every field on this site is part of a multi-step intake
+   form, so that fires on the first tap and again on every field after it.
+   Do not collapse this back to a single `text-meta`.
+
    `aria-[invalid=true]` drives the error border straight off the ARIA state,
    so a field cannot show as valid to a screen reader while looking invalid on
    screen; there is only one flag to set.
    ========================================================================= */
 export const fieldClass =
-  "w-full rounded-lg border-[1.5px] border-line bg-white px-4 py-3 text-meta text-ink outline-none transition-colors placeholder:text-ink-muted focus:border-brand-500 focus:ring-2 focus:ring-brand-100 disabled:cursor-not-allowed disabled:bg-sand disabled:text-ink-muted aria-[invalid=true]:border-red-400";
+  "w-full rounded-lg border-[1.5px] border-line bg-white px-4 py-3 text-[1rem] text-ink outline-none transition-colors md:text-meta placeholder:text-ink-muted focus:border-brand-500 focus:ring-2 focus:ring-brand-100 disabled:cursor-not-allowed disabled:bg-sand disabled:text-ink-muted aria-[invalid=true]:border-red-400";
 
 export type InputProps = React.InputHTMLAttributes<HTMLInputElement>;
 

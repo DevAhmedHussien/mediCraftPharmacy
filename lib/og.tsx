@@ -32,6 +32,24 @@ export const PRODUCT_IMAGE_TIGHT = {
   height: 880,
 } as const;
 
+/**
+ * The hero render, as a JPEG, for share cards.
+ *
+ * Satori cannot decode WebP — feeding it one fails the build while
+ * prerendering — so the WebP the site serves has a JPEG sibling generated
+ * solely for this. 1600x900, which downsamples cleanly into the 1200x630
+ * card without the renderer having to scale up.
+ */
+export const HERO_OG_IMAGE = {
+  src: "/images/site/mc-home-hero-vials-og.jpg",
+  width: 1600,
+  height: 900,
+} as const;
+
+export function heroOgDataUri(): string {
+  return publicFileAsDataUri(HERO_OG_IMAGE.src, "image/jpeg");
+}
+
 export function productImageTightDataUri(): string {
   return publicFileAsDataUri(PRODUCT_IMAGE_TIGHT.src, "image/jpeg");
 }

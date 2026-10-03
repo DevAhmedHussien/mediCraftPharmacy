@@ -122,7 +122,19 @@ export function RevealWords({
 
   return (
     <motion.span
-      className={cn("inline-block", className)}
+      /*
+       * `inline`, not `inline-block`.
+       *
+       * As an inline-block this wrapper was an atomic box for line-breaking:
+       * a phrase that did not fit in the remaining space moved to the next line
+       * whole, instead of letting its first word finish the current one. In the
+       * hero that stranded "Not" on a line of its own — "Crafted," / "Not" /
+       * "Manufactured." — on every screen under about 640px.
+       *
+       * Only the individual word spans below need to be inline-block, because
+       * only they carry the y-transform. The wrapper just scopes the stagger.
+       */
+      className={cn("inline", className)}
       initial="hidden"
       whileInView="shown"
       viewport={{ once: true, margin: "-60px" }}

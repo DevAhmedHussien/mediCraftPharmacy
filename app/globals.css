@@ -49,8 +49,12 @@ body {
 }
 
 /* The chrome is fixed, so the document is inset by its height once here rather
-   than every page remembering to leave room for it. */
-main {
+   than every page remembering to leave room for it.
+
+   Scoped to a class, not the bare `main` element: /admin renders its own
+   <main> under its own (shorter, non-fixed) header, and a blanket rule left a
+   108px void at the top of every admin screen. */
+.site-main {
   padding-top: var(--chrome-h);
 }
 
@@ -152,7 +156,7 @@ main {
     @apply inline-flex items-center justify-center gap-2 rounded-lg px-5 py-3 text-meta font-bold transition duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2;
   }
   .btn-primary {
-    @apply btn bg-brand-500 text-white shadow-[0_1px_2px_rgba(13,25,62,0.12)] hover:bg-brand-600 active:translate-y-px;
+    @apply btn bg-brand-500 text-white hover:bg-brand-600 active:translate-y-px;
   }
   /* The cyan CTA — used on navy, where it is the highest-contrast thing
      available. Navy type on cyan, never white. */
@@ -184,48 +188,29 @@ main {
      ------------------------------------------------------------------ */
   /*
    * Card. `overflow-hidden` so the accent rule below can sit flush in the top
-   * edge, and `transition` on transform/shadow/border only — never on layout
+   * edge, and `transition` on colour and border only — never on layout
    * properties, so hovering a grid of twelve cards costs no reflow.
    */
+  /* ------------------------------------------------------------------
+     Cards.
+
+     Flat. A border, a white ground, and nothing else — no drop shadow, no
+     lift on hover, no icon plate that recolours under the cursor. A
+     compounding pharmacy is judged on looking exact rather than lively, and
+     every one of those effects was movement for its own sake.
+
+     What is left is a border that deepens on hover, which is enough to say
+     "this is clickable" without the page appearing to breathe.
+     ------------------------------------------------------------------ */
   .card {
-    @apply relative flex flex-col overflow-hidden rounded-tile border border-line bg-white p-7 shadow-card transition-[transform,box-shadow,border-color] duration-300;
+    @apply relative flex flex-col overflow-hidden rounded-tile border border-line bg-white p-7 transition-colors duration-200;
   }
-  /* A brand rule that draws in from the left along the card's top edge. It
-     replaces the usual "lift and glow" as the primary hover signal, which on a
-     clinical layout reads calmer and more deliberate. */
-  .card-hover::before {
-    content: "";
-    @apply pointer-events-none absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 bg-brand-500 transition-transform duration-500;
-  }
-  .card-hover:hover::before,
-  .card-hover:focus-visible::before {
-    @apply scale-x-100;
-  }
-  .card-hover {
-    @apply hover:-translate-y-[3px] hover:border-brand-200 hover:shadow-lift;
-  }
-  /* Icon plate. Square with a generous radius so it echoes the logo's
-     containing square from the deck's icon variants. */
-  .card-icon {
-    @apply mb-5 flex h-12 w-12 items-center justify-center rounded-[0.75rem] transition-colors duration-300;
-  }
-  .card-hover:hover .card-icon-blue {
-    @apply bg-brand-500 text-white;
-  }
-  .card-hover:hover .card-icon-cyan {
-    @apply bg-cyan-500 text-white;
-  }
-  .card-hover:hover .card-icon-navy {
-    @apply bg-navy text-white;
-  }
-  .card-icon-blue {
-    @apply bg-brand-500/10 text-brand-600;
-  }
-  .card-icon-cyan {
-    @apply bg-cyan-400/20 text-cyan-700;
-  }
-  .card-icon-navy {
-    @apply bg-navy/[0.07] text-navy;
+  /* Hover is a faint brand tint on the border, not a dark outline. A near
+     black rule appearing around a card as the pointer crosses it is the
+     heaviest thing on an otherwise quiet page. */
+  .card-hover:hover,
+  .card-hover:focus-visible {
+    @apply border-brand-300;
   }
   /* brand-600 rather than brand-500: these are set at body size, where the
      deeper blue holds up better (7.47:1 on white). */
@@ -395,7 +380,7 @@ main {
     @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.7rem] bg-brand-500 text-meta font-black text-white;
   }
   .process-card {
-    @apply relative rounded-tile border border-line bg-white p-6 shadow-card;
+    @apply relative rounded-tile border border-line bg-white p-6;
   }
   .process-num {
     @apply mb-3 block font-mono text-caption font-bold text-cyan-700;
@@ -531,7 +516,7 @@ main {
     @apply sr-only;
   }
   .skip-link:focus-visible {
-    @apply not-sr-only fixed left-4 top-4 z-[100] rounded-lg bg-brand-500 px-5 py-3 text-meta font-bold text-white shadow-lift outline-none ring-2 ring-white;
+    @apply not-sr-only fixed left-4 top-4 z-[100] rounded-lg bg-brand-500 px-5 py-3 text-meta font-bold text-white outline-none ring-2 ring-white;
   }
   /* `main` is a focus target for the skip link but must not show a ring when
      reached by mouse. */
@@ -633,6 +618,48 @@ main {
     background-image: linear-gradient(180deg, #0a1330 0%, #0d193e 55%, #101f4d 100%);
   }
   /*
+   * The landing hero, and only the landing hero, fills the first screen.
+   *
+   * Scoped to its own class rather than put on `.hero`, which the interior
+   * page mastheads and the closing CTA also wear — on `.hero` it made every
+   * page open with a screen-height navy band.
+   *
+   * `svh` rather than `vh`: on iOS `vh` is the tallest the viewport ever gets,
+   * so with the browser bars showing a `100vh` hero is taller than the screen
+   * and the calls to action start below the fold. `min-h` rather than `h`
+   * because a long headline at 320px must still be allowed to grow.
+   */
+  .hero-full {
+    @apply flex flex-col;
+    min-height: calc(100svh - var(--chrome-h));
+  }
+  /* The copy and product take whatever height is left and centre inside it, so
+     the ticker below them sits on the hero's bottom edge rather than floating
+     with the group. */
+  .hero-full > .container-x {
+    @apply flex w-full flex-1 items-center;
+  }
+  /*
+   * One height for every interior masthead.
+   *
+   * They used to be sized by their own copy, so /about (a five-line lead) and
+   * /licenses (a two-line one) opened at visibly different heights and the
+   * band read as a different component on each page.
+   */
+  .page-masthead {
+    @apply flex items-center;
+    /* Two jobs. It clears the tallest copy-only masthead (/about, at a
+       five-line lead) so every text-only page opens at the same height. And
+       it is deep enough that a 16:9 cover is shown nearly whole: at 1440px a
+       1600x900 photograph renders 810px tall, so a 40rem band crops about a
+       fifth rather than a third. Shallower than this and the covers read as
+       zoomed-in crops rather than photographs. */
+    min-height: 40rem;
+  }
+  .page-masthead > .container-x {
+    @apply w-full;
+  }
+  /*
    * The HEPA ceiling grid as a CSS texture, shared by the hero and the custody
    * band. Brief §4.5 asks for this pattern as a material ground; drawn rather
    * than photographed, it costs nothing and cannot misrepresent the facility.
@@ -659,6 +686,204 @@ main {
     content: "";
     @apply pointer-events-none absolute -bottom-52 left-[8%] h-[30rem] w-[30rem] rounded-full;
     background: radial-gradient(circle, rgba(35, 220, 225, 0.13) 0%, transparent 70%);
+  }
+  /* ---------------------------------------------------------------------
+     Chain of custody — the recorded frame and its tracked sequence.
+
+     A bezel, a burn-in bar and a reticle, because what is being claimed is
+     not "we have a nice packing bench" but "there is footage, and it is
+     filed against a prescription number". The screen furniture is the
+     argument; see components/media/CustodyFilm.tsx.
+     ------------------------------------------------------------------ */
+  .custody-monitor {
+    @apply overflow-hidden rounded-panel border border-white/15 bg-navy-deep;
+  }
+  .custody-monitor-bar {
+    @apply flex items-center gap-3 border-b border-white/10 px-4 py-2.5 font-mono text-[0.625rem] uppercase tracking-[0.1em] text-cyan-300/80;
+    background: rgba(255, 255, 255, 0.04);
+  }
+  .custody-monitor-screen {
+    @apply relative aspect-[16/9] overflow-hidden bg-navy-deep;
+  }
+  /* Scanlines at 3px pitch — visible as a texture, invisible as stripes. */
+  .custody-scan {
+    @apply pointer-events-none absolute inset-0;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.045) 0 1px,
+      transparent 1px 3px
+    );
+  }
+  /* Framing brackets: eight hairlines on one element, two per corner, so a
+     purely decorative overlay costs no markup. */
+  .custody-reticle {
+    --bracket: rgba(35, 220, 225, 0.55);
+    @apply pointer-events-none absolute inset-5;
+    background-image:
+      linear-gradient(var(--bracket), var(--bracket)),
+      linear-gradient(var(--bracket), var(--bracket)),
+      linear-gradient(var(--bracket), var(--bracket)),
+      linear-gradient(var(--bracket), var(--bracket)),
+      linear-gradient(var(--bracket), var(--bracket)),
+      linear-gradient(var(--bracket), var(--bracket)),
+      linear-gradient(var(--bracket), var(--bracket)),
+      linear-gradient(var(--bracket), var(--bracket));
+    background-size:
+      18px 1px, 1px 18px,
+      18px 1px, 1px 18px,
+      18px 1px, 1px 18px,
+      18px 1px, 1px 18px;
+    background-position:
+      left top, left top,
+      right top, right top,
+      left bottom, left bottom,
+      right bottom, right bottom;
+    background-repeat: no-repeat;
+  }
+  .custody-monitor-tc {
+    @apply absolute bottom-3 left-4 font-mono text-[0.625rem] tracking-[0.1em] text-white/70;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  }
+
+  /* The four checkpoints, as a tracked sequence rather than four more cards.
+     One continuous rule runs the height of the list and each node sits on it,
+     which is the part a row of boxes could not say: you do not reach
+     checkpoint three without passing checkpoint two. */
+  .custody-track {
+    @apply relative grid gap-6 sm:grid-cols-2 lg:grid-cols-1 lg:gap-0;
+  }
+  .custody-node {
+    @apply relative pl-11;
+  }
+  /* The connector, drawn per node so it stops cleanly at the last one and
+     never has to know how many there are. Suppressed at `sm`, where the list
+     is two columns and a rule running down each column would connect
+     checkpoints that do not follow each other. */
+  .custody-node:not(:last-child)::before {
+    content: "";
+    @apply absolute bottom-0 left-[0.6875rem] top-8 w-px bg-white/15 sm:hidden lg:block;
+  }
+  .custody-node-mark {
+    @apply absolute left-0 top-0 flex h-[1.375rem] w-[1.375rem] items-center justify-center rounded-[0.25rem] border border-cyan-400/40 bg-navy-deep font-mono text-[0.625rem] font-medium text-cyan-300;
+  }
+  .custody-node-stamp {
+    @apply font-mono text-[0.625rem] uppercase tracking-[0.1em] text-white/40;
+  }
+  @media (min-width: 1024px) {
+    .custody-node {
+      @apply pb-7;
+    }
+    .custody-node:last-child {
+      @apply pb-0;
+    }
+  }
+
+  /* ---------------------------------------------------------------------
+     Page cover — the rendered ground behind an interior page's <PageHero>.
+
+     Same principle as the hero stage: the render is cut away on the left
+     rather than washed over with a translucent navy. A flat wash across the
+     whole frame is what makes a background image read as faded stock — it
+     mutes the subject and the ground by the same amount, so nothing in the
+     band is either crisp or clean. Masking instead gives the heading solid
+     navy and the rendering its full contrast, with the handover happening in
+     the empty middle of the frame.
+
+     Below `md` there is no left to hand over to, so the render drops to a
+     tint behind the copy and the scrim goes flat.
+     ------------------------------------------------------------------ */
+  .page-cover {
+    @apply pointer-events-none absolute inset-0 opacity-30;
+  }
+  .page-cover-scrim {
+    @apply pointer-events-none absolute inset-0 bg-navy/70;
+  }
+  /* Closes the seam where the band meets the white section below it. The stop
+     colour is the hero gradient's own last stop, so the fade lands exactly. */
+  .page-cover-foot {
+    @apply pointer-events-none absolute inset-x-0 bottom-0 h-24;
+    background: linear-gradient(to top, #101f4d 0%, rgba(16, 31, 77, 0) 100%);
+  }
+
+  @media (min-width: 768px) {
+    .page-cover {
+      @apply opacity-90;
+      -webkit-mask-image: linear-gradient(
+        to right,
+        transparent 6%,
+        rgba(0, 0, 0, 0.55) 30%,
+        #000 58%
+      );
+      mask-image: linear-gradient(
+        to right,
+        transparent 6%,
+        rgba(0, 0, 0, 0.55) 30%,
+        #000 58%
+      );
+    }
+    .page-cover-scrim {
+      background: linear-gradient(
+        to right,
+        rgba(13, 25, 62, 0.96) 0%,
+        rgba(13, 25, 62, 0.9) 36%,
+        rgba(13, 25, 62, 0.58) 58%,
+        rgba(13, 25, 62, 0.3) 82%
+      );
+    }
+  }
+
+  /* ---------------------------------------------------------------------
+     Hero stage — the rendered injectable line.
+
+     The render (lib/media.ts `homeHero`) is built on the same navy the hero
+     sits on and composes its vials into the right 45% of the frame, so on a
+     desktop it is not put in a box: the frame is masked away on its left and
+     along its bottom and the rendering simply dissolves into the document
+     ground. Its top row samples #08112d against the hero's #0a1330, which is
+     why only two edges need the treatment — the third matches already, and the
+     fourth runs off the viewport.
+
+     Two nested masks rather than one `mask-composite` declaration: nesting
+     multiplies the two gradients in every engine, where compositing degrades
+     to a union — and a union here would leave a hard vertical edge straight
+     down the middle of the headline.
+
+     Below `lg` the same element is an ordinary figure in the flow, cropped
+     tighter (4:3) so the vials still read at 375px, with the border and radius
+     the rest of the card system uses.
+     ------------------------------------------------------------------ */
+  /* Capped rather than full-bleed: at `w-full` of its column the vials ran to
+     the container edge and crowded the headline. The cap keeps the product
+     inside its half with air on both sides at every width. */
+  .hero-product {
+    @apply relative z-10 mx-auto w-full max-w-[22rem] sm:max-w-[26rem] lg:mr-0 lg:max-w-[28rem] xl:max-w-[32rem];
+  }
+  /* The one cyan bloom the hero is allowed, sitting behind the glass so it
+     reads as light through the vials rather than a glow pasted on top. */
+  .hero-product-glow {
+    @apply pointer-events-none absolute left-1/2 top-[48%] -z-10 h-[86%] w-[104%] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl;
+    /* Two stops, not one. The vials are dark navy glass on a dark navy ground,
+       so a cyan bloom alone does not separate them — the wider, cooler wash
+       underneath is what lifts the silhouette off the background. */
+    background:
+      radial-gradient(
+        ellipse 44% 40% at 50% 46%,
+        rgba(35, 220, 225, 0.2) 0%,
+        rgba(35, 220, 225, 0.07) 54%,
+        transparent 78%
+      ),
+      radial-gradient(
+        ellipse 60% 56% at 50% 52%,
+        rgba(96, 165, 250, 0.13) 0%,
+        transparent 72%
+      );
+  }
+  /* The contact shadow. The cut-out has no floor of its own, and without this
+     the vials hang in the middle of the section; an ellipse under the bases
+     is what puts them on a surface. */
+  .hero-product-img {
+    @apply h-auto w-full;
+    filter: drop-shadow(0 26px 30px rgba(2, 10, 28, 0.55));
   }
   /* Lifts the hero's content above the background layers. Elements marked
      `data-layer` opt out — those are the video and the scrims, which have to
@@ -865,5 +1090,227 @@ main {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+@layer components {
+  /* ---------------------------------------------------------------------
+     Article body — the one place raw HTML is rendered on this site.
+
+     Styled by element selector rather than by class because the markup comes
+     from a Markdown pipeline (lib/markdown.ts) and carries no classes. Scoped
+     under `.prose-article` so it cannot leak into the rest of the app.
+     ------------------------------------------------------------------ */
+  .prose-article h2 {
+    @apply mt-12 text-[1.5rem] font-black leading-tight text-ink text-balance;
+  }
+  .prose-article h3 {
+    @apply mt-9 text-[1.1875rem] font-bold leading-snug text-ink;
+  }
+  .prose-article h4 {
+    @apply mt-7 text-[1.0625rem] font-bold text-ink;
+  }
+  .prose-article p {
+    @apply mt-5 leading-relaxed text-pretty;
+  }
+  .prose-article ul {
+    @apply mt-5 list-disc space-y-2 pl-5;
+  }
+  .prose-article ol {
+    @apply mt-5 list-decimal space-y-2 pl-5;
+  }
+  .prose-article a {
+    @apply font-medium text-brand-600 underline underline-offset-2 hover:text-brand-700;
+  }
+  .prose-article strong {
+    @apply font-bold text-ink;
+  }
+  .prose-article blockquote {
+    @apply mt-6 border-l-2 border-cyan-400 pl-5 italic text-ink-soft;
+  }
+  .prose-article code {
+    @apply rounded bg-sand px-1.5 py-0.5 font-mono text-[0.875em] text-ink;
+  }
+  .prose-article pre {
+    @apply mt-5 overflow-x-auto rounded-tile bg-navy p-4 text-caption text-white;
+  }
+  .prose-article pre code {
+    @apply bg-transparent p-0 text-white;
+  }
+  .prose-article hr {
+    @apply my-10 border-line;
+  }
+  .prose-article table {
+    @apply mt-6 w-full border-collapse text-meta;
+  }
+  .prose-article th {
+    @apply border-b border-line px-3 py-2 text-left font-medium text-ink-soft;
+  }
+  .prose-article td {
+    @apply border-b border-line px-3 py-2;
+  }
+}
+
+/* ===========================================================================
+   .admin — the operator console.
+
+   Ported from the Tila admin system so the two consoles read as one product
+   family, with MediCraft's own palette substituted: the rail is brand navy
+   (#0d193e, the exact logo navy) rather than Tila's green-black, and the
+   accent is the brand blue.
+
+   Deliberately NOT the marketing site. That palette is warm and roomy and set
+   in Satoshi because it is selling to someone who is deciding. An operator is
+   working a queue: they need density, a cool ground that does not compete
+   with status colour, and identifiers they can compare at a glance. Sharing
+   one visual language between the two made the admin look like a logged-in
+   storefront — which is exactly what the previous MediCraft admin was.
+   ========================================================================= */
+@layer components {
+  .admin {
+    --admin-bg: #eef0f3;
+    --admin-surface: #ffffff;
+    --admin-rail: #0d193e;
+    --admin-rail-text: #b6c0d6;
+    --admin-border: #dde1e8;
+    --admin-border-strong: #c7cdd8;
+    --admin-ink: #161f33;
+    --admin-ink-70: #4a5470;
+    --admin-ink-50: #78829a;
+    --admin-accent: #1b54fb;
+
+    background: var(--admin-bg);
+    color: var(--admin-ink);
+    /* Tabular numerals everywhere: a column of prices that does not line up
+       cannot be scanned, and scanning is the whole job. */
+    font-feature-settings: "tnum" 1;
+  }
+
+  /* Headings here are UI labels, not typography. The display weight and the
+     tight tracking belong on a page being read, not scanned. */
+  .admin h1,
+  .admin h2,
+  .admin h3,
+  .admin h4 {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    letter-spacing: -0.012em;
+    line-height: 1.25;
+  }
+
+  .admin-title {
+    font-size: 1.25rem;
+  }
+  .admin-section {
+    font-size: 0.9375rem;
+  }
+
+  .admin-panel {
+    background: var(--admin-surface);
+    border: 1px solid var(--admin-border);
+    border-radius: 6px;
+  }
+
+  /* Identifiers line up when they are tabular and monospaced. Comparing two
+     DEA numbers in a proportional face is needlessly hard. */
+  .admin-id {
+    font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.75rem;
+    letter-spacing: -0.01em;
+  }
+
+  .admin-label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--admin-ink-50);
+  }
+
+  .admin-row {
+    border-bottom: 1px solid var(--admin-border);
+    transition: background-color 120ms ease;
+  }
+  .admin-row:hover {
+    background: #f5f7fa;
+  }
+  .admin-row:last-child {
+    border-bottom: 0;
+  }
+
+  /* --- Controls ---------------------------------------------------------
+     The marketing .btn-* classes are 44px tall with a 1rem label, sized for a
+     thumb on a phone. An operator clicks with a mouse and needs six controls
+     in a toolbar, so these are 32px with a 0.8125rem label. */
+  .admin-btn {
+    @apply inline-flex shrink-0 items-center justify-center gap-1.5 rounded-[5px] px-3 py-1.5 text-[0.8125rem] font-medium transition-colors;
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1;
+    --tw-ring-color: var(--admin-accent);
+  }
+  .admin-btn:disabled {
+    @apply cursor-not-allowed opacity-50;
+  }
+  .admin-btn-primary {
+    background: var(--admin-accent);
+    color: #fff;
+  }
+  .admin-btn-primary:hover:not(:disabled) {
+    background: #1544d4;
+  }
+  .admin-btn-secondary {
+    background: var(--admin-surface);
+    border: 1px solid var(--admin-border-strong);
+    color: var(--admin-ink);
+  }
+  .admin-btn-secondary:hover:not(:disabled) {
+    background: #f5f7fa;
+  }
+  .admin-btn-danger {
+    background: var(--admin-surface);
+    border: 1px solid #e4b8ae;
+    color: #9c3a2a;
+  }
+  .admin-btn-danger:hover:not(:disabled) {
+    background: #fdf4f2;
+  }
+  .admin-btn-ghost {
+    color: var(--admin-ink-70);
+  }
+  .admin-btn-ghost:hover:not(:disabled) {
+    background: rgba(0, 0, 0, 0.04);
+    color: var(--admin-ink);
+  }
+
+  .admin-input {
+    @apply w-full rounded-[5px] px-2.5 py-1.5 text-[0.8125rem];
+    background: var(--admin-surface);
+    border: 1px solid var(--admin-border-strong);
+    color: var(--admin-ink);
+  }
+  .admin-input::placeholder {
+    color: var(--admin-ink-50);
+  }
+  .admin-input:focus {
+    outline: none;
+    border-color: var(--admin-accent);
+    box-shadow: 0 0 0 3px rgb(27 84 251 / 0.12);
+  }
+  .admin-input[aria-invalid="true"] {
+    border-color: #c0553f;
+  }
+
+  /* Rail navigation. */
+  .admin-rail-link {
+    @apply flex items-center gap-2.5 rounded-[5px] px-3 py-1.5 text-[0.8125rem] transition-colors;
+    color: var(--admin-rail-text);
+  }
+  .admin-rail-link:hover {
+    background: rgb(255 255 255 / 0.06);
+    color: #fff;
+  }
+  .admin-rail-link[aria-current="page"] {
+    background: rgb(255 255 255 / 0.1);
+    color: #fff;
+    font-weight: 600;
   }
 }

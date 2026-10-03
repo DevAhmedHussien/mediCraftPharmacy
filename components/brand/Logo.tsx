@@ -228,17 +228,21 @@ export function Logo({
   className,
   tone = "light",
   animate = "load",
+  idPrefix,
 }: {
   className?: string;
   tone?: Tone;
   animate?: Animate;
+  /** Glyph-id namespace. Only needed when a second lockup of the same tone
+   *  shares a page with the navbar's (e.g. the enquiry form's letterhead). */
+  idPrefix?: string;
 }) {
   const fill = markFills(tone);
   const type = tone === "invert" ? "fill-white" : "fill-brand-500";
 
   // Distinct ids per tone so two lockups on one page (header + footer) cannot
-  // collide in the document's id space.
-  const ns = `mc-${tone}`;
+  // collide in the document's id space; `idPrefix` covers a third.
+  const ns = idPrefix ?? `mc-${tone}`;
 
   return (
     <svg

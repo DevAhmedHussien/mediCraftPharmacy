@@ -1,16 +1,16 @@
 "use client";
 
 import { useFormState } from "react-dom";
-import { requestRefill } from "@/app/refill/actions";
+import { requestRefill } from "@/app/(site)/refill/actions";
 import { initialFormState, US_STATES } from "@/lib/forms";
 import {
   TextField,
   SelectField,
   TextArea,
-  SubmitButton,
+  ActionSubmitButton,
   FormAlert,
   SectionTitle,
-} from "@/components/forms/Fields";
+} from "@/components/ui/form/native";
 
 export function RefillForm() {
   const [state, formAction] = useFormState(requestRefill, initialFormState);
@@ -68,7 +68,7 @@ export function RefillForm() {
         <TextArea name="notes" label="Notes for the pharmacy" rows={3} optional error={e.notes} />
       </section>
 
-      <SubmitButton>Request refill</SubmitButton>
+      <ActionSubmitButton>Request refill</ActionSubmitButton>
     </form>
   );
 }

@@ -1,6 +1,23 @@
 /* ===========================================================================
    Imagery manifest — the art-direction brief, encoded.
 
+
+   UPDATE — RENDERED BRAND IMAGERY IS NOW IN THE SLOTS
+   ---------------------------------------------------
+   The `media` map below carries 3D renderings built from MediCraft's own
+   assets: the vector lockup in components/brand/Logo.tsx, the label system
+   from the Window Perspective deck, and the catalog in lib/data.ts. They are
+   not photographs and not stock. Products carry labels generated from their
+   own catalog entries; the facility scenes are brand illustrations of how a
+   MediCraft space is designed to look, not a record of 4190 Corporate Ct.
+   Section 6's concern still applies to the facility scenes — when the Phase 2
+   shoot lands, replace `lab`, `labPlate`, `storefront`, `storefrontFront` and
+   `storefrontEntrance` with the real frames (same ratios, same keys) so nothing
+   a prescriber tours contradicts the site. The storefront set is path-traced
+   and photographic in finish, which makes that swap more important, not less;
+   until then every alt text says "Rendering".
+   The shot list below remains the brief for that shoot.
+
    This file is the bridge between the photography brief ("MediCraft Pharmacy —
    Website Imagery & Art Direction Brief", v1.0, August 2026) and the build. It
    lists every image slot on the site with its ratio, delivered size, priority
@@ -42,9 +59,10 @@
    3. Swap the slot's <GradientPlate> for <Figure media={media.yourKey} />.
       The ratios already match the brief's §3.2 table, so nothing reflows.
 
-   The <AmbientVideo> component and `heroVideo` below are kept wired for the
-   same reason — the hero's scrim and safe-area geometry are already built for
-   moving footage.
+   The <AmbientVideo> component and its `heroVideo` config were removed: the
+   hero now carries a rendering, the config pointed at an empty src, and a
+   component nothing renders is a component nobody maintains. The hero's scrim
+   and safe-area geometry still suit moving footage if it is ever shot.
    ========================================================================= */
 
 export type Media = {
@@ -59,186 +77,239 @@ export type Media = {
   alt: string;
 };
 
-/** Shoot phase. §6 splits the work around cleanroom certification. */
-type Phase = 1 | 2;
+/* The shot list that used to live here as an exported `shotList` array is now
+   the header comment above and nothing else. It was 110 lines of data that no
+   component ever read — a brief for a photographer, shipped to every visitor's
+   browser as a runtime value. The brief belongs in the repo; it does not
+   belong in a bundle. Recover it from git history when the Phase 2 shoot is
+   commissioned. */
 
-/** §4 priority key: P1 required for launch, P2 strongly recommended, P3 nice to have. */
-type Priority = "P1" | "P2" | "P3";
+/**
+ * Rendered imagery, keyed for use in components. Sizes are intrinsic pixels;
+ * files follow the §3.1 naming convention and live in public/images/site/.
+ */
+const R = "/images/site";
 
-export type Slot = {
-  /** Where it appears. */
-  where: string;
-  ratio: string;
-  /** Delivered size at @2x, from §3.2. */
-  size: string;
-  priority: Priority;
-  phase: Phase;
-  /** The frame, condensed from §4. */
-  shot: string;
-  /** Anything in §2 that bites specifically here. */
-  compliance?: string;
+export const media = {
+  /**
+   * Home hero — the injectable line, cut out on transparency.
+   *
+   * The original render baked a navy gradient and a floor reflection into the
+   * frame, so the hero had to mask the image into its own background to hide
+   * the seam. That is what made the product read as a faded panel off to one
+   * side rather than part of the page. This is the same render with the
+   * background removed, so it sits directly on the hero ground and the layout
+   * can place it instead of hiding its edges.
+   */
+  homeHero: {
+    src: `${R}/mc-home-hero-vials-cutout.webp`,
+    width: 1112,
+    height: 884,
+    alt: "Rendering of MediCraft Pharmacy injectable vials — semaglutide, tirzepatide, NAD+ and glutathione — in labelled multiple-dose vials",
+  },
+  /** Formulary / category heroes — one of each dosage form. */
+  formulary: {
+    src: `${R}/mc-hero-formulary.webp`,
+    width: 1600,
+    height: 900,
+    alt: "Test tubes and conical flasks holding coloured solutions on a laboratory bench, beside an open notebook",
+  },
+  /** Sterile compounding room — about / quality / careers heroes. */
+  lab: {
+    src: `${R}/mc-hero-quality.webp`,
+    width: 1600,
+    height: 900,
+    alt: "A rack of sealed vials on a laboratory bench beside a monitor showing batch data",
+  },
+  /** A laboratory bench run, 3:2, for the home page's "Who we are" column. */
+  labPlate: {
+    src: `${R}/mc-hero-labplate.webp`,
+    width: 1600,
+    height: 900,
+    alt: "A laboratory bench run with conical flasks, reagent bottles and shelving under daylight",
+  },
+  /** Storefront at blue hour, three-quarter — about hero. Path-traced; subject in the right half. */
+  storefront: {
+    src: `${R}/mc-contact-storefront-16x9-2x.webp`,
+    width: 2560,
+    height: 1440,
+    alt: "Rendering of a MediCraft Pharmacy storefront at blue hour: an illuminated MediCraft channel-letter sign and blade sign above cyan-framed glazing onto a lit pharmacy interior, with rain-wet pavement in front",
+  },
+  /** Storefront straight-on at blue hour — contact / licenses heroes (brief: "straight-on or slight three-quarter"). */
+  storefrontFront: {
+    src: `${R}/mc-contact-storefront-front-16x9-2x.webp`,
+    width: 2560,
+    height: 1440,
+    alt: "Rendering of a MediCraft Pharmacy storefront seen straight-on at blue hour: the illuminated MediCraft sign above a cyan-framed glass entrance and a lit pharmacy interior",
+  },
+  /** Entrance detail at blue hour — 4:3 panel, available for a Figure. */
+  storefrontEntrance: {
+    src: `${R}/mc-about-storefront-entrance-4x3-2x.webp`,
+    width: 1600,
+    height: 1200,
+    alt: "Rendering of a MediCraft Pharmacy entrance at blue hour: the blade sign with the MediCraft mark, channel letters above a lit canopy, and the cyan portal frame around the glazing",
+  },
+  /** Reception — providers / support heroes. */
+  reception: {
+    src: `${R}/mc-hero-providers.webp`,
+    width: 1171,
+    height: 659,
+    alt: "A pharmacist in a white coat counting capsules into their hand at a dispensing bench",
+  },
+  /** Inside the hood — compounding hero. */
+  hood: {
+    src: `${R}/mc-hero-hood.webp`,
+    width: 841,
+    height: 473,
+    alt: "A pipette releasing a droplet above laboratory vials, over printed chemical structures",
+  },
+  /**
+   * Chain of custody — the pack station with the overhead camera visibly in
+   * frame. Brief §4.10 is blunt about why that detail decides the shot: "the
+   * entire claim is 'we filmed it'. If the viewer cannot see the camera, the
+   * claim is just text." The recording monitor carries the prescription
+   * number, which is the other half of what makes footage evidential.
+   */
+  custody: {
+    src: `${R}/mc-hero-custody.webp`,
+    width: 1291,
+    height: 726,
+    alt: "Gloved hands lifting a tray of sealed samples from cold storage",
+  },
+  /** Quality — the documentary frame the brief asks for (§4, P2). */
+  sopPlate: {
+    src: `${R}/mc-quality-sop-binder-4x3-2x.webp`,
+    width: 736,
+    height: 552,
+    alt: "A laboratory bench with a bound laboratory notebook open beside a pipette rack, reagent bottles and a vortex mixer",
+  },
+  /** Bench microscope and slide reader — a 4:3 panel for a quality Figure. */
+  microscope: {
+    src: `${R}/mc-quality-microscope-4x3-2x.webp`,
+    width: 897,
+    height: 673,
+    alt: "A bench microscope beside a monitor displaying a stained slide at 100 micrometre scale, with prepared slides on the bench",
+  },
+  /** Glassware bench — a 4:3 panel for a compounding Figure. */
+  bench: {
+    src: `${R}/mc-compounding-bench-4x3-2x.webp`,
+    width: 736,
+    height: 552,
+    alt: "A compounding bench with a volumetric flask, a burette on a stand, a rack of test tubes and an evaporating dish under a task lamp",
+  },
+  /** Who we are — the /about masthead. */
+  aboutCover: {
+    src: `${R}/mc-hero-about.webp`,
+    width: 1600,
+    height: 900,
+    alt: "Three scientists in white coats and safety glasses working at a laboratory bench beside data displays",
+  },
+  /** The act of compounding — the /compounding masthead. */
+  compoundingCover: {
+    src: `${R}/mc-hero-compounding.webp`,
+    width: 1600,
+    height: 900,
+    alt: "A distillation apparatus on a stand beside conical flasks of solution on a laboratory bench",
+  },
+  /** Reaching us — the /contact masthead. */
+  contactCover: {
+    src: `${R}/mc-hero-contact.webp`,
+    width: 862,
+    height: 485,
+    alt: "Conical flasks, volumetric flasks and pipettes arranged on a clean laboratory bench",
+  },
+  /**
+   * State coverage — the /licenses masthead.
+   *
+   * Its own slot rather than the storefront one it used to share: /contact
+   * still wants the building, because that page is about where to find it.
+   */
+  licensesCover: {
+    src: `${R}/mc-hero-licenses.webp`,
+    width: 1488,
+    height: 837,
+    alt: "A tray of sealed glass vials with a syringe on a stainless laboratory bench",
+  },
+  /** People at work — careers. */
+  team: {
+    src: `${R}/mc-careers-team-4x3-2x.webp`,
+    width: 736,
+    height: 552,
+    alt: "A pharmacist in a white coat at a laboratory bench lined with wash bottles and glassware",
+  },
+} satisfies Record<string, Media>;
+
+const card = (file: string, alt: string, width = 1200, height = 900): Media => ({
+  src: `${R}/${file}`,
+  width,
+  height,
+  alt,
+});
+
+/** Therapeutic-area cards, keyed by the card's href. 4:3. */
+export const areaMedia: Record<string, Media> = {
+  "/products/weight-management": card("mc-area-weight-management-4x3-2x.webp", "MediCraft semaglutide and tirzepatide flex-dose vials"),
+  "/products/hormone-therapy": card("mc-area-hormone-therapy-4x3-2x.webp", "MediCraft testosterone cypionate and HCG vials beside an estradiol / progesterone cream pump"),
+  "/products/peptide-therapy": card("mc-area-peptide-therapy-4x3-2x.webp", "MediCraft BPC-157, sermorelin and PT-141 vials"),
+  "/products/dermatology": card("mc-area-dermatology-4x3-2x.webp", "MediCraft tretinoin combination and hair restoration airless pumps"),
+  "/products/pain-management": card("mc-area-pain-management-4x3-2x.webp", "A MediCraft custom-formulation pump and vial, compounded to prescription"),
+  "/products/vitality-longevity": card("mc-area-vitality-longevity-4x3-2x.webp", "MediCraft glutathione, Myers' Cocktail and NAD+ vials"),
+};
+
+/** Delivery-method cards on /compounding, keyed by title. 4:3. */
+export const deliveryMedia: Record<string, Media> = {
+  Injectables: card("mc-delivery-injectables-4x3-2x.webp", "A MediCraft injectable vial with an insulin syringe"),
+  "Topical Creams & Gels": card("mc-delivery-topicals-4x3-2x.webp", "Two MediCraft airless cream pumps"),
+  "Oral Capsules & Tablets": card("mc-delivery-oral-4x3-2x.webp", "A MediCraft amber Rx bottle with loose capsules"),
+  "Nasal Sprays": card("mc-delivery-nasal-4x3-2x.webp", "A MediCraft metered-dose nasal spray bottle"),
+  "Troches & Sublingual": card("mc-delivery-troches-4x3-2x.webp", "A MediCraft troche blister card with loose troches"),
+  "IV Solutions": card("mc-delivery-iv-4x3-2x.webp", "A MediCraft IV admixture bag beside a 30 mL glutathione vial"),
+};
+
+/** Facility & automation cards on /quality, keyed by title. 16:10. */
+export const automationMedia: Record<string, Media> = {
+  "Automated Cleanroom Cleaning Systems": card("mc-quality-auto-cleaning-16x10-2x.webp", "Rendering of a cleanroom floor-cleaning robot with a cyan status ring", 1200, 750),
+  "Automated Vial Crimping Machines": card("mc-quality-auto-crimping-16x10-2x.webp", "Rendering of an automated vial crimper sealing a MediCraft vial, with crimped vials on a tray", 1200, 750),
+  "Environmental Monitoring Technology": card("mc-quality-auto-monitoring-16x10-2x.webp", "Rendering of an environmental monitoring display showing particle count, temperature, humidity and pressure differential beside a particle counter", 1200, 750),
+  "Video-Verified Fulfillment": card("mc-quality-auto-fulfillment-16x10-2x.webp", "Rendering of a pack station with an overhead camera filming a cold-chain shipper of MediCraft vials", 1200, 750),
 };
 
 /**
- * The shot list. Ordered by priority, then by page.
+ * A square thumbnail for a product category, for the Products menu.
  *
- * Every entry currently renders as a <GradientPlate> or a drawn component. None
- * is a stock photograph.
+ * Six categories have their own therapeutic-area artwork; the other five that
+ * carry products do not. Rather than show a thumbnail on some rows and a gap on
+ * the rest, those fall back to the packshot of their first product — which is
+ * the right image anyway: it is that category's own container wearing its own
+ * label, not a stand-in.
+ *
+ * Returns null only when a category has neither, which is a category with no
+ * products in it. The menu renders those without a thumbnail.
  */
-export const shotList: Slot[] = [
-  {
-    where: "Home hero — full-bleed background",
-    ratio: "16:9 cropping to 21:9",
-    size: "3840 × 2160",
-    priority: "P1",
-    phase: 2,
-    shot: "A gowned compounder's gloved hands working under the laminar airflow hood, mid-action, drawing into a syringe. Three-quarter rear/side angle so focused posture reads without the face dominating. f/5.6 so hands and hood architecture both read.",
-    compliance:
-      "Full aseptic garb, no exposed wrist, no first-air obstruction staged for composition (§2.3, §2.4). Subject must sit in the right third — the left 60% carries the headline. Must survive a navy gradient at 70–85%.",
-  },
-  {
-    where: "About — 'Who We Are' two-column",
-    ratio: "4:3",
-    size: "1600 × 1200",
-    priority: "P1",
-    phase: 2,
-    shot: "Cleanroom environmental wide: anteroom or buffer-room doorway looking through into the classified space, one gowned figure small in frame, architecture dominant. 24–35mm at f/8–f/11, camera dead level.",
-    compliance:
-      "Look for the credibility objects an inspector-literate viewer reads instantly: stainless, epoxy floor coving, HEPA ceiling grid, pass-through chambers, pressure-differential gauge.",
-  },
-  {
-    where: "Quality — leadership team portraits (6)",
-    ratio: "1:1",
-    size: "800 × 800",
-    priority: "P1",
-    phase: 1,
-    shot: "Chest-up square crop, eyes on the upper third, body turned ~15°, face to camera, composed and not smiling. Facility behind at f/2.8 bokeh — not a seamless studio backdrop. One matched grade across all six.",
-    compliance:
-      "Signed model release from every identifiable person (§2.7). If someone declines, use a matched-style silhouette — never mix a photograph with an icon in the same row.",
-  },
-  {
-    where: "Quality — chain of custody panel",
-    ratio: "4:3",
-    size: "1600 × 1200",
-    priority: "P1",
-    phase: 2,
-    shot: "Packing station from a slightly elevated three-quarter angle WITH THE OVERHEAD CAMERA VISIBLY IN FRAME, its mount and lens catching light. A gowned tech's hands in the packing tray below.",
-    compliance:
-      "The camera is the point: 'if the viewer cannot see the camera, the claim is just text.' No readable label data, no PHI on any monitor, check reflections in glass and stainless (§2.1, §2.2).",
-  },
-  {
-    where: "Providers — partnership two-column",
-    ratio: "4:3",
-    size: "1600 × 1200",
-    priority: "P1",
-    phase: 1,
-    shot: "A pharmacist and a clinician mid-discussion over a formulation document or tablet, neither looking at camera. The one place a genuine two-person image is necessary.",
-    compliance: "Must read as a working conversation. Not a handshake.",
-  },
-  {
-    where: "State coverage — licensure map",
-    ratio: "n/a — component",
-    size: "vector",
-    priority: "P1",
-    phase: 1,
-    shot: "Not photography. A data-driven SVG the team can update without a designer. Built: components/sections/CoverageMap.tsx, driven by lib/coverage.ts.",
-    compliance: "No stock US map (§4.14).",
-  },
-  {
-    where: "Quality — 'Quality Is Built Into Our DNA' banner",
-    ratio: "1:1 or 4:5",
-    size: "1400 × 1400",
-    priority: "P2",
-    phase: 1,
-    shot: "Macro of a gloved hand initialing a batch record, or a bound SOP volume open on stainless with a pen resting on it. 85–100mm at f/2.8, top-down or steep three-quarter. Quality in compounding is documentary — paper, signatures, timestamps. Not beakers.",
-    compliance: "Document text must be illegible or a purpose-made dummy form.",
-  },
-  {
-    where: "Quality — automation cards (4)",
-    ratio: "16:10",
-    size: "1200 × 750",
-    priority: "P2",
-    phase: 1,
-    shot: "One frame per card, matched lens/angle/grade so the four read as a set: cleaning equipment mid-cycle low along the floor; macro on the crimping head closing a seal (the most photogenic equipment in the building); an EM display with LED readouts in focus, aqua LEDs as the accent; the packing camera.",
-  },
-  {
-    where: "Quality — API & raw material sourcing",
-    ratio: "4:3",
-    size: "1600 × 1200",
-    priority: "P2",
-    phase: 1,
-    shot: "Sealed API containers on a quarantine shelf with QC status labels, or a gloved hand comparing a Certificate of Analysis against a container label.",
-    compliance: "Dummy label text only. No branded manufacturer cartons (§2.5).",
-  },
-  {
-    where: "State coverage — shipping two-column",
-    ratio: "4:3",
-    size: "1600 × 1200",
-    priority: "P2",
-    phase: 1,
-    shot: "A validated cold-chain shipper, open mid-pack: gel packs, insulated liner, temperature indicator strip in frame, shot slightly overhead. Show the engineering — cold chain is the prescriber's biggest anxiety.",
-    compliance: "Avoid delivery trucks, generic cardboard, maps with dotted flight paths.",
-  },
-  {
-    where: "Providers / Home — therapeutic area cards (6)",
-    ratio: "1:1",
-    size: "600 × 600",
-    priority: "P2",
-    phase: 1,
-    shot: "Abstract macro over literal: six matched plates of formulation states — a viscous gel drawing a peak, a solution's meniscus, a cream's surface texture, a lyophilised powder, a suspension mid-swirl. 100mm macro, single hard raking light, f/8, focus-stacked.",
-    compliance:
-      "Do not photograph body parts or patient stand-ins. Literal category imagery drops the site from clinical to consumer-wellness and creates model-release and implied-claim problems.",
-  },
-  {
-    where: "Compounding — delivery method cards (6)",
-    ratio: "1:1",
-    size: "600 × 600",
-    priority: "P2",
-    phase: 1,
-    shot: "Six dosage-form shots in one session, one setup: 85mm, f/8, three-quarter elevated, cool-grey or navy seamless surface, soft top light, one narrow specular per object. Consistency across the six matters more than any single frame.",
-    compliance: "All containers unlabelled or dummy-labelled (§2.5).",
-  },
-  {
-    where: "Contact — facility exterior",
-    ratio: "16:9",
-    size: "2400 × 1350",
-    priority: "P2",
-    phase: 2,
-    shot: "4190 Corporate Ct at blue hour, interior lights on, straight-on or slight three-quarter. Blue hour reads brand-navy for free.",
-    compliance:
-      "Property release from the landlord (Two Red Roses Foundation) if the exterior is featured (§2.8). Never shoot at midday.",
-  },
-];
-
-/**
- * Delivered photography, keyed for use in components.
- *
- * Empty by design — see the header. Add entries as the shoot lands:
- *
- *   hoodHands: {
- *     src: "/images/site/mc-hero-hood-16x9-2x.webp",
- *     width: 3840, height: 2160,
- *     alt: "Gowned compounder drawing a solution into a syringe inside a laminar airflow hood",
- *   },
- */
-export const media = {} satisfies Record<string, Media>;
-
-/**
- * The hero's ambient clip, once shot.
- *
- * The <AmbientVideo> component stays in the tree unused: it already handles
- * autoplay policy (muted, inline, metadata preload) and swaps to a poster still
- * for anyone who has asked for reduced motion. Point `src` and `poster` at the
- * Phase 2 footage and restore the layer in components/sections/Hero.tsx.
- *
- * Compression targets from §3.1: hero ≤ 250KB, panel ≤ 150KB, card ≤ 80KB,
- * portrait ≤ 60KB. WebP primary, JPEG fallback, @1x and @2x for every slot.
- */
-export const heroVideo = {
-  src: "",
-  poster: "",
-  width: 1280,
-  height: 720,
-  description:
-    "Gowned compounder's gloved hands working under the laminar airflow hood",
+export type CategoryThumb = {
+  src: string;
+  alt: string;
+  /**
+   * How to seat the image in its tile. The area artwork is a full photograph
+   * and fills the tile; the packshots are cut out on transparency, so they are
+   * contained on the tile's own ground instead of being cropped into it.
+   */
+  fit: "cover" | "contain";
 };
+
+export function categoryThumb(
+  slug: string,
+  firstProductSlug: string | undefined,
+  firstProductName: string | undefined
+): CategoryThumb | null {
+  const area = areaMedia[`/products/${slug}`];
+  if (area) return { src: area.src, alt: area.alt, fit: "cover" };
+  if (firstProductSlug) {
+    return {
+      src: `/images/products/${firstProductSlug}.webp`,
+      alt: firstProductName ?? "",
+      fit: "contain",
+    };
+  }
+  return null;
+}

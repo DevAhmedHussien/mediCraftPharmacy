@@ -3,14 +3,14 @@
 import { useFormState } from "react-dom";
 import { Send } from "lucide-react";
 
-import { submitApplication } from "@/app/careers/actions";
+import { submitApplication } from "@/app/(site)/careers/actions";
 import {
   FormAlert,
   RadioGroup,
   SelectField,
-  SubmitButton,
+  ActionSubmitButton,
   TextField,
-} from "@/components/forms/Fields";
+} from "@/components/ui/form/native";
 import { fieldClass } from "@/components/ui/input";
 import { FieldError, Label } from "@/components/ui/label";
 import { REFERRAL_SOURCES, initialFormState } from "@/lib/forms";
@@ -102,10 +102,10 @@ export function CareerForm() {
         <FieldError id="resume-error" message={state.errors?.resume} />
       </div>
 
-      <SubmitButton>
+      <ActionSubmitButton>
         Submit application
         <Send className="h-4 w-4" />
-      </SubmitButton>
+      </ActionSubmitButton>
 
       <FormAlert ok={state.ok} message={state.message} />
     </form>

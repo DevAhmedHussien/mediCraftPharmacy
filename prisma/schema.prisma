@@ -1,0 +1,1406 @@
+// ===========================================================================
+// MediCraft Pharmacy — partner platform schema
+//
+// Review notes, so the choices below are arguable rather than mysterious:
+//
+//  · MONEY IS `Decimal`, NEVER `Float`. Negotiated unit prices are compared,
+//    summed and shown back to a partner who has agreed to them contractually.
+//    Binary floating point cannot represent 0.1, so a Float column turns an
+//    agreed 12.30 into 12.299999999999999 somewhere between the negotiation
+//    and the invoice. 12,4 gives four decimal places, which compounding
+//    per-unit pricing needs (a per-mL price of 0.0825 is ordinary).
+//
+//  · PERMISSION LABELS KEEP THEIR DOTS. The brief specifies
+//    `requirePermission("pricing.review")`, but a Prisma enum member cannot be
+//    named `applications.view`. Every member is therefore `@map`ped to its
+//    dotted wire string: Postgres stores `pricing.review`, TypeScript sees
+//    `PRICING_REVIEW`, and lib/partner/status.ts carries the dotted strings the
+//    guard is called with. Change one and the parity test fails.
+//
+//  · SECRETS ARE SPLIT FROM THEIR DISPLAY FORM. `einCiphertext` holds a
+//    versioned AES-GCM envelope; `einLast4` holds the four digits an admin
+//    needs to eyeball a match. Nothing in the app ever decrypts to render a
+//    list. Same shape for licence numbers.
+//
+//  · DELETING AN ADMIN MUST NOT DELETE HISTORY. `AuditLog.actorId` and
+//    `StatusHistory.actorId` are nullable with `onDelete: SetNull`, and both
+//    denormalise `actorEmail` at write time. A deleted admin leaves
+//    "sarah@… approved pricing for Acme" intact rather than an orphan row or,
+//    worse, a cascade that erases the record of what they did.
+//
+//  · `Partner.statusChangedAt` is denormalised on purpose. The stale-
+//    application cron asks "which partners have sat in an actionable status
+//    for more than N days" every morning; deriving that from StatusHistory
+//    means a correlated max() per partner. One indexed column instead.
+//
+// Open questions for the owner are collected in the handover notes, not
+// silently resolved here.
+// ===========================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Prisma 7 moved the connection URL out of the schema: migrations read it
+// from prisma.config.ts, and the client gets it through a driver adapter
+// (lib/db.ts). The schema now describes shape only, which is why it is safe
+// to commit and to share with a client bundle analyser.
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  PARTNER
+}
+
+enum BusinessType {
+  TELEHEALTH
+  EMR
+  SMALL_PHARMACY
+}
+
+/// The single vocabulary for where a partner is in the pipeline. Mirrored by
+/// `PartnerStatus` in lib/partner/status.ts; a parity test pins them together.
+enum PartnerStatus {
+  APPLICATION_SUBMITTED
+  /// Requester details confirmed and a photo ID uploaded; waiting on a
+  /// reviewer to say who this is before any pricing leaves the building.
+  IDENTITY_SUBMITTED
+  PRODUCT_LIST_SENT
+  /// Applicant asked to negotiate and gave their reasons; waiting on an admin
+  /// to put a date on it.
+  MEETING_REQUESTED
+  /// A date is set and the applicant can see it.
+  PRICING_MEETING
+  PRICING_SUBMITTED
+  PRICING_CHANGES_REQUESTED
+  /// The admin has built a partner-specific list and sent it; the applicant
+  /// is looking at it.
+  NEGOTIATED_PRICING_SENT
+  PRICING_ADMIN_APPROVED
+  PRICING_PARTNER_ACCEPTED
+  /// Filling in the full account-setup form.
+  ONBOARDING_IN_PROGRESS
+  /// Account details are in; they are uploading licences and photo ID.
+  DOCUMENTS_PENDING
+  /// Details AND documents are in, waiting on a reviewer.
+  ONBOARDING_SUBMITTED
+  ONBOARDING_CHANGES_REQUESTED
+  ONBOARDING_APPROVED
+  MSA_SENT
+  MSA_SIGNED
+  VERIFIED
+  REJECTED
+  MSA_DECLINED
+  SUSPENDED
+}
+
+/// Dotted wire strings are the source of truth — see the header note.
+enum Permission {
+  APPLICATIONS_VIEW   @map("applications.view")
+  APPLICATIONS_REVIEW @map("applications.review")
+  PRODUCTS_SEND       @map("products.send")
+  PRICING_REVIEW      @map("pricing.review")
+  ONBOARDING_REVIEW   @map("onboarding.review")
+  MSA_SEND            @map("msa.send")
+  PARTNERS_VIEW       @map("partners.view")
+  PARTNERS_MANAGE     @map("partners.manage")
+}
+
+enum DocumentType {
+  /// Government-issued photo ID for the authorised signer.
+  GOVERNMENT_ID
+  PHARMACY_LICENSE
+  DEA_REGISTRATION
+  NPI_CONFIRMATION
+  STATE_LICENSE
+  W9
+  CERTIFICATE_OF_INSURANCE
+  BUSINESS_REGISTRATION
+  OTHER
+}
+
+enum DocumentStatus {
+  PENDING_REVIEW
+  ACCEPTED
+  REJECTED
+}
+
+enum PriceListStatus {
+  /// The admin is still building it; the applicant cannot see it.
+  DRAFT
+  /// Sent to the applicant, awaiting their decision.
+  SENT
+  /// The applicant asked for another round.
+  CHANGES_REQUESTED
+  /// The applicant accepted these prices.
+  ACCEPTED
+  /// Replaced by a later version. Kept, never deleted.
+  SUPERSEDED
+}
+
+/// Which service captured a signature. The internal driver exists so the MSA
+/// flow is complete before DocuSign credentials arrive; swapping to DOCUSIGN
+/// is a config change, not a rewrite.
+enum SignatureDriver {
+  INTERNAL
+  DOCUSIGN
+  SIGNEASY
+}
+
+/// Where a formulary change order is in its own, separate lifecycle.
+///
+/// SEPARATE FROM `PartnerStatus` ON PURPOSE. A verified partner asking to add
+/// three preparations is still verified: they keep ordering everything already
+/// on their schedule while the new items are priced. Running this through the
+/// partner status would knock them back to PRICING_MEETING and stop those
+/// orders — punishing a partner for wanting to buy more.
+enum AmendmentStatus {
+  /// Asked for, with a reason. Waiting on an admin.
+  REQUESTED
+  /// An admin is pricing the new items.
+  UNDER_REVIEW
+  /// Prices are with the partner.
+  PRICING_SENT
+  /// They asked for another round.
+  CHANGES_REQUESTED
+  /// They accepted; the change order has not gone out yet.
+  ACCEPTED
+  /// The change order is out for signature.
+  CHANGE_ORDER_SENT
+  /// Signed. The new items are live on their schedule.
+  SIGNED
+  DECLINED
+}
+
+enum MsaEnvelopeStatus {
+  CREATED
+  SENT
+  DELIVERED
+  COMPLETED
+  DECLINED
+  VOIDED
+}
+
+enum NotificationPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum NotificationType {
+  APPLICATION_SUBMITTED
+  IDENTITY_SUBMITTED
+  MEETING_REQUESTED
+  /// A verified partner asked to add preparations to their schedule.
+  AMENDMENT_REQUESTED
+  PRICING_SUBMITTED
+  PRICING_PARTNER_ACCEPTED
+  ONBOARDING_SUBMITTED
+  DOCUMENTS_SUBMITTED
+  PARTNER_RESUBMITTED
+  MSA_SIGNED
+  PARTNER_VERIFIED
+  MSA_DECLINED
+  INTEGRATION_FAILURE
+  STATUS_CHANGED_BY_TEAMMATE
+  ACCOUNT_PERMISSIONS_CHANGED
+  APPLICATION_STALE
+}
+
+enum OutboxStatus {
+  PENDING
+  SENDING
+  SENT
+  FAILED
+  DEAD
+}
+
+enum EmailStatus {
+  SENT
+  DELIVERED
+  BOUNCED
+  COMPLAINED
+  FAILED
+}
+
+enum WebhookProvider {
+  DOCUSIGN
+  SIGNEASY
+  STRIPE
+}
+
+// ---------------------------------------------------------------------------
+// Identity & access
+// ---------------------------------------------------------------------------
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  role         Role
+  isActive     Boolean   @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  partner             Partner?
+  permissions         AdminPermission[]        @relation("PermissionHolder")
+  permissionsGranted  AdminPermission[]        @relation("PermissionGranter")
+  passwordResetTokens PasswordResetToken[]
+  notifications       Notification[]
+  notificationPrefs   NotificationPreference[]
+
+  @@index([role, isActive])
+}
+
+/// One row per granted permission. A row-per-permission rather than a JSON
+/// array so "every admin who can review pricing" is an indexed join — that
+/// query runs on every single transition to build the notification fan-out.
+model AdminPermission {
+  id          String     @id @default(cuid())
+  userId      String
+  permission  Permission
+  grantedById String?
+  grantedAt   DateTime   @default(now())
+
+  user      User  @relation("PermissionHolder", fields: [userId], references: [id], onDelete: Cascade)
+  grantedBy User? @relation("PermissionGranter", fields: [grantedById], references: [id], onDelete: SetNull)
+
+  @@unique([userId, permission])
+  @@index([permission])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  /// SHA-256 of the token. The plaintext exists only in the emailed link, so a
+  /// database leak cannot be replayed into an account takeover.
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+// ---------------------------------------------------------------------------
+// Partner
+// ---------------------------------------------------------------------------
+
+model Partner {
+  id               String        @id @default(cuid())
+  userId           String        @unique
+  companyName      String
+  businessType     BusinessType
+  contactName      String
+  phone            String
+  status           PartnerStatus @default(APPLICATION_SUBMITTED)
+  /// Denormalised for the stale-application cron — see the header note.
+  statusChangedAt  DateTime      @default(now())
+  verifiedAt       DateTime?
+  rejectedReason   String?
+  suspendedReason  String?
+  stripeCustomerId String?       @unique
+
+  /// The contact this partner maps to in GoHighLevel.
+  ///
+  /// Stored so a status change can retag that contact without searching the
+  /// CRM by email first — one upsert on the creation edge, then direct
+  /// add/remove tag calls for every transition after it. Null until the first
+  /// sync succeeds, and null forever if GHL is not configured.
+  ghlContactId     String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  user           User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  application    PartnerApplication?
+  onboarding     PartnerOnboarding?
+  documents      PartnerDocument[]
+  paymentMethods PaymentMethodRef[]
+  priceLists     PriceListVersion[]
+  pricing        PartnerPricing[]
+  selections     PartnerFormularySelection[]
+  meetings       Meeting[]
+  msaEnvelopes   MsaEnvelope[]
+  statusHistory  StatusHistory[]
+  crmOutbox      CrmOutbox[]
+  notifications  Notification[]
+  amendments     FormularyAmendment[]
+
+  @@index([status, statusChangedAt])
+  @@index([businessType])
+  @@index([createdAt])
+}
+
+model PartnerOnboarding {
+  id        String @id @default(cuid())
+  partnerId String @unique
+
+  legalBusinessName String?
+  dba               String?
+  /// AES-GCM envelope, `v1:<iv>:<tag>:<ciphertext>` base64. Never logged.
+  einCiphertext     String?
+  /// Display-only, so an admin can match a document without a decrypt call.
+  einLast4          String?
+
+  businessStreet String?
+  businessSuite  String?
+  businessCity   String?
+  businessState  String?
+  businessZip    String?
+
+  /// Set when billing differs; otherwise the business address is used.
+  billingStreet String?
+  billingSuite  String?
+  billingCity   String?
+  billingState  String?
+  billingZip    String?
+
+  /// Postal abbreviations the partner operates in.
+  statesOfOperation String[]
+
+  signerName  String?
+  signerTitle String?
+  signerEmail String?
+
+  /// Everything the partner has typed but not yet submitted. The autosave
+  /// endpoint writes here; submit validates it and promotes it to the typed
+  /// columns above. Keeping the two separate means a half-filled draft can
+  /// never fail a NOT NULL constraint or be mistaken for submitted data.
+  draft Json?
+
+  submittedAt   DateTime?
+  reviewedById  String?
+  reviewedAt    DateTime?
+  reviewNotes   String?
+  /// Per-field reviewer comments on a changes-requested round:
+  /// `{ "einCiphertext": "Does not match the W-9", ... }`
+  fieldComments Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  partner  Partner          @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  licenses PartnerLicense[]
+}
+
+/// A partner operates under several licences with independent expiry dates, so
+/// this is a table rather than columns on PartnerOnboarding. It also gives the
+/// expiry-reminder job something to index.
+model PartnerLicense {
+  id               String       @id @default(cuid())
+  onboardingId     String
+  type             DocumentType
+  state            String?
+  /// Encrypted like the EIN — licence numbers are regulated identifiers.
+  numberCiphertext String
+  numberLast4      String
+  expiresAt        DateTime?
+  createdAt        DateTime     @default(now())
+
+  onboarding PartnerOnboarding @relation(fields: [onboardingId], references: [id], onDelete: Cascade)
+
+  @@index([onboardingId])
+  @@index([expiresAt])
+}
+
+model PartnerDocument {
+  id        String       @id @default(cuid())
+  partnerId String
+  type      DocumentType
+  /// Which storage backed this object. Same reason as `Media.driver`: a file
+  /// uploaded locally in development still resolves after the deployment is
+  /// pointed at S3, instead of 404ing against a bucket that never had it.
+  driver    StorageDriver  @default(LOCAL)
+  s3Key           String         @unique
+  filename        String
+  mime            String
+  size            Int
+  status          DocumentStatus @default(PENDING_REVIEW)
+  reviewerComment String?
+  reviewedById    String?
+  uploadedAt      DateTime       @default(now())
+
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  @@index([partnerId, type])
+  @@index([status])
+}
+
+/// Card data never reaches this database. Stripe Elements tokenises in the
+/// browser; the backend stores the reference and the four digits needed to say
+/// "Visa ending 4242" on a settings screen.
+model PaymentMethodRef {
+  id                    String   @id @default(cuid())
+  partnerId             String
+  stripePaymentMethodId String   @unique
+  brand                 String
+  last4                 String
+  expMonth              Int
+  expYear               Int
+  isDefault             Boolean  @default(false)
+  createdAt             DateTime @default(now())
+
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  @@index([partnerId])
+}
+
+// ---------------------------------------------------------------------------
+// Catalog & pricing
+// ---------------------------------------------------------------------------
+
+/// A therapeutic area, editable by an admin.
+///
+/// This was a hardcoded array in lib/data.ts, which meant the one thing the
+/// pharmacy most wanted to change — what the catalogue is divided into — was
+/// the one thing that needed a deploy.
+///
+/// Two taxonomies live here side by side, and that is deliberate rather than a
+/// migration half-done. The eleven marketing areas ("Peptide Therapy",
+/// "Women's Health") are how the public site groups a curated shop window; the
+/// ten in the 2026 formulary spreadsheet ("HRT", "TRT", "Supplies") are how the
+/// pharmacy actually organises 692 orderable items. They overlap on exactly two
+/// names. `isPublished` decides which of them a visitor ever sees, so the split
+/// is a setting an admin controls rather than a fact baked into the code.
+model ProductCategory {
+  id   String @id @default(cuid())
+  /// URL segment. Frozen after creation — a renamed category must not 404 a
+  /// link someone bookmarked.
+  slug String @unique
+  name String
+
+  blurb String?
+  /// Pictogram name from components/icons/set.tsx.
+  icon  String?
+
+  sortOrder Int @default(0)
+
+  /// Appears on the public marketing site. Off by default: a category added to
+  /// organise the partner formulary should not silently publish itself.
+  isPublished Boolean @default(false)
+  /// Available to attach products to at all. Retiring a category hides it from
+  /// the pickers without detaching the products already filed under it.
+  isActive    Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products Product[]
+
+  @@index([isPublished, sortOrder])
+}
+
+model Product {
+  id           String   @id @default(cuid())
+  /// URL segment. Derived from name + form + strength on create, then frozen —
+  /// renaming a product must not break a link a prescriber has bookmarked.
+  slug         String   @unique
+  name         String
+  strength     String?
+  form         String?
+  ndc          String?  @unique
+
+  categoryId String?
+
+  /// Kept alongside `categoryId` as the public site's URL key, so a category
+  /// page can be found without a join and an import can file a row before its
+  /// category row exists.
+  categorySlug String?
+
+  blurb        String?
+  description  String?
+  listPrice    Decimal  @db.Decimal(12, 4)
+  unit         String   @default("each")
+  imageMediaId String?
+
+  // --- From the 2026 formulary spreadsheet --------------------------------
+  /// Compounded · Non-Compounded · Supply.
+  productClass String?
+  /// Oral, Topical, Sublingual, "IM | SQ Injection", …
+  route        String?
+  /// Unit of sale: "ea", "10ML Vial", "30 g".
+  packageSize  String?
+  /// Rx · OTC · OTC/Rx · Supply.
+  rxStatus     String?
+  /// NC (not controlled) · C-III · C-IV · C-V.
+  deaSchedule  String?
+  /// Beyond-use dating and storage, as the formulary states it.
+  bud          String?
+  /// Ships refrigerated. MSA §1.4 attaches an obligation to this, so it is a
+  /// column and never an inference from the dating text — 35 items carry a
+  /// refrigerated BUD without requiring cold shipping.
+  coldChain    Boolean  @default(false)
+
+  /// Priced by written quote, not from a list. MSA §4.1: items shown as
+  /// "Quote" in the Partner Formulary are priced by quote or change order, so
+  /// these are deliberately left out of an automatic price-list draft rather
+  /// than carried at a fictional zero.
+  isQuoteOnly  Boolean  @default(false)
+
+  /// Shown on the public marketing site. Most of the formulary is orderable by
+  /// partners without being a page a patient can browse to.
+  isPublished  Boolean  @default(false)
+  /// Orderable by partners and included in a price list draft.
+  isActive     Boolean  @default(true)
+
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  category       ProductCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  image          Media?           @relation(fields: [imageMediaId], references: [id], onDelete: SetNull)
+  priceListItems PriceListItem[]
+  partnerPricing PartnerPricing[]
+  selections     PartnerFormularySelection[]
+
+  @@index([isActive, sortOrder, name])
+  @@index([isPublished, categorySlug])
+  @@index([categoryId])
+  @@index([categorySlug])
+  amendmentItems AmendmentItem[]
+}
+
+/// One row per round of negotiation. Nothing is ever overwritten: a counter
+/// from the admin supersedes the previous version rather than editing it, so
+/// the negotiation history stays reconstructible — which is the point of
+/// versioning a price list at all.
+/// The medications a partner actually dispenses.
+///
+/// The formulary is 692 items and no practice orders all of them. Before any
+/// negotiation the partner picks the lines they work with, and everything
+/// downstream follows that selection: the call request says what the call is
+/// about, the admin's price-list draft is built from it instead of from the
+/// whole catalogue, and accepting list pricing writes a price book for those
+/// products rather than for seven hundred.
+///
+/// Kept as its own table rather than a column on PriceListItem, because a
+/// partner chooses before a price list exists — the choice is what causes one
+/// to be drafted.
+model PartnerFormularySelection {
+  id        String   @id @default(cuid())
+  partnerId String
+  productId String
+  createdAt DateTime @default(now())
+
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([partnerId, productId])
+  @@index([partnerId])
+}
+
+model PriceListVersion {
+  id            String          @id @default(cuid())
+  partnerId     String
+  version       Int
+  status        PriceListStatus @default(DRAFT)
+  submittedById String?
+  submittedAt   DateTime?
+  reviewedById  String?
+  reviewedAt    DateTime?
+  adminComment  String?
+  acceptedAt    DateTime?
+  createdAt     DateTime        @default(now())
+
+  partner    Partner              @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  items      PriceListItem[]
+  amendments FormularyAmendment[]
+
+  @@unique([partnerId, version])
+  @@index([partnerId, status])
+}
+
+model PriceListItem {
+  id        String  @id @default(cuid())
+  versionId String
+  productId String
+  /// Snapshotted from the catalog at submission. Without this copy, editing a
+  /// product's list price later silently rewrites what the partner was shown
+  /// during a negotiation they have already agreed to.
+  /// Snapshotted from the catalog when the line is created. Without the copy,
+  /// editing a product's list price later silently rewrites what the partner
+  /// was shown during a negotiation they have already agreed to.
+  listPrice Decimal @db.Decimal(12, 4)
+
+  /// Percentage off the list price, 0–100. The admin types this, because a
+  /// discount is what is actually being negotiated — "15% off" is the
+  /// sentence said on the call, not "126.65".
+  discountPercent Decimal @default(0) @db.Decimal(5, 2)
+
+  /// listPrice × (1 − discount). Stored rather than derived on read: it is
+  /// what the applicant accepted, and recomputing it later from a changed
+  /// list price would quietly restate the agreement.
+  finalPrice Decimal @db.Decimal(12, 4)
+
+  quantity     Int?
+  partnerNote  String?
+  adminComment String?
+
+  version PriceListVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  product Product          @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@unique([versionId, productId])
+  @@index([versionId])
+}
+
+/// The partner's live price book. Written on PRICING_PARTNER_ACCEPTED but only
+/// switched on at VERIFIED, so an unverified partner can never transact at a
+/// negotiated price.
+model PartnerPricing {
+  id              String    @id @default(cuid())
+  partnerId       String
+  productId       String
+  price           Decimal   @db.Decimal(12, 4)
+  sourceVersionId String?
+  effectiveFrom   DateTime
+  effectiveTo     DateTime?
+  isActive        Boolean   @default(false)
+
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  // "One active price per product per partner" needs a PARTIAL unique index
+  // (`WHERE "isActive"`), which Prisma cannot express. The migration adds it
+  // by hand — see the note in the handover.
+  @@index([partnerId, isActive])
+  @@index([productId])
+}
+
+/**
+ * A negotiation meeting.
+ * One row covers both halves of the exchange: the applicant's request, with
+ * the reasons they are required to give, and the admin's scheduling of it.
+ * Two tables would mean a join every time either side is displayed, and there
+ * is never a schedule without a request that prompted it.
+ */
+model Meeting {
+  id        String @id @default(cuid())
+  partnerId String
+
+  /// Why they want to negotiate. Required of the applicant — a meeting
+  /// request with no stated reason wastes the first ten minutes of the call
+  /// working out what it is for.
+  requestNotes String
+  requestedAt  DateTime @default(now())
+
+  /// The times the admin is offering, earliest first. Empty until an admin
+  /// has looked at the request.
+  ///
+  /// An array rather than three nullable columns: the only question anyone
+  /// asks of this data is "which times are on the table", and a column per
+  /// slot turns that into three null checks and caps the answer at three
+  /// forever.
+  proposedSlots  DateTime[]
+  slotsOfferedAt DateTime?
+
+  /// Set when the applicant picks one of `proposedSlots`, or when an admin
+  /// books a time directly. Null until then, which is exactly the distinction
+  /// the applicant's status page reads.
+  scheduledAt     DateTime?
+  durationMinutes Int?      @default(30)
+  /// Video link or phone number — whatever the admin arranges. Kept separate
+  /// from `conferenceUrl`: a dial-in typed by hand and a Meet link minted by
+  /// Google have different lifetimes, and overwriting one with the other lost
+  /// the number nobody could then find.
+  location        String?
+  adminNotes      String?
+  scheduledById   String?
+
+  /// When the applicant accepted. The pair (`scheduledAt`, `confirmedAt`)
+  /// distinguishes "we offered and they took it" from "an admin booked it
+  /// outright", which is what the confirmed card on the portal says out loud.
+  confirmedAt DateTime?
+  /// Anything the applicant added when picking their time.
+  partnerNote String?
+
+  /// Google Meet, when the calendar driver minted one.
+  conferenceUrl   String?
+  calendarEventId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  @@index([partnerId, requestedAt])
+  @@index([scheduledAt])
+}
+
+// ---------------------------------------------------------------------------
+// MSA
+// ---------------------------------------------------------------------------
+
+model MsaEnvelope {
+  id         String          @id @default(cuid())
+  partnerId  String
+
+  driver     SignatureDriver @default(INTERNAL)
+  /// DocuSign's envelope id, or a generated one for the internal driver.
+  envelopeId String          @unique
+
+  status      MsaEnvelopeStatus @default(CREATED)
+  templateId  String?
+  signerEmail String
+  signerName  String
+
+  /// DocuSign requires a stable client user id to issue an embedded signing
+  /// URL for the same recipient twice. Persisted rather than regenerated.
+  signerClientUserId String?
+
+  sentAt         DateTime?
+  completedAt    DateTime?
+  declinedAt     DateTime?
+  declineReason  String?
+  voidedAt       DateTime?
+  signedPdfS3Key String?
+
+  /// Internal driver only.
+  ///
+  /// `agreementHash` is the SHA-256 of the exact agreement text that was on
+  /// screen when the name was typed. Storing it is what makes the signature
+  /// evidential: "they signed" is worthless without "they signed THIS", and
+  /// without it nothing stops the agreement being edited afterwards.
+  signedName      String?
+  agreementHash   String?
+  signedIp        String?
+  signedUserAgent String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  partner    Partner              @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  amendments FormularyAmendment[]
+
+  @@index([partnerId, status])
+}
+
+/**
+ * A request from a verified partner to add preparations to their schedule.
+ *
+ * The agreement is explicit that no pricing change takes effect without a
+ * signed change order, so this is not a "tick a box and start ordering" flow:
+ * the request is priced, accepted and signed exactly as the original schedule
+ * was. What it reuses is the machinery — `PriceListVersion` is already
+ * versioned per partner, so an amendment's prices are simply the next version
+ * rather than a second pricing system standing beside the first.
+ */
+model FormularyAmendment {
+  id        String @id @default(cuid())
+  partnerId String
+  /// 1, 2, 3 ... per partner. What the change order is called on its face.
+  number    Int
+
+  status AmendmentStatus @default(REQUESTED)
+
+  /// Why they want these. Required, for the same reason a meeting request
+  /// needs a reason: an admin pricing blind prices badly.
+  requestNotes String
+  requestedAt  DateTime @default(now())
+
+  reviewedById String?
+  reviewedAt   DateTime?
+  /// What an admin said when declining, or when asking for more detail.
+  adminNote    String?
+
+  /// The prices built for these items. Null until an admin starts a draft.
+  priceListVersionId String?
+  /// The signed change order. Null until it is sent.
+  msaEnvelopeId      String?
+
+  signedAt  DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  partner          Partner           @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  priceListVersion PriceListVersion? @relation(fields: [priceListVersionId], references: [id], onDelete: SetNull)
+  msaEnvelope      MsaEnvelope?      @relation(fields: [msaEnvelopeId], references: [id], onDelete: SetNull)
+  items            AmendmentItem[]
+
+  @@unique([partnerId, number])
+  @@index([partnerId, status])
+  @@index([status, requestedAt])
+}
+
+/**
+ * One preparation on a change request.
+ *
+ * The product is referenced, not snapshotted: unlike `PriceListItem`, nothing
+ * here is a commercial term. It records "they asked for this item", and if the
+ * catalogue entry is later corrected the request should follow the correction
+ * rather than preserve a typo.
+ */
+model AmendmentItem {
+  id          String @id @default(cuid())
+  amendmentId String
+  productId   String
+
+  createdAt DateTime @default(now())
+
+  amendment FormularyAmendment @relation(fields: [amendmentId], references: [id], onDelete: Cascade)
+  product   Product            @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([amendmentId, productId])
+  @@index([amendmentId])
+}
+
+// ---------------------------------------------------------------------------
+// History, audit, webhooks
+// ---------------------------------------------------------------------------
+
+/// The spine of the whole system. Every transition writes exactly one row, and
+/// that row's id is what makes the emails and notifications for the transition
+/// idempotent.
+model StatusHistory {
+  id         String         @id @default(cuid())
+  partnerId  String
+  fromStatus PartnerStatus?
+  toStatus   PartnerStatus
+  actorId    String?
+  /// Denormalised so history survives the actor being deleted.
+  actorEmail String?
+  actorRole  Role?
+  note       String?
+  createdAt  DateTime       @default(now())
+
+  partner       Partner        @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  emails        EmailOutbox[]
+  notifications Notification[]
+
+  @@index([partnerId, createdAt])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actorEmail String?
+  action     String
+  entityType String
+  entityId   String
+  metadata   Json?
+  ip         String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([actorId, createdAt])
+  @@index([createdAt])
+}
+
+/// Both webhook providers redeliver. A unique key on the provider's own event
+/// id turns "handle this twice" into a no-op insert conflict rather than a
+/// second status transition.
+model WebhookEvent {
+  id          String          @id @default(cuid())
+  provider    WebhookProvider
+  externalId  String
+  eventType   String
+  payload     Json
+  processedAt DateTime?
+  error       String?
+  receivedAt  DateTime        @default(now())
+
+  @@unique([provider, externalId])
+  @@index([processedAt])
+}
+
+// ---------------------------------------------------------------------------
+// Email
+// ---------------------------------------------------------------------------
+
+/// Transactional outbox. The row is written inside the same transaction as the
+/// status change; a worker sends it afterwards. That ordering is what makes
+/// "no status changes without its email, no email without its status change"
+/// true under failure — a provider outage cannot roll back an approval, and a
+/// rolled-back approval cannot leak an email.
+/// A submission from one of the public forms.
+///
+/// The contact, refill and careers forms each ended in a `console.log` and a
+/// success message. Nothing was delivered anywhere, so a patient asking for a
+/// refill was told it had been received and it had not — and the refill log
+/// line wrote a named patient, their date of birth and their medication into
+/// the host's plaintext logs.
+///
+/// PHI IS ENCRYPTED AND NEVER EMAILED. A refill request is protected health
+/// information: it is sealed into `payloadCiphertext` with the same
+/// field-level encryption the prescriber identifiers use, and staff are
+/// notified with a message that carries a type and a link and nothing else —
+/// the same rule the partner pipeline already follows.
+model SiteEnquiry {
+  id   String          @id @default(cuid())
+  kind SiteEnquiryKind
+
+  /// Enough to recognise and reply, never enough to identify a patient's
+  /// condition. Null on a refill, where even the name is PHI in context.
+  name    String?
+  email   String?
+  phone   String?
+  subject String?
+
+  /// The whole submission, AES-256-GCM sealed. Opened only in the admin, by a
+  /// signed-in member of staff, one record at a time.
+  payloadCiphertext String
+  /// Set when the submission contains protected health information.
+  isPhi             Boolean @default(false)
+
+  status     SiteEnquiryStatus @default(NEW)
+  handledAt  DateTime?
+  handledById String?
+
+  /// Best-effort, for rate limiting and abuse review. Never used for auth.
+  ip        String?
+  createdAt DateTime @default(now())
+
+  @@index([status, createdAt])
+  @@index([kind, createdAt])
+}
+
+enum SiteEnquiryKind {
+  CONTACT
+  REFILL
+  CAREER
+}
+
+enum SiteEnquiryStatus {
+  NEW
+  HANDLED
+  SPAM
+}
+
+/// Pending CRM mirrors, written in the same transaction as the status change.
+///
+/// GoHighLevel was originally called inline from `applyTransition`. That put a
+/// third-party HTTP round trip on the critical path of every status change —
+/// including a visitor submitting the public enquiry form — and a slow CRM
+/// turned into a slow submit, then a timeout, then a lost sync with nothing
+/// left to retry from. Enqueuing instead makes the mirror atomic with the
+/// transition that caused it and lets the existing worker drain it.
+model CrmOutbox {
+  id             String       @id @default(cuid())
+  /// The status-history row this mirrors. One sync per transition, so a retry
+  /// or a double-write can never tag a contact twice.
+  idempotencyKey String       @unique
+  partnerId      String
+  /// The transition's label — the key the GHL tag map is built on.
+  label          String
+  /// The status the partner moved into, for the stage pointer.
+  toStatus       PartnerStatus
+  status         OutboxStatus @default(PENDING)
+  attempts       Int          @default(0)
+  lastError      String?
+  nextAttemptAt  DateTime     @default(now())
+  processedAt    DateTime?
+  createdAt      DateTime     @default(now())
+
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  @@index([status, nextAttemptAt])
+  @@index([partnerId])
+}
+
+model EmailOutbox {
+  id             String       @id @default(cuid())
+  /// `${historyId}:${template}:${recipient}`. The brief's suggested key of
+  /// (partnerId, toStatus, historyId) collapses the admin fan-out into one row
+  /// — a single transition emails the partner and every admin holding the
+  /// relevant permission, so the recipient has to be part of the key.
+  idempotencyKey String       @unique
+  historyId      String?
+  template       String
+  to             String
+  /// Zod-validated per template before enqueue, so the worker never has to
+  /// decide what to do with props that don't fit.
+  props          Json
+  status         OutboxStatus @default(PENDING)
+  attempts       Int          @default(0)
+  lastError      String?
+  nextAttemptAt  DateTime     @default(now())
+  sentAt         DateTime?
+  createdAt      DateTime     @default(now())
+
+  history StatusHistory? @relation(fields: [historyId], references: [id], onDelete: SetNull)
+
+  @@index([status, nextAttemptAt])
+}
+
+model EmailLog {
+  id                String      @id @default(cuid())
+  outboxId          String?
+  to                String
+  template          String
+  partnerId         String?
+  providerMessageId String?
+  status            EmailStatus
+  error             String?
+  createdAt         DateTime    @default(now())
+
+  @@index([partnerId, createdAt])
+  @@index([providerMessageId])
+}
+
+// ---------------------------------------------------------------------------
+// In-app notifications
+// ---------------------------------------------------------------------------
+
+model Notification {
+  id          String               @id @default(cuid())
+  recipientId String
+  type        NotificationType
+  priority    NotificationPriority @default(NORMAL)
+  title       String
+  body        String
+  partnerId   String?
+  /// Where the bell click goes, e.g. `/admin/partners/abc123?tab=pricing`.
+  link        String?
+  metadata    Json?
+  historyId   String?
+  readAt      DateTime?
+  archivedAt  DateTime?
+  createdAt   DateTime             @default(now())
+
+  recipient User           @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+  partner   Partner?       @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  history   StatusHistory? @relation(fields: [historyId], references: [id], onDelete: SetNull)
+
+  /// Same reasoning as the outbox key: a retried transition must not deal a
+  /// second copy of the same card to the same admin.
+  @@unique([historyId, recipientId, type])
+  @@index([recipientId, readAt, createdAt])
+  @@index([partnerId])
+}
+
+model NotificationPreference {
+  id     String           @id @default(cuid())
+  userId String
+  type   NotificationType
+  inApp  Boolean          @default(true)
+  email  Boolean          @default(true)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type])
+}
+
+// ===========================================================================
+// Media — one record per uploaded file, whatever is holding the bytes.
+//
+// The driver is stored on the row, not read from config at render time. A file
+// uploaded to the local disk in development and a file in S3 in production
+// can then coexist in one database (a seeded dev dump, a restored backup)
+// without the app guessing wrong about where to look for it.
+// ===========================================================================
+
+enum StorageDriver {
+  LOCAL
+  S3
+}
+
+model Media {
+  id           String        @id @default(cuid())
+  driver       StorageDriver
+  /// Object key, e.g. `blog/2026/09/hero-a1b2c3.webp`. Unique per driver.
+  key          String
+  bucket       String?
+  filename     String
+  mime         String
+  size         Int
+  width        Int?
+  height       Int?
+  /// Required on anything user-facing; the admin UI refuses to publish without it.
+  alt          String?
+  /// SHA-256 of the bytes. Lets a re-upload of the same file reuse the object
+  /// instead of paying for a second copy, and proves integrity after a move.
+  checksum     String?
+  uploadedById String?
+  createdAt    DateTime      @default(now())
+
+  postsAsCover Post[]       @relation("PostCover")
+  products     Product[]
+  signatures   Prescriber[] @relation("PrescriberSignature")
+
+  @@unique([driver, key])
+  @@index([createdAt])
+}
+
+// ===========================================================================
+// Blog
+// ===========================================================================
+
+enum PostStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHED
+  ARCHIVED
+}
+
+model Post {
+  id      String     @id @default(cuid())
+  slug    String     @unique
+  title   String
+  excerpt String?
+  /// Markdown. Rendered and sanitised server-side — never dangerouslySetInnerHTML
+  /// on raw input, because an admin account is not a trusted HTML source.
+  body    String
+  status  PostStatus @default(DRAFT)
+
+  coverMediaId String?
+  authorId     String
+
+  seoTitle       String?
+  seoDescription String?
+  /// Derived at save time so a list page never has to load every body to
+  /// render "6 min read".
+  readingMinutes Int     @default(1)
+
+  /// Denormalised counter, rolled up from PageView by the nightly job. Reading
+  /// it costs one column instead of a count(*) over the analytics table.
+  viewCount   Int       @default(0)
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  cover      Media?         @relation("PostCover", fields: [coverMediaId], references: [id], onDelete: SetNull)
+  categories PostCategory[]
+  revisions  PostRevision[]
+
+  /// The index the public blog list actually uses: published posts, newest
+  /// first. Without the status leading it, Postgres sorts the whole table.
+  @@index([status, publishedAt])
+  @@index([authorId])
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+
+  posts PostCategory[]
+}
+
+/// Explicit join table rather than Prisma's implicit m2m, so the pairing can
+/// carry an ordering later without a migration that rewrites the relation.
+model PostCategory {
+  postId     String
+  categoryId String
+
+  post     Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([postId, categoryId])
+  @@index([categoryId])
+}
+
+/// Every save of a published post snapshots the previous body. Cheap insurance
+/// against an admin pasting over a year-old article at 5pm.
+model PostRevision {
+  id          String   @id @default(cuid())
+  postId      String
+  title       String
+  body        String
+  createdById String?
+  createdAt   DateTime @default(now())
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId, createdAt])
+}
+
+// ===========================================================================
+// Analytics — first-party, cookieless, no third-party script.
+//
+// `visitorHash` is HMAC(ip + user-agent, salt-of-the-day). That yields a
+// stable per-visitor key for 24 hours and then becomes unlinkable, which is
+// what makes a unique-visitor count possible without storing an IP address,
+// setting a cookie, or needing a consent banner. Rotating the salt daily is
+// the whole privacy property — do not make it static.
+// ===========================================================================
+
+model PageView {
+  id           String   @id @default(cuid())
+  path         String
+  /// Hostname only. A full referrer URL can carry a search query or a session
+  /// token from the referring site.
+  referrerHost String?
+  visitorHash  String
+  sessionId    String
+  country      String?
+  /// "mobile" | "tablet" | "desktop" — bucketed, never the raw UA string.
+  device       String?
+  browser      String?
+  durationMs   Int?
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([path, createdAt])
+  @@index([visitorHash, createdAt])
+}
+
+model AnalyticsEvent {
+  id          String   @id @default(cuid())
+  name        String
+  path        String?
+  visitorHash String?
+  props       Json?
+  createdAt   DateTime @default(now())
+
+  @@index([name, createdAt])
+  @@index([createdAt])
+}
+
+/// Nightly rollup. The dashboard reads this, never the raw tables — a
+/// year-over-year chart must not scan millions of PageView rows on every load.
+model DailyStat {
+  id            String   @id @default(cuid())
+  date          DateTime @db.Date
+  path          String
+  views         Int      @default(0)
+  uniques       Int      @default(0)
+  avgDurationMs Int?
+
+  @@unique([date, path])
+  @@index([date])
+}
+
+// ===========================================================================
+// Account setup application
+//
+// Models the "MediCraft Pharmacy Account Setup" form verbatim: account type,
+// one or two prescribers, the practice, and the per-topic communications
+// preferences. It hangs off Partner so the pipeline in lib/partner/status.ts
+// is unchanged — this is the *content* of APPLICATION_SUBMITTED.
+//
+// DEA numbers, NPIs and state licence numbers are regulated identifiers and
+// are encrypted at rest with the same envelope as the EIN, with a `…Last4`
+// column so an admin can match a document without a decrypt round trip.
+// ===========================================================================
+
+enum AccountType {
+  NEW
+  EXISTING
+}
+
+model PartnerApplication {
+  id        String @id @default(cuid())
+  partnerId String @unique
+
+  /// Null until the full account-setup form is completed in the portal. The
+  /// public interest form does not ask — a lead who has not seen our pricing
+  /// has no opinion about it yet, and guessing a value would store a guess as
+  /// though it were an answer.
+  accountType          AccountType?
+  howDidYouHearAboutUs String?
+  medicraftRep         String?
+
+  // --- From the public interest form ---------------------------------------
+  /// The enquirer's role, e.g. "Owner/Prescriber".
+  contactRole           String?
+  /// How the practice operates — office only, telehealth, network, central fill.
+  orgType               String?
+  website               String?
+  medicationsOfInterest String?
+  /// Free text from the enquiry. Not shown in any email — see the email rules.
+  interestNotes         String?
+
+  /// When the full account-setup form was completed in the portal. `submittedAt`
+  /// is when the LEAD arrived, and the two are weeks apart by design.
+  completedAt DateTime?
+
+  // --- Who is asking for the price list ------------------------------------
+  //
+  // Provider Cost is confidential under MSA §11, so it does not go out to an
+  // email address that filled in a form. The requester names themselves, gives
+  // a direct line, and uploads a government photo ID; a reviewer matches the
+  // three before releasing anything.
+  requesterName   String?
+  requesterTitle  String?
+  requesterPhone  String?
+  requesterEmail  String?
+  /// Free text: which practice role they hold, why they need the formulary.
+  requesterNote   String?
+
+  identitySubmittedAt DateTime?
+  identityVerifiedAt  DateTime?
+  identityVerifiedById String?
+
+  practiceName      String
+  isPrimaryLocation Boolean @default(true)
+  practiceAddress   String?
+  practiceCity      String?
+  practiceState     String?
+  practiceZip       String?
+  practicePhone     String?
+  practiceFax       String?
+
+  officeContactName  String?
+  officeContactPhone String?
+  officeContactEmail String?
+
+  // Communications preference — one channel pair per topic, exactly as the
+  // form groups them. Flat columns rather than JSON: these are queried
+  // ("who wants invoices by fax") and validated per field.
+  rxQuestionsEmail String?
+  rxQuestionsPhone String?
+  shippingEmail    String?
+  shippingFax      String?
+  invoicesEmail    String?
+  invoicesFax      String?
+
+  submittedAt DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  partner     Partner      @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  prescribers Prescriber[]
+
+  @@index([practiceState])
+}
+
+model Prescriber {
+  id            String @id @default(cuid())
+  applicationId String
+  /// 0 or 1 — the form takes at most two. Enforced by the Zod schema and by
+  /// the unique below, so a double-submit cannot create a third.
+  position      Int
+
+  name String
+
+  /// The form's `signature` field, supported both ways: a typed full name, or
+  /// a drawn/uploaded image. Which one is authoritative is an open question —
+  /// see the handover notes.
+  signatureText    String?
+  signatureMediaId String?
+  signedAt         DateTime?
+
+  /// Nullable: a prescriber without a DEA registration has no number to give,
+  /// and the form no longer requires one. Still encrypted when present.
+  deaCiphertext String?
+  deaLast4      String?
+  deaExpiration DateTime?
+
+  npiCiphertext String?
+  npiLast4      String?
+
+  stateLicenseCiphertext String?
+  stateLicenseLast4      String?
+
+  createdAt DateTime @default(now())
+
+  application PartnerApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  signature   Media?             @relation("PrescriberSignature", fields: [signatureMediaId], references: [id], onDelete: SetNull)
+
+  @@unique([applicationId, position])
+  @@index([applicationId])
+}

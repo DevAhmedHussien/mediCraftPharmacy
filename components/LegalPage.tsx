@@ -1,6 +1,6 @@
 import { PageHero } from "@/components/blocks";
 import { legal } from "@/lib/content";
-import { site } from "@/lib/site";
+import { site, hasRealPhone, telHref } from "@/lib/site";
 
 /**
  * Shared shell for the two legal documents.
@@ -49,10 +49,10 @@ export function LegalPage({
               </a>{" "}
               ·{" "}
               <a
-                href={`tel:${site.phone.replace(/[^\d+]/g, "")}`}
+                href={telHref() ?? "/contact"}
                 className="font-bold text-brand-600 hover:underline"
               >
-                {site.phone}
+                {hasRealPhone ? site.phone : "our contact page"}
               </a>
             </p>
           </section>

@@ -91,21 +91,6 @@ export const refillSchema = z.object({
   notes: optionalText,
 });
 
-export const providerSchema = z.object({
-  firstName: required("First name"),
-  lastName: required("Last name"),
-  email,
-  phone: required("Phone"),
-  role: required("Your role"),
-  practiceName: required("Practice / company name"),
-  website: optionalText,
-  ...addressFields,
-  orgType: required("Organization type"),
-  medications: optionalText,
-  notes: optionalText,
-  referral: required("Referral source"),
-});
-
 /**
  * The careers form.
  *
@@ -125,7 +110,6 @@ export const careerSchema = z.object({
 
 export type ContactSubmission = z.infer<typeof contactSchema>;
 export type RefillSubmission = z.infer<typeof refillSchema>;
-export type ProviderSubmission = z.infer<typeof providerSchema>;
 export type CareerSubmission = z.infer<typeof careerSchema>;
 
 /* --- The bridge between zod and the form components ---------------------- */

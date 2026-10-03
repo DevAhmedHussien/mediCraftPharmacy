@@ -1,6 +1,20 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+
+  /*
+   * Build output directory, overridable per-invocation.
+   *
+   * `next dev` and `next build` both write to `.next` by default, so running a
+   * build while the dev server is up overwrites the chunks the dev server is
+   * actively serving. The dev server then 500s with
+   * `Cannot find module './8948.js'` — a real failure with a completely
+   * misleading message, since nothing is wrong with the code.
+   *
+   * `npm run build:check` sets NEXT_DIST_DIR=.next-build so a verification
+   * build can run alongside a live dev server without touching it.
+   */
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   images: {
     /*
      * Every image is local now, so no remote hosts need allowing — the Unsplash

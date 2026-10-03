@@ -57,7 +57,6 @@ export function Formulary({
                   active === g.category.slug && "chip-active"
                 )}
               >
-                <Icon name={g.category.icon} className="h-4 w-4" />
                 {g.category.name}
               </button>
             ))}
@@ -71,10 +70,6 @@ export function Formulary({
           {visible.map((g) => (
             <section key={g.category.slug} id={g.category.slug} className="scroll-mt-44">
               <header className="flex flex-wrap items-center gap-4 border-b-2 border-line pb-5">
-                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[0.7rem] bg-brand-500/10 text-brand-600">
-                  <Icon name={g.category.icon} className="h-[1.3rem] w-[1.3rem]" />
-                </span>
-
                 <div className="min-w-0 flex-1">
                   <h2 className="text-[1.25rem] font-black text-ink">
                     <Link

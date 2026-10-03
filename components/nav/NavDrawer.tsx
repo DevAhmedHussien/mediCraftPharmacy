@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+
+import type { HeaderAccount, NavCategory } from "@/components/Navbar";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, Menu } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
@@ -12,8 +14,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { nav, navCtas, site } from "@/lib/site";
-import { categories, getCategory, productsByCategory } from "@/lib/data";
+import { nav, navCtas, site, hasRealPhone, telHref } from "@/lib/site";
+
 import { cn } from "@/lib/utils";
 
 /**
@@ -26,7 +28,13 @@ type View =
   | { level: "categories" }
   | { level: "category"; slug: string };
 
-export function NavDrawer() {
+export function NavDrawer({
+  categories,
+  account,
+}: {
+  categories: NavCategory[];
+  account: HeaderAccount;
+}) {
   const [open, setOpen] = useState(false);
   const [view, setView] = useState<View>({ level: "root" });
   // Drives the slide direction so going deeper and going back feel different.
@@ -55,9 +63,8 @@ export function NavDrawer() {
   );
 
   const activeCategory =
-    view.level === "category" ? getCategory(view.slug) : undefined;
-  const categoryProducts =
-    view.level === "category" ? productsByCategory(view.slug) : [];
+    view.level === "category" ? categories.find((c) => c.slug === view.slug) : undefined;
+  const categoryProducts = activeCategory?.products ?? [];
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -114,7 +121,7 @@ export function NavDrawer() {
                 ))}
             </nav>
 
-            <DrawerCtas />
+            <DrawerCtas account={account} />
           </div>
         )}
 
@@ -142,7 +149,7 @@ export function NavDrawer() {
               </SheetClose>
 
               {categories.map((c) => {
-                const count = productsByCategory(c.slug).length;
+                const count = c.count;
                 return (
                   <button
                     key={c.slug}
@@ -204,7 +211,7 @@ export function NavDrawer() {
               ))}
             </nav>
 
-            <DrawerCtas />
+            <DrawerCtas account={account} />
           </div>
         )}
       </SheetContent>
@@ -225,7 +232,7 @@ function BackBar({ label, onClick }: { label: string; onClick: () => void }) {
   );
 }
 
-function DrawerCtas() {
+function DrawerCtas({ account }: { account: HeaderAccount }) {
   return (
     <div className="mt-auto flex flex-col gap-2.5 border-t border-line p-6">
       {navCtas.map((cta) => (
@@ -244,19 +251,19 @@ function DrawerCtas() {
 
       {/* The topbar's utility links are hidden on phones, so the drawer is
           where they have to live. */}
+      <SheetClose asChild>
+        <Link
+          href={account ? account.href : "/login"}
+          className="mt-2 text-center text-meta font-medium text-brand-600 transition-colors hover:text-brand-500"
+        >
+          {account ? account.label : "Provider Portal Login"}
+        </Link>
+      </SheetClose>
       <a
-        href={site.loginUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="mt-2 text-center text-meta font-medium text-brand-600 transition-colors hover:text-brand-500"
-      >
-        Provider Portal Login
-      </a>
-      <a
-        href={`tel:${site.phone.replace(/[^\d+]/g, "")}`}
+        href={telHref() ?? "/contact"}
         className="text-center text-meta text-ink-soft transition-colors hover:text-ink"
       >
-        {site.phone}
+        {hasRealPhone ? site.phone : "Contact us"}
       </a>
     </div>
   );

@@ -27,7 +27,7 @@ export function ProductCard({ product: p }: { product: Product }) {
             alt={`${p.name} — ${p.form}, ${p.doses}`}
             fill
             sizes="(min-width: 1280px) 260px, (min-width: 640px) 45vw, 90vw"
-            className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+            className="object-cover"
           />
         </div>
 
@@ -36,7 +36,7 @@ export function ProductCard({ product: p }: { product: Product }) {
             {p.category}
           </p>
 
-          <h3 className="mt-2 text-[1.0625rem] font-bold leading-snug text-ink transition-colors duration-200 group-hover:text-brand-600 text-balance">
+          <h3 className="mt-2 text-[1.0625rem] font-bold leading-snug text-ink text-balance">
             {p.name}
           </h3>
 

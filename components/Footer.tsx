@@ -3,7 +3,7 @@ import { Logo } from "@/components/brand/Logo";
 import { Icon } from "@/components/icons/set";
 import { Badge } from "@/components/ui/badge";
 import { footerBlurb } from "@/lib/content";
-import { footerBadges, footerColumns, site } from "@/lib/site";
+import { footerBadges, footerColumns, site, hasRealPhone, telHref } from "@/lib/site";
 
 /** Social links, with the wordmark each account is actually listed under in
  *  the owner's document. */
@@ -38,10 +38,10 @@ export function Footer() {
             <div className="mt-6 space-y-1.5 text-meta">
               <p>
                 <a
-                  href={`tel:${site.phone.replace(/[^\d+]/g, "")}`}
+                  href={telHref() ?? "/contact"}
                   className="transition-colors hover:text-white"
                 >
-                  {site.phone}
+                  {hasRealPhone ? site.phone : "Contact us"}
                 </a>
               </p>
               <p>
@@ -119,12 +119,24 @@ export function Footer() {
             © {year} {site.name} · EST. {site.established} · All rights reserved.
           </p>
 
-          <div className="flex items-center gap-5 text-caption">
+          {/* A compounding pharmacy is asked for all five of these during
+              diligence, so all five are linked rather than the two that are
+              traditional. */}
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-caption">
             <Link href="/privacy" className="transition-colors hover:text-white">
               Privacy Policy
             </Link>
+            <Link href="/notice-of-privacy-practices" className="transition-colors hover:text-white">
+              HIPAA Notice
+            </Link>
             <Link href="/terms" className="transition-colors hover:text-white">
               Terms of Use
+            </Link>
+            <Link href="/shipping-and-returns" className="transition-colors hover:text-white">
+              Shipping &amp; Returns
+            </Link>
+            <Link href="/accessibility" className="transition-colors hover:text-white">
+              Accessibility
             </Link>
           </div>
         </div>

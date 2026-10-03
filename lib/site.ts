@@ -43,6 +43,9 @@ function resolveOrigin(): string {
      the topbar, 8:00–6:00 in the contact block. The contact block wins here
      because it is the one that enumerates all seven days, but confirm it.
    ========================================================================= */
+/** What `phone` falls back to while SITE_PHONE is unset. Never dialled. */
+const PLACEHOLDER_PHONE = "(727) 000-0000";
+
 export const site = {
   name: "MediCraft Pharmacy",
   shortName: "MediCraft",
@@ -54,7 +57,17 @@ export const site = {
   url: resolveOrigin(),
 
   // --- Primary NAP (name / address / phone) ---
-  phone: "(727) 000-0000", // TODO: replace with the real number before launch
+  /**
+   * The pharmacy's phone number.
+   *
+   * Sourced from SITE_PHONE so it can be set without a code change. Until it
+   * is, `hasRealPhone` below is false and every caller renders a link to the
+   * contact page instead of a `tel:` that dials nothing — a prescriber tapping
+   * a dead number on a pharmacy site is worse than no number at all, and it is
+   * the kind of placeholder that survives to launch precisely because it looks
+   * finished.
+   */
+  phone: process.env.SITE_PHONE?.trim() || PLACEHOLDER_PHONE,
   email: "info@medicraftpharmacy.com",
   providerEmail: "providers@medicraftpharmacy.com",
   privacyEmail: "privacy@medicraftpharmacy.com",
@@ -83,7 +96,12 @@ export const site = {
   llcEstablished: "2025",
   priceRange: "$$",
 
-  loginUrl: "https://portal.medicraftpharmacy.com/login",
+  /**
+   * The portal now lives in this app. It used to point at an external
+   * subdomain that was never stood up, so every "Provider Portal Login" on
+   * the site was a dead link.
+   */
+  loginUrl: "/login",
   social: {
     linkedin: "https://linkedin.com/company/medicraftpharmacy",
     instagram: "https://instagram.com/medicraftpharmacy",
@@ -109,6 +127,7 @@ export const nav = [
   { label: "For Providers", href: "/providers" },
   { label: "Our Compounding", href: "/compounding" },
   { label: "Products", href: "/products" },
+  { label: "Compounding Notes", href: "/blog" },
   { label: "Resources & FAQ", href: "/support" },
   { label: "Contact", href: "/contact" },
 ];
@@ -119,18 +138,57 @@ export const nav = [
  * dropdown. Resources and Contact are reachable from the topbar and footer
  * instead of crowding the bar to the point where labels start truncating.
  */
-export const headerNav = [
-  { label: "About", href: "/about" },
-  { label: "Quality", href: "/quality" },
-  { label: "State Coverage", href: "/licenses" },
-  { label: "For Providers", href: "/providers" },
-  { label: "Compounding", href: "/compounding" },
+/**
+ * The header.
+ *
+ * Nine top-level links did not fit: adding Work With Us and Contact pushed
+ * "State Coverage" onto two lines and the bar started wrapping. Grouping the
+ * four "who we are / how we work" pages under one item fixes that and makes
+ * Compounding Notes reachable from the header, which it never was — it existed
+ * only in the footer, so the blog was effectively invisible.
+ */
+export type HeaderNavItem = {
+  label: string;
+  href: string;
+  children?: { label: string; href: string; blurb: string }[];
+};
+
+export const headerNav: HeaderNavItem[] = [
+  {
+    label: "The pharmacy",
+    href: "/about",
+    children: [
+      {
+        label: "About MediCraft",
+        href: "/about",
+        blurb: "Who compounds your prescriptions, and where.",
+      },
+      {
+        label: "Quality standards",
+        href: "/quality",
+        blurb: "USP 795, 797 and 800, and how we meet them.",
+      },
+      {
+        label: "Our compounding",
+        href: "/compounding",
+        blurb: "Sterile and non-sterile, and what each involves.",
+      },
+      {
+        label: "State coverage",
+        href: "/licenses",
+        blurb: "Where we hold a permit and where one is pending.",
+      },
+    ],
+  },
+  { label: "For providers", href: "/providers" },
+  { label: "Compounding notes", href: "/blog" },
+  { label: "Contact", href: "/contact" },
 ];
 
 /** Call-to-action links at the right edge of the header. */
 export const navCtas = [
   { label: "Patient Refill", href: "/refill", style: "outline" as const },
-  { label: "Provider Portal", href: "/providers", style: "primary" as const },
+  { label: "Open an Account", href: "/work-with-us", style: "primary" as const },
 ];
 
 /** Footer link columns, as grouped in the owner's document. */
@@ -139,6 +197,7 @@ export const footerColumns = [
     heading: "Company",
     links: [
       { label: "About MediCraft", href: "/about" },
+      { label: "Compounding Notes", href: "/blog" },
       { label: "Quality Standards", href: "/quality" },
       { label: "Our Team", href: "/quality#leadership" },
       { label: "Careers", href: "/careers" },
@@ -148,8 +207,8 @@ export const footerColumns = [
   {
     heading: "Providers",
     links: [
-      { label: "Open an Account", href: "/providers" },
-      { label: "Provider Portal", href: "/providers" },
+      { label: "Open an Account", href: "/work-with-us" },
+      { label: "Provider Portal", href: "/login" },
       { label: "Formulary Guide", href: "/products" },
       { label: "Clinical Resources", href: "/support#resources" },
       { label: "State Coverage", href: "/licenses" },
@@ -184,3 +243,16 @@ export const footerBadges = [
 
 /** Flat list kept for any consumer that just wants every route. */
 export const footerLinks = footerColumns.flatMap((c) => c.links);
+
+/**
+ * Is the phone number real?
+ *
+ * Every `tel:` link on the site checks this. False means the UI offers the
+ * contact page instead of a number that rings nowhere.
+ */
+export const hasRealPhone = site.phone !== PLACEHOLDER_PHONE;
+
+/** A `tel:` href, or null when there is no number worth dialling. */
+export function telHref(): string | null {
+  return hasRealPhone ? `tel:${site.phone.replace(/[^\d+]/g, "")}` : null;
+}

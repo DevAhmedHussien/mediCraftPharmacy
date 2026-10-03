@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import Image from "next/image";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
-import { Icon, type IconName } from "@/components/icons/set";
+import type { IconName } from "@/components/icons/set";
 import type { Media } from "@/lib/media";
 
 export type StickyStep = {
@@ -123,7 +123,7 @@ function StickyCard({
     >
       <motion.div
         style={{ scale, opacity }}
-        className="rounded-panel border border-line bg-white p-7 shadow-lift md:p-9"
+        className="rounded-panel border border-line bg-white p-7 md:p-9"
       >
         <StepBody step={step} index={index} total={total} />
       </motion.div>
@@ -143,12 +143,8 @@ function StepBody({
   return (
     <>
       <div className="flex items-center justify-between gap-4">
-        <span className="flex h-11 w-11 items-center justify-center rounded-[0.7rem] bg-brand-500 text-white">
-          {step.icon ? (
-            <Icon name={step.icon} className="h-[1.3rem] w-[1.3rem]" />
-          ) : (
-            <span className="text-meta font-black">{index + 1}</span>
-          )}
+        <span className="flex h-11 w-11 items-center justify-center rounded-[0.7rem] border border-line text-meta font-black text-ink">
+          {index + 1}
         </span>
 
         {/* Position in the sequence, as data — this is a numbered process. */}

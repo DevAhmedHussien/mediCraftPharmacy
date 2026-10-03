@@ -14,14 +14,6 @@ import { cn } from "@/lib/utils";
    globals.css; this file is only the markup contract.
    ========================================================================= */
 
-type Tone = "blue" | "cyan" | "navy";
-
-const TONE_ICON: Record<Tone, string> = {
-  blue: "card-icon-blue",
-  cyan: "card-icon-cyan",
-  navy: "card-icon-navy",
-};
-
 /* --- Section head -------------------------------------------------------- */
 
 /**
@@ -87,19 +79,16 @@ export function SectionHead({
 
 /* --- Cards --------------------------------------------------------------- */
 
-export function IconCard({
-  icon,
-  tone = "blue",
+export function InfoCard({
   title,
   body,
   credential,
   meta,
   href,
   status,
+  media,
   className,
 }: {
-  icon: IconName;
-  tone?: Tone;
   title: string;
   body: string;
   /** Mono credential line — a list of qualifications, i.e. data. */
@@ -114,13 +103,30 @@ export function IconCard({
   href?: string;
   /** e.g. "Coming Soon" — renders the card as a muted placeholder. */
   status?: string;
+  /**
+   * Optional image bled to the card's top edge. Its ratio comes from the
+   * asset's own width/height, so 4:3 and 16:10 sets both lay out without a
+   * per-page prop.
+   */
+  media?: Media;
   className?: string;
 }) {
   const inner = (
     <>
-      <span className={cn("card-icon", TONE_ICON[tone])}>
-        <Icon name={icon} className="h-[1.45rem] w-[1.45rem]" />
-      </span>
+      {media && (
+        <div
+          className="relative -mx-7 -mt-7 mb-6 overflow-hidden bg-navy"
+          style={{ aspectRatio: `${media.width} / ${media.height}` }}
+        >
+          <Image
+            src={media.src}
+            alt={media.alt}
+            fill
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+            className="object-cover"
+          />
+        </div>
+      )}
 
       {/* Whole-card links get a corner arrow rather than a text CTA. It is the
           standard affordance for a clickable block and costs no vertical space. */}
@@ -128,7 +134,12 @@ export function IconCard({
         <ArrowUpRight
           aria-hidden
           strokeWidth={2}
-          className="absolute right-6 top-6 h-5 w-5 text-ink-muted transition-[transform,color] duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-brand-500"
+          className={cn(
+            // Moves a fraction on hover; does not change colour. One signal is
+            // enough, and a recolouring arrow on every card in a grid is noise.
+            "absolute right-6 top-6 z-10 h-5 w-5 transition-transform duration-200 group-hover:translate-x-0.5",
+            media ? "text-white/80" : "text-ink-muted"
+          )}
         />
       )}
 
@@ -167,6 +178,12 @@ export function IconCard({
     </div>
   );
 }
+
+/**
+ * Kept as an alias while the content objects still carry an `icon` key.
+ * @deprecated Use `InfoCard` — the icon plate is gone.
+ */
+export const IconCard = InfoCard;
 
 /** Responsive card grid — `cols` is the count at the widest breakpoint. */
 export function CardGrid({
@@ -532,37 +549,43 @@ export function PageHero({
   eyebrow?: string;
   title: string;
   lead?: string;
-  /** Optional background still, laid under the navy scrim. */
+  /** Optional background rendering, laid under a left-weighted navy scrim. */
   media?: Media;
   children?: ReactNode;
 }) {
   return (
-    <section className="hero pb-14 pt-12 md:pb-20 md:pt-16">
-      {/* A still rather than a cover photo with type stacked under it: the
-          image sits behind a navy scrim so the heading holds full contrast
-          whatever the photograph's exposure. */}
+    <section className="hero page-masthead pb-14 pt-12 md:pb-20 md:pt-16">
       {media && (
         <>
-          <div data-layer className="absolute inset-0 -z-10">
+          {/* Layers stay at z-auto so they paint above the section's own
+              gradient; `.hero > *:not([data-layer])` lifts the copy above
+              them. The rendering is masked away under the heading rather than
+              dimmed under it — see `.page-cover` in globals.css for why. */}
+          <div data-layer aria-hidden className="page-cover">
             <Image
               src={media.src}
               alt=""
               fill
               priority
               sizes="100vw"
-              className="object-cover opacity-30"
+              /* Centred. The covers are now ordinary 16:9 photographs whose
+                 subject is already in the middle of the frame, so the old 55%
+                 bias — written for renders that sat low in frame — was
+                 pushing them off-centre and cropping the subject out. */
+              className="object-cover object-center"
             />
           </div>
-          <div
-            data-layer
-            aria-hidden
-            className="absolute inset-0 -z-10 bg-gradient-to-r from-navy via-navy/90 to-navy/55"
-          />
+          <div data-layer aria-hidden className="page-cover-scrim" />
+          <div data-layer aria-hidden className="page-cover-foot" />
         </>
       )}
 
       <div className="container-x">
-        <div className="max-w-3xl">
+        {/* Narrower once there is a rendering behind it, so the heading stays
+            on the masked-out side of the frame and the subject keeps the
+            right. Without one the band is plain navy and the full measure is
+            fine. */}
+        <div className={cn(media ? "max-w-3xl md:max-w-[34rem] lg:max-w-[38rem]" : "max-w-3xl")}>
           {eyebrow && <p className="eyebrow eyebrow-invert">{eyebrow}</p>}
           <h1 className="mt-4 text-display-md font-black text-white text-balance md:text-display-lg">
             {title}

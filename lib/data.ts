@@ -143,26 +143,50 @@ export const categories: Category[] = [
 ];
 
 /**
- * Product photography.
+ * Product packshots.
  *
- * The MediCraft vial render replaces the stock photos that used to stand in
- * here. Every dosage form currently points at the same file, so the whole
- * catalog shows real branded packaging instead of mismatched stock imagery.
+ * MediCraft renders replaced the stock photos that used to stand in here, and
+ * the catalog no longer shares one file across every dosage form: each entry
+ * resolves its own render through `productImage(slug)` below. The container
+ * matches the one the entry's spec sheet names — clear glass vial sized to the
+ * fill for injectables, 30 g airless pump for creams and topicals, amber Rx
+ * bottle for capsules, blister card for troches, dropper bottle for the sterile
+ * ophthalmic — so a prescriber comparing tiles is comparing real packaging.
  *
- * Note the render carries a specific label — "Semaglutide Injection DS,
- * Flex-Dose, Double Strength, 5 mg/mL, 3 mL multi-dose vial" — so products
- * other than that one display packaging that does not match their own contents.
- * To correct that, drop a render per form into
- * `public/images/products/` and repoint the keys below; nothing else needs to
- * change, because each catalog entry already references these keys by form.
+ * The renders are transparent, so they sit on the sand tile in ProductCard and
+ * on the white plate of a product page without a visible box.
  */
 export const PRODUCT_IMAGE = {
-  src: "/images/products/semaglutide-double-strength-flex-dose-3ml.webp",
-  /** Intrinsic size of the render — required by next/image to reserve space. */
-  width: 1257,
+  /** Representative packshot, used where a single product image is needed. */
+  src: "/images/products/semaglutide-double-strength-flex-dose-3-ml-injectable-5-mg-ml.webp",
+  /** Intrinsic size of every packshot — required by next/image to reserve space. */
+  width: 1600,
   height: 1600,
 } as const;
 
+/**
+ * Path of a product's own packshot.
+ *
+ * Every catalog entry now has a render at `public/images/products/<slug>.webp`
+ * of the container that entry actually ships in — the same container its spec
+ * sheet names under "Package" — with a label generated from its own fields, so
+ * a packshot never shows another product's name or strength. Where the catalog
+ * lists a strength as Custom or Patient-specific the label reads "Strength per
+ * Rx" rather than inventing a figure; CMP / BUD / LOT values are illustrative,
+ * as on the VialMotif.
+ *
+ * Keyed by slug, so adding a product means adding one file at the matching
+ * name. Nothing else needs to change.
+ */
+export function productImage(slug: string): string {
+  return `/images/products/${slug}.webp`;
+}
+
+/**
+ * Dosage-form hint carried by each raw entry. `buildProduct` overrides it with
+ * the entry's own packshot, so these keys only document which container a form
+ * ships in; nothing renders them.
+ */
 const img = {
   vial: PRODUCT_IMAGE.src,
   syringe: PRODUCT_IMAGE.src,
@@ -709,9 +733,14 @@ const detailOverrides: Record<string, Partial<ProductDetail>> = {
 function buildProduct(raw: RawProduct, index: number): Product {
   const override = detailOverrides[raw.name] ?? {};
 
+  const slug = slugify(`${raw.name} ${raw.form} ${raw.doses}`);
+
   return {
     ...raw,
-    slug: slugify(`${raw.name} ${raw.form} ${raw.doses}`),
+    slug,
+    // The per-product render, not the shared `img` placeholder the raw entry
+    // carries — every entry has its own packshot keyed by this slug.
+    image: productImage(slug),
     detail: {
       // Deterministic catalog number — no randomness, so builds stay reproducible.
       productId: String(8510900 + index * 13),

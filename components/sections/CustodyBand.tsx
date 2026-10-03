@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { CustodyFilm } from "@/components/media/CustodyFilm";
 import { FadeIn } from "@/components/motion/Motion";
 import { quality } from "@/lib/content";
 
@@ -61,7 +62,15 @@ export function CustodyBand() {
           </dl>
         </FadeIn>
 
+        {/* The contact sheet. This is what turns the claim from an assertion
+            into something with a shape — the frames carry camera IDs, timecodes
+            and a prescription number, which is what makes footage evidential.
+            See components/media/CustodyFilm.tsx. */}
         <FadeIn delay={0.15}>
+          <CustodyFilm invert className="mt-12" />
+        </FadeIn>
+
+        <FadeIn delay={0.2}>
           <Link href="/quality" className="btn-accent btn-lg group mt-10">
             See the full quality record
             <ArrowRight

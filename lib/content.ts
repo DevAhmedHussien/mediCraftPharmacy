@@ -24,8 +24,16 @@ import type { IconName } from "@/components/icons/set";
 
 export const hero = {
   badge: "10+ Years Executive Experience · Palm Harbor, FL · PCAB In Progress",
-  /** The emphasised word is set apart so the hero can colour it. */
-  headline: { before: "Wellness Is ", accent: "Crafted", after: ", Not Manufactured." },
+  /**
+   * The emphasised word is set apart so the hero can colour it.
+   *
+   * The comma travels with `accent`, not at the head of `after`. RevealWords
+   * splits on spaces to animate word by word, so a leading "," in `after`
+   * became its own inline-block span and could wrap to the start of a line —
+   * on a 375px screen the headline broke as "Crafted" / ", Not" /
+   * "Manufactured." Keeping the comma attached makes that break impossible.
+   */
+  headline: { before: "Wellness Is ", accent: "Crafted,", after: "Not Manufactured." },
   lead: "MediCraft Pharmacy delivers precision compounding solutions tailored to every patient's unique biology. Based in Palm Harbor, Florida, we partner with providers nationwide to move medicine beyond the mass-manufactured standard model.",
   actions: {
     primary: { label: "Open a Provider Account", href: "/providers" },
@@ -983,6 +991,110 @@ export const closingCta = {
 
 export const legal = {
   effectiveDate: "January 1, 2026",
+
+  /* ------------------------------------------------------------------
+     The documents a compounding pharmacy is actually asked for.
+
+     A privacy policy and terms of use were here. A 503A pharmacy that ships
+     into other states is also asked, routinely and by prescribers rather than
+     by lawyers, for its HIPAA notice, what happens when a cold-chain package
+     goes wrong, and whether the site is usable by someone with a screen
+     reader. Those three were missing, which is the sort of gap a practice
+     notices during diligence.
+
+     WHAT THESE ARE NOT: counsel-reviewed. They are accurate descriptions of
+     how this system behaves — the encryption, the retention, the shipping
+     split — written so a lawyer has something factual to edit rather than a
+     blank page. Have them reviewed before launch.
+     ------------------------------------------------------------------ */
+
+  hipaa: {
+    title: "Notice of Privacy Practices",
+    intro:
+      "This notice describes how medical information about you may be used and disclosed, and how you can get access to this information. Please review it carefully. It is provided under the HIPAA Privacy Rule, 45 CFR Part 164.",
+    sections: [
+      {
+        heading: "Our Duties",
+        body: "We are required by law to maintain the privacy of your protected health information, to give you this notice of our legal duties and privacy practices, and to follow the terms of the notice currently in effect. We must notify you promptly if a breach occurs that may have compromised the privacy or security of your information.",
+      },
+      {
+        heading: "How We Use and Disclose Your Information",
+        body: "For treatment: we use your prescription and health information to compound, verify, label and dispense your medication, and to consult with your prescriber. For payment: we use it to bill you or your practice. For health care operations: we use it for quality review, pharmacist supervision, and regulatory reporting. We may also disclose information where the law requires it — to the FDA for an adverse event, to a state board of pharmacy, or in response to a lawful order.",
+      },
+      {
+        heading: "What We Do Not Do",
+        body: "We do not sell your protected health information. We do not use it for marketing without your written authorisation. Compounded preparations dispensed to provider practices under our partner agreements are self-pay and are not submitted to Medicare, Medicaid, TRICARE or any commercial payer.",
+      },
+      {
+        heading: "Your Rights",
+        body: "You may inspect and request a copy of your records, ask us to correct them, ask for a list of certain disclosures we have made, request that we communicate with you by a particular method or at a particular address, and request a restriction on how we use or disclose your information. You may revoke an authorisation in writing at any time, except where we have already acted on it.",
+      },
+      {
+        heading: "How Your Information Is Held",
+        body: "Prescription records and regulated identifiers — DEA registrations, NPI numbers, state licence numbers and tax identifiers — are encrypted at rest with AES-256-GCM and are displayed to staff as their last four digits only. Documents you upload are stored in private encrypted storage and retrieved through short-lived links; they are never public. Access to an identifiable record by a member of staff is recorded in an audit log.",
+      },
+      {
+        heading: "Complaints",
+        body: "If you believe your privacy rights have been violated, contact us using the address below. You may also file a complaint with the Secretary of the U.S. Department of Health and Human Services. We will not retaliate against you for filing a complaint.",
+      },
+    ],
+  },
+
+  shipping: {
+    title: "Shipping, Delivery and Returns",
+    intro:
+      "Compounded medication is made for one named patient and cannot be returned to stock once it leaves our custody. This page explains how we ship, what happens when something goes wrong, and who bears the cost in each case.",
+    sections: [
+      {
+        heading: "Cold Chain",
+        body: "Preparations marked for cold shipping in our formulary travel in validated refrigerated packaging chosen for the destination and the season. Tracking is sent automatically to the contacts on the account. Sixty-two preparations in the 2026 formulary require refrigerated transit; the requirement is a property of the preparation and is shown before you order, not discovered on arrival.",
+      },
+      {
+        heading: "Beyond-Use Dating",
+        body: "A compounded preparation carries a beyond-use date assigned under USP standards rather than a manufacturer expiration date. The date runs from the date of compounding, and release testing, fulfilment and transit each consume part of it. Prescribe quantities the patient can reasonably use within the labelled window; ask us before writing an extended supply and we will tell you what dating that formulation will carry.",
+      },
+      {
+        heading: "When We Reship at Our Cost",
+        body: "We sent the wrong drug, strength or form; an item on the prescription was missing; we shipped to the wrong address; the product arrived damaged or defective; a cold-ship item was outside range on arrival; or dating on arrival was shorter than your agreement allows.",
+      },
+      {
+        heading: "When the Recipient Is Responsible",
+        body: "The address given to us was wrong or incomplete; the patient or clinic refused or failed to accept delivery; a package was lost or stolen after confirmed delivery to the correct address; signature was waived and the carrier confirmed delivery; or storage after delivery was outside labelled conditions.",
+      },
+      {
+        heading: "When We Work It Out Together",
+        body: "A carrier delay spoils a shipment through nobody's fault, weather or a regional event disrupts delivery, or something happens that is not listed here. We split or absorb the cost case by case, and we do not hide behind a table.",
+      },
+      {
+        heading: "Returns",
+        body: "Prescription medication cannot be returned to pharmacy stock once it leaves our custody. Where a refund, credit or replacement is not required by law, we will still review the circumstances and make it right where it is fair to do so. Report anything missing, damaged, incorrect, tampered with or temperature-concerned as soon as you notice it, with photographs of the product and packaging, and keep the product, label, box, insulation and coolant until our review is finished — the carrier requires them for a claim.",
+      },
+    ],
+  },
+
+  accessibility: {
+    title: "Accessibility Statement",
+    intro:
+      "We want this site to be usable by every prescriber and patient who needs it, including those using a screen reader, a keyboard alone, or a magnified display. This statement describes what we have done and how to tell us when we have fallen short.",
+    sections: [
+      {
+        heading: "Standard",
+        body: "We aim to meet the Web Content Accessibility Guidelines (WCAG) 2.1 at Level AA. That is the standard referenced by the Americans with Disabilities Act in the guidance courts have generally followed, and it is the one we test against.",
+      },
+      {
+        heading: "What We Have Done",
+        body: "Every form field has a label that is programmatically associated with it, and every error message is announced rather than only coloured. Interactive elements are reachable and operable by keyboard, with a visible focus ring that is never removed. Tables used for data are marked up as tables with scoped headers. Status changes — a saved draft, a submitted form, a failed upload — are announced through live regions. Motion is decorative only and respects the operating system's reduced-motion preference.",
+      },
+      {
+        heading: "Known Limitations",
+        body: "Product photography is decorative and carries short alternative text rather than a full description of the packaging. Uploaded documents — a licence or a certificate sent to us by a practice — are not remediated for accessibility, because they are supplied by third parties and viewed only by our own staff.",
+      },
+      {
+        heading: "Tell Us",
+        body: "If any part of this site is difficult or impossible for you to use, write to us at the address below and tell us what you were trying to do. We treat an accessibility report as a defect report. If you need information from this site in another format while we fix it, ask and we will send it.",
+      },
+    ],
+  },
 
   privacy: {
     title: "Privacy Policy",

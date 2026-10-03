@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { IBM_Plex_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import { site } from "@/lib/site";
-import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
 import "./globals.css";
 
 /**
@@ -89,66 +87,21 @@ export const metadata: Metadata = {
   },
 };
 
+/**
+ * The document shell, and nothing else.
+ *
+ * The marketing chrome — navbar, footer, skip link, Pharmacy JSON-LD — moved
+ * to app/(site)/layout.tsx when /admin and /login arrived. Those two are
+ * full-width authenticated surfaces with their own header; wrapping them in
+ * the public navbar put two logos and a "Provider Portal" call to action on
+ * top of the admin dashboard. A route group keeps the URLs identical and the
+ * shells separate.
+ */
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  /**
-   * Organisation structured data.
-   *
-   * Deliberately narrower than before. The previous version asserted a street
-   * address, a ZIP, a fax line and three separate branch locations, none of
-   * which appear in the pharmacy's own identity document — publishing invented
-   * NAP data is actively harmful for a licensed pharmacy's local search. What
-   * is stated here is only what the owner states: Palm Harbor, Florida, one
-   * location, licensed in Florida.
-   *
-   * Add `streetAddress` and `postalCode` here once the suite address is
-   * confirmed; Google needs both for a Pharmacy entity to rank locally.
-   */
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Pharmacy",
-    "@id": `${site.url}/#pharmacy`,
-    name: site.name,
-    description: site.description,
-    url: site.url,
-    telephone: site.phone,
-    email: site.email,
-    priceRange: site.priceRange,
-    currenciesAccepted: "USD",
-    foundingDate: site.llcEstablished,
-    address: {
-      "@type": "PostalAddress",
-      addressLocality: site.addressParts.city,
-      addressRegion: site.addressParts.state,
-      addressCountry: site.addressParts.country,
-    },
-    geo: {
-      "@type": "GeoCoordinates",
-      latitude: site.geo.lat,
-      longitude: site.geo.lng,
-    },
-    // Licensed in Florida today. The 49-state ambition is not an area served
-    // yet, so it is not claimed here.
-    areaServed: { "@type": "State", name: "Florida" },
-    openingHoursSpecification: [
-      {
-        "@type": "OpeningHoursSpecification",
-        dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-        opens: "08:00",
-        closes: "18:00",
-      },
-      {
-        "@type": "OpeningHoursSpecification",
-        dayOfWeek: "Saturday",
-        opens: "09:00",
-        closes: "13:00",
-      },
-    ],
-    sameAs: [site.social.linkedin, site.social.instagram, site.social.facebook],
-  };
 
   return (
     <html lang="en" className={`${satoshi.variable} ${mono.variable}`}>
@@ -161,26 +114,7 @@ export default function RootLayout({
         <noscript>
           <style>{`[data-reveal]{opacity:1!important;transform:none!important}`}</style>
         </noscript>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
-        {/*
-         * Skip link. The header carries a two-tier bar, a six-item nav and an
-         * eleven-item Products panel, so a keyboard or screen-reader user would
-         * otherwise tab through roughly twenty controls on every page before
-         * reaching the content. Visually hidden until focused.
-         */}
-        <a href="#main" className="skip-link">
-          Skip to content
-        </a>
-        <Navbar />
-        {/* `id` is the skip target; `tabIndex={-1}` lets it receive focus
-            programmatically without entering the tab order itself. */}
-        <main id="main" tabIndex={-1}>
-          {children}
-        </main>
-        <Footer />
+        {children}
       </body>
     </html>
   );
