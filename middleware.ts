@@ -31,6 +31,56 @@ const SECURITY_HEADERS: Record<string, string> = {
   "Permissions-Policy": "camera=(), microphone=(), geolocation=(), interest-cohort=()",
 };
 
+/**
+ * The storage origin the browser is allowed to PUT to.
+ *
+ * WHY THIS FUNCTION EXISTS
+ * ------------------------
+ * `connect-src 'self'` silently broke every document upload in production,
+ * and the symptom pointed nowhere near here. A document upload is a
+ * presigned PUT: the server mints a signed S3 URL, the browser PUTs the
+ * bytes straight to the bucket. CSP refuses the fetch before it leaves the
+ * browser, so the server action succeeded, nothing was logged, no request
+ * ever reached S3 — and the uploader's catch reported "We could not reach
+ * storage. Check your connection and try again." A network message, on a
+ * page that was plainly online.
+ *
+ * It could only ever happen in production. Development runs
+ * STORAGE_DRIVER=local, which PUTs to /api/uploads on this origin, and
+ * `'self'` allows that.
+ *
+ * `img-src` already ends in `https:`, which is why looking at an uploaded
+ * document worked fine and only putting one there did not — the two halves
+ * of the same feature were governed by two different directives.
+ *
+ * Only the exact bucket origin is added, never a wildcard: this grants the
+ * page the right to send bytes somewhere, and the list of somewheres should
+ * be one host long.
+ */
+function storageOrigin(): string | null {
+  if (process.env.STORAGE_DRIVER !== "s3") return null;
+
+  // MinIO and LocalStack set an explicit endpoint; use whatever it names.
+  const endpoint = process.env.S3_ENDPOINT;
+  if (endpoint) {
+    try {
+      return new URL(endpoint).origin;
+    } catch {
+      return null;
+    }
+  }
+
+  const bucket = process.env.S3_BUCKET;
+  const region = process.env.S3_REGION;
+  if (!bucket || !region) return null;
+
+  return process.env.S3_FORCE_PATH_STYLE === "true"
+    ? `https://s3.${region}.amazonaws.com`
+    : `https://${bucket}.s3.${region}.amazonaws.com`;
+}
+
+const STORAGE_ORIGIN = storageOrigin();
+
 const CSP = [
   "default-src 'self'",
   "base-uri 'self'",
@@ -51,7 +101,7 @@ const CSP = [
   "font-src 'self' data:",
   "style-src 'self' 'unsafe-inline'",
   "script-src 'self' 'unsafe-inline'" + (process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""),
-  "connect-src 'self'",
+  ["connect-src 'self'", STORAGE_ORIGIN].filter(Boolean).join(" "),
   "upgrade-insecure-requests",
 ].join("; ");
 
