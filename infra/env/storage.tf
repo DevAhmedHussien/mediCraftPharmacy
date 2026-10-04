@@ -44,7 +44,20 @@ resource "aws_s3_bucket_cors_configuration" "uploads" {
   cors_rule {
     allowed_methods = ["PUT", "GET"]
     allowed_origins = [var.app_url]
-    allowed_headers = ["content-type", "content-length"]
+    /* The presign sends `x-amz-server-side-encryption: AES256`, and the AWS
+       SDK adds its own `x-amz-checksum-*` and `x-amz-sdk-*` headers to a
+       PutObject. A browser asks permission for every one of them in the CORS
+       preflight, and S3 refuses the whole request if any is missing from
+       this list — which surfaces as fetch() throwing a bare TypeError, so
+       the app reports "could not reach storage" and no S3 log line is ever
+       written. Enumerating content-type and content-length alone is what
+       broke uploads in production.
+
+       `x-amz-*` rather than `*`: the origin restriction above is what
+       actually guards this bucket, and keeping the header list narrow to
+       the AWS set means an unexpected header is still a visible failure
+       rather than a silent allow. */
+    allowed_headers = ["content-type", "content-length", "x-amz-*"]
     expose_headers  = ["ETag"]
     max_age_seconds = 3000
   }

@@ -20,6 +20,32 @@ const nextConfig = {
   output: "standalone",
 
   /*
+   * Modules the tracer misses.
+   *
+   * `@aws-sdk/s3-request-presigner` is a declared dependency, imported at the
+   * top of lib/services/storage.ts, and the tracer still leaves it out of
+   * .next/standalone — `@aws-sdk/client-s3` and fifteen of its siblings come
+   * across, that one does not.
+   *
+   * The failure is worth recording, because nothing about it points at a
+   * missing module. Document upload is a presigned PUT: the browser asks the
+   * server for a signed URL, and the server action that mints it throws
+   * ERR_MODULE_NOT_FOUND. The client catches that as a failed request and
+   * reports "We could not reach storage. Check your connection and try
+   * again." So the symptom is a network message, on a page that is plainly
+   * loading fine, with nothing in the S3 logs because no request was ever
+   * made — and it only appears in a container, because `next dev` resolves
+   * from the full node_modules and works perfectly.
+   */
+  // Under `experimental` because this is Next 14; the option moved to the
+  // top level in 15, and set there it is silently ignored.
+  experimental: {
+    outputFileTracingIncludes: {
+      "/**": ["./node_modules/@aws-sdk/s3-request-presigner/**"],
+    },
+  },
+
+  /*
    * Build output directory, overridable per-invocation.
    *
    * `next dev` and `next build` both write to `.next` by default, so running a
