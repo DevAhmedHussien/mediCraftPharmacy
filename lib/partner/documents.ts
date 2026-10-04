@@ -17,6 +17,26 @@ export type DocumentSpec = {
   required: boolean;
 };
 
+/* ONE DOCUMENT.
+ *
+ * This list held eight: photo ID, DEA registration, state medical licence,
+ * W-9, pharmacy licence, certificate of insurance, business registration and
+ * a catch-all. Four of them were required, so an applicant could not finish
+ * onboarding without producing all four — and every one was a scan a
+ * practice manager had to find, photograph and upload before the account
+ * would move.
+ *
+ * The pharmacy decided it only needs to know who is signing. That is the
+ * photo ID, which is already collected at the identity step, long before
+ * this one.
+ *
+ * The REMOVED TYPES ARE STILL IN THE DocumentType ENUM, deliberately. They
+ * are not dropped from the database, because partners who already uploaded a
+ * DEA certificate still have that row and the admin's review panel still has
+ * to render it — it falls back to the raw type name when `specFor` returns
+ * undefined. Deleting the enum members would orphan real uploads to prove a
+ * tidiness point.
+ */
 export const DOCUMENT_SPECS: DocumentSpec[] = [
   {
     type: "GOVERNMENT_ID",
@@ -24,48 +44,6 @@ export const DOCUMENT_SPECS: DocumentSpec[] = [
     blurb:
       "A driver's licence or passport for your authorised signer. We check the name against the agreement before it goes out.",
     required: true,
-  },
-  {
-    type: "DEA_REGISTRATION",
-    label: "DEA registration",
-    blurb: "The certificate for each prescriber listed on your account.",
-    required: true,
-  },
-  {
-    type: "STATE_LICENSE",
-    label: "State medical licence",
-    blurb: "Current licence for the prescriber, issued by the state you practise in.",
-    required: true,
-  },
-  {
-    type: "W9",
-    label: "W-9",
-    blurb: "Signed, with the legal business name and EIN you gave us on the previous step.",
-    required: true,
-  },
-  {
-    type: "PHARMACY_LICENSE",
-    label: "Pharmacy licence",
-    blurb: "If you hold one. Not every practice does.",
-    required: false,
-  },
-  {
-    type: "CERTIFICATE_OF_INSURANCE",
-    label: "Certificate of insurance",
-    blurb: "Professional liability, if your agreement will require it.",
-    required: false,
-  },
-  {
-    type: "BUSINESS_REGISTRATION",
-    label: "Business registration",
-    blurb: "Articles of incorporation or equivalent, if your entity is newly formed.",
-    required: false,
-  },
-  {
-    type: "OTHER",
-    label: "Anything else",
-    blurb: "Anything a reviewer asked you for that does not fit above.",
-    required: false,
   },
 ];
 

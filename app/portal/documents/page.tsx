@@ -90,14 +90,27 @@ export default async function PortalDocumentsPage() {
           <strong className="font-bold">A reviewer asked for changes.</strong> Anything they
           rejected is marked below — replace it and submit again.
         </p>
+      ) : missing.length === 0 ? (
+        /* The only document this pharmacy asks for is the photo ID, and that
+           is collected at the identity step — six screens before this one.
+           So by the time anybody reaches here it is almost always already in
+           hand, and an upload box for a file we are not waiting on reads as
+           another task. Say what is true: nothing is outstanding. */
+        <p className="text-intro text-ink-soft text-pretty">
+          Nothing is outstanding. We already have the photo ID for your authorised signer, which
+          is the only document we ask for. Submit below and your account goes to a reviewer.
+        </p>
       ) : (
         <p className="text-intro text-ink-soft text-pretty">
-          The last step. Photograph or scan each document — PDF, JPG, PNG and WebP all work, up to
-          25 MB each. Files go straight to encrypted storage and are visible only to you and the
-          reviewer handling your account.
+          The last step. Photograph or scan your authorised signer&rsquo;s photo ID — PDF, JPG,
+          PNG and WebP all work, up to 25 MB. It goes straight to encrypted storage and is
+          visible only to you and the reviewer handling your account.
         </p>
       )}
 
+      {/* Still rendered when it is already satisfied: the row shows the file
+          on record with its review state, which is the only place a partner
+          can check what we hold and replace it if a reviewer rejected it. */}
       <div className="mt-8 space-y-3">
         {DOCUMENT_SPECS.map((spec) => (
           <DocumentRow
