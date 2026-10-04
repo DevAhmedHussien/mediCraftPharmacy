@@ -1,0 +1,83 @@
+# =============================================================================
+# What runs on the server.
+#
+# Copied to /opt/medicraft/docker-compose.yml by the deploy workflow. The
+# image tag is supplied by CI through APP_IMAGE; everything else is fixed.
+# =============================================================================
+
+services:
+  # --- The database --------------------------------------------------------
+  # NO PUBLISHED PORT. Reachable on the compose network as `postgres:5432`
+  # and from nowhere else — not from the host, not from the internet, no
+  # matter what the security group says. That is the whole of its isolation
+  # now that there is no private subnet.
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: medicraft
+      POSTGRES_USER: medicraft
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      # Postgres refuses to initialise into a non-empty directory, and the
+      # XFS volume has a lost+found. A subdirectory avoids the argument.
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - /data/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U medicraft -d medicraft"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    # A database that dies under memory pressure takes the site with it, so
+    # it gets a floor the application cannot squeeze.
+    deploy:
+      resources:
+        limits:
+          memory: 768M
+
+  # --- The application -----------------------------------------------------
+  app:
+    image: ${APP_IMAGE:?APP_IMAGE is required}
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - /opt/medicraft/.env.app
+    environment:
+      # Assembled here rather than stored: the host and the database name are
+      # fixed by this file, so keeping a whole URL in Secrets Manager would
+      # be the same password written down twice.
+      DATABASE_URL: postgresql://medicraft:${POSTGRES_PASSWORD}@postgres:5432/medicraft?sslmode=disable
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+
+  # --- TLS and routing -----------------------------------------------------
+  # Caddy obtains and renews certificates itself. It needs port 80 reachable
+  # for the ACME challenge, which is why the security group opens it even
+  # though every request there is redirected.
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /opt/medicraft/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      # Certificates persist across restarts. Without this Caddy re-issues on
+      # every deploy and hits Let's Encrypt's rate limit within a week.
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:

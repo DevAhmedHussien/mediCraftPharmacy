@@ -1,0 +1,45 @@
+# =============================================================================
+# Caddy. Certificates are obtained and renewed automatically.
+#
+# The apex 301s to www rather than serving both. One canonical origin keeps
+# sessions, CORS and the S3 presign rules from having to know about two —
+# and a cookie set on one host is not sent to the other, which is the bug
+# this prevents.
+# =============================================================================
+
+{
+	email ops@medicraftpharmacy.com
+	# Staging CA while testing, to avoid burning Let's Encrypt rate limits:
+	# acme_ca https://acme-staging-v02.api.letsencrypt.org/directory
+}
+
+medicraftpharmacy.com {
+	redir https://www.medicraftpharmacy.com{uri} permanent
+}
+
+www.medicraftpharmacy.com {
+	encode zstd gzip
+
+	# Proxied over the compose network; the app publishes no host port.
+	reverse_proxy app:3000 {
+		health_uri /api/health
+		health_interval 10s
+		health_timeout 5s
+	}
+
+	# The app sets its own CSP and the rest; these are the few a proxy is
+	# better placed to guarantee.
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	log {
+		output file /data/access.log {
+			roll_size 50MiB
+			roll_keep 5
+		}
+	}
+}

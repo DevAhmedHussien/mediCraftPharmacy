@@ -165,14 +165,33 @@ let s3Client: S3Client | null = null;
 
 function getS3(): S3Client {
   if (!s3Client) {
+    /* Credentials are supplied ONLY when they were configured.
+     *
+     * Omitting the key entirely is what lets the SDK fall back to its
+     * default provider chain, which on App Runner resolves the instance role
+     * — so production needs no stored key at all. Passing
+     * `credentials: { accessKeyId: undefined }` is NOT the same thing: the
+     * SDK takes that as an explicit empty credential and signs requests with
+     * it, which fails as a 403 that looks like a permissions problem rather
+     * than a configuration one.
+     *
+     * MinIO and LocalStack have no role to find, so local development sets
+     * the pair and takes this branch. */
+    const explicit =
+      env.S3_ACCESS_KEY_ID && env.S3_SECRET_ACCESS_KEY
+        ? {
+            credentials: {
+              accessKeyId: env.S3_ACCESS_KEY_ID,
+              secretAccessKey: env.S3_SECRET_ACCESS_KEY,
+            },
+          }
+        : {};
+
     s3Client = new S3Client({
       region: env.S3_REGION!,
       endpoint: env.S3_ENDPOINT,
       forcePathStyle: env.S3_FORCE_PATH_STYLE,
-      credentials: {
-        accessKeyId: env.S3_ACCESS_KEY_ID!,
-        secretAccessKey: env.S3_SECRET_ACCESS_KEY!,
-      },
+      ...explicit,
     });
   }
   return s3Client;

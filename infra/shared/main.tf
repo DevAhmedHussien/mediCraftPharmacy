@@ -30,7 +30,9 @@ terraform {
     bucket         = "medicraft-terraform-state"
     key            = "shared.tfstate"
     region         = "us-east-1"
-    dynamodb_table = "medicraft-terraform-locks"
+    # S3-native locking. Replaces the DynamoDB table, which Terraform 1.16
+    # deprecates — one less resource to create and pay attention to.
+    use_lockfile   = true
     encrypt        = true
   }
 }

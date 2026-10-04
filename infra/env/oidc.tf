@@ -18,8 +18,6 @@
    deploy to production, which is the whole control this is here to provide.
    ========================================================================= */
 
-data "aws_caller_identity" "current" {}
-
 data "aws_iam_policy_document" "github_assume" {
   statement {
     effect  = "Allow"
@@ -55,7 +53,13 @@ resource "aws_iam_role" "github_deploy" {
 }
 
 data "aws_iam_policy_document" "deploy" {
-  # Push an image.
+  /* Push an image. That is all CI does in AWS now.
+
+     The deploy itself is an SSH session to the instance, which pulls the
+     image using its own role — so the pipeline never needs permission to
+     change infrastructure. It cannot create, resize or delete anything, and
+     a compromised workflow can at worst push an image that a human still has
+     to deploy. */
   statement {
     effect = "Allow"
     actions = [
@@ -68,47 +72,7 @@ data "aws_iam_policy_document" "deploy" {
       "ecr:BatchGetImage",
       "ecr:GetDownloadUrlForLayer",
     ]
-    # GetAuthorizationToken is account-wide by design; the rest are scoped to
-    # this repository below.
     resources = ["*"]
-  }
-
-  # Point the service at it, and read back what happened. Deliberately NOT
-  # apprunner:CreateService or DeleteService — CI updates what Terraform
-  # owns, it does not create or destroy infrastructure.
-  statement {
-    effect = "Allow"
-    actions = [
-      "apprunner:ListServices",
-      "apprunner:DescribeService",
-      "apprunner:UpdateService",
-    ]
-    resources = ["*"]
-  }
-
-  # Run the migration task and wait for it.
-  statement {
-    effect = "Allow"
-    actions = [
-      "ecs:RunTask",
-      "ecs:DescribeTasks",
-      "ecs:RegisterTaskDefinition",
-      "ecs:DescribeTaskDefinition",
-    ]
-    resources = ["*"]
-  }
-
-  # UpdateService and RunTask both hand work to a role; IAM requires the
-  # caller to be allowed to pass each one. Enumerated rather than "*",
-  # because iam:PassRole on everything is privilege escalation to anything
-  # the account can assume.
-  statement {
-    effect  = "Allow"
-    actions = ["iam:PassRole"]
-    resources = [
-      aws_iam_role.apprunner_ecr_access.arn,
-      aws_iam_role.migrate_execution.arn,
-    ]
   }
 }
 

@@ -1,17 +1,9 @@
 locals {
   name = "medicraft-${var.env_name}"
 
-  # Which branch may assume this environment's role. Production is reachable
-  # only from main; staging only from staging. A run on any other branch
-  # cannot mint a token AWS will accept, so a feature branch cannot deploy
-  # even if its workflow asks to.
+  # Which branch may assume this environment's deploy role. Production is
+  # reachable only from main; staging only from staging.
   deploy_branch = var.env_name == "production" ? "main" : "staging"
-
-  # A distinct range per environment. Separate VPCs may legally reuse a CIDR
-  # — until somebody peers them, or attaches both to a transit gateway, at
-  # which point overlapping ranges cannot be routed and the fix is rebuilding
-  # a VPC. Costs nothing to get right now.
-  vpc_cidr = var.env_name == "production" ? "10.20.0.0/16" : "10.30.0.0/16"
 
   tags = {
     Project     = "medicraft-pharmacy"
@@ -19,16 +11,18 @@ locals {
     ManagedBy   = "terraform"
   }
 
-  # Every value the app's env schema requires at boot. Created empty here and
-  # populated out of band — see infra/README.md.
+  /* Everything the application needs that must not be in an image, a
+     compose file, or this repository.
+
+     NO DATABASE_URL. Postgres runs beside the app on the same host, so the
+     connection string is `postgres:5432` plus the password — the entrypoint
+     assembles it from POSTGRES_PASSWORD rather than storing the same secret
+     twice under two names, which is how the two drift apart. */
   secret_names = [
-    "DATABASE_URL",
+    "POSTGRES_PASSWORD",
     "AUTH_SECRET",
     "FIELD_ENCRYPTION_KEY",
     "RESEND_API_KEY",
     "CRON_SECRET",
-    "S3_ACCESS_KEY_ID",
-    "S3_SECRET_ACCESS_KEY",
-    "SITE_PHONE",
   ]
 }

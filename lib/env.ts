@@ -140,7 +140,20 @@ const base = z.object({
 
 const schema = base.superRefine((v, ctx) => {
   if (v.STORAGE_DRIVER === "s3") {
-    for (const key of ["S3_REGION", "S3_BUCKET", "S3_ACCESS_KEY_ID", "S3_SECRET_ACCESS_KEY"] as const) {
+    /* Region and bucket only.
+     *
+     * The access key pair used to be required here too, which forced an IAM
+     * user with long-lived credentials even when running somewhere that
+     * already has an identity — App Runner, ECS and Lambda all carry a role,
+     * and the AWS SDK finds it on its own. Demanding static keys there means
+     * creating a second credential to store, leak and rotate in order to
+     * reach a bucket the instance can already read.
+     *
+     * They stay OPTIONAL rather than being removed: MinIO and LocalStack in
+     * docker-compose have no instance role, so local development still
+     * supplies them. See `getS3` in lib/services/storage.ts for the other
+     * half of this. */
+    for (const key of ["S3_REGION", "S3_BUCKET"] as const) {
       if (!v[key]) {
         ctx.addIssue({
           code: "custom",

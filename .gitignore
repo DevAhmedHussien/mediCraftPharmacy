@@ -14,3 +14,18 @@ next-env.d.ts
 .uploads
 /.next-build
 /.mail
+
+# --- Terraform -------------------------------------------------------------
+# Provider binaries: hundreds of megabytes, re-downloaded by `init`.
+**/.terraform/
+# Plan files are ephemeral and can carry resource attributes that should not
+# be in a repository. They are regenerated in seconds.
+*.tfplan
+# State never lives here — the backend is S3 — but a stray local run would
+# otherwise commit a plaintext inventory of the whole account.
+*.tfstate
+*.tfstate.*
+.terraform.tfstate.lock.info
+# .terraform.lock.hcl IS committed on purpose: it pins provider versions so
+# CI and a laptop resolve the same ones.
+tsconfig.tsbuildinfo
