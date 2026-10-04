@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 
 import { PageHero } from "@/components/blocks";
@@ -57,8 +58,26 @@ export default async function BlogIndexPage() {
             <ul className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {posts.map((post) => (
                 <li key={post.slug}>
-                  <article className="card card-hover group h-full p-6">
+                  <article className="card card-hover group h-full overflow-hidden p-0">
                     <Link href={`/blog/${post.slug}`} className="flex h-full flex-col">
+                      {/* The cover, bled to the card's top edge.
+                          Served through /api/uploads rather than a public S3
+                          URL: the bucket is private and every read goes
+                          through the app, which is what keeps an uploaded
+                          licence and a blog cover under the same rule. */}
+                      {post.cover && (
+                        <div className="relative aspect-[16/10] overflow-hidden bg-sand">
+                          <Image
+                            src={`/api/uploads/${post.cover.key}`}
+                            alt={post.cover.alt ?? ""}
+                            fill
+                            sizes="(min-width: 1024px) 24rem, (min-width: 768px) 45vw, 92vw"
+                            className="object-cover"
+                          />
+                        </div>
+                      )}
+
+                      <div className="flex h-full flex-col p-6">
                       {post.categories.length > 0 && (
                         <p className="text-label font-medium uppercase tracking-wide text-cyan-700">
                           {post.categories.map((c) => c.category.name).join(" · ")}
@@ -85,6 +104,7 @@ export default async function BlogIndexPage() {
                         {" · "}
                         {post.readingMinutes} min read
                       </p>
+                      </div>
                     </Link>
                   </article>
                 </li>

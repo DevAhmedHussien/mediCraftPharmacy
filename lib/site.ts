@@ -1,5 +1,13 @@
 /** The canonical production domain — the last resort if nothing else is set. */
-const CANONICAL_ORIGIN = "https://medicraftpharmacy.com";
+/* www, not the apex.
+ *
+ * Caddy 301s the apex to www, so this is the host that actually serves. An
+ * origin that redirects is wrong in two places at once: every canonical URL
+ * and every schema.org @id points at a hop rather than a page, and the logo
+ * in every email is fetched through a redirect — which a fair number of mail
+ * clients refuse to follow for images, leaving a broken mark at the top of
+ * the message. */
+const CANONICAL_ORIGIN = "https://www.medicraftpharmacy.com";
 
 /**
  * Resolves the origin that metadata, canonicals, the sitemap and — critically —

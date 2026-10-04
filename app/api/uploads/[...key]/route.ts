@@ -35,6 +35,9 @@ export const runtime = "nodejs";
 
 const PARTNER_DOCUMENT_PREFIX = /^partners\/([^/]+)\/documents\//;
 
+/** Cover images for published articles. Public to read, staff to write. */
+const BLOG_MEDIA_PREFIX = /^blog\//;
+
 /**
  * Decide whether this session may touch this key, for this operation.
  *
@@ -48,6 +51,20 @@ const PARTNER_DOCUMENT_PREFIX = /^partners\/([^/]+)\/documents\//;
  * rather than a lookup. Everything else under the upload root is admin media.
  */
 async function authorise(key: string, mode: "read" | "write"): Promise<boolean> {
+  /* Blog covers are public to READ and staff-only to write.
+   *
+   * Everything else under this route is a private document, so the rule was
+   * "a session, or nothing" — which is right for a licence and wrong for an
+   * article's cover photograph. A published post is a public page; an image
+   * on it that 403s to anyone not signed in is a broken page for every
+   * visitor the article was written for.
+   *
+   * Narrow on purpose: the `blog/` prefix only, reads only. Writes still
+   * need staff, so nobody can publish an image by choosing a key. The
+   * bucket stays private and the bytes still pass through this route, which
+   * is what keeps one rule for how objects leave storage. */
+  if (mode === "read" && BLOG_MEDIA_PREFIX.test(key)) return true;
+
   const session = await auth();
   if (!session?.user) return false;
 

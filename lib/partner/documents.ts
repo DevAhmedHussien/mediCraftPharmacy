@@ -17,7 +17,7 @@ export type DocumentSpec = {
   required: boolean;
 };
 
-/* ONE DOCUMENT.
+/* ONE REQUIRED DOCUMENT, PLUS A CATCH-ALL.
  *
  * This list held eight: photo ID, DEA registration, state medical licence,
  * W-9, pharmacy licence, certificate of insurance, business registration and
@@ -29,6 +29,11 @@ export type DocumentSpec = {
  * The pharmacy decided it only needs to know who is signing. That is the
  * photo ID, which is already collected at the identity step, long before
  * this one.
+ *
+ * "Anything else" stays, and stays OPTIONAL. A reviewer who wants to see an
+ * insurance certificate for one particular practice needs somewhere to
+ * receive it; without that slot the only route is email, which nothing in
+ * this system reads. It blocks nothing — `missingRequired` ignores it.
  *
  * The REMOVED TYPES ARE STILL IN THE DocumentType ENUM, deliberately. They
  * are not dropped from the database, because partners who already uploaded a
@@ -44,6 +49,13 @@ export const DOCUMENT_SPECS: DocumentSpec[] = [
     blurb:
       "A driver's licence or passport for your authorised signer. We check the name against the agreement before it goes out.",
     required: true,
+  },
+  {
+    type: "OTHER",
+    label: "Anything else",
+    blurb:
+      "Optional. A licence, an insurance certificate, anything a reviewer asked you for. Nothing here blocks your account.",
+    required: false,
   },
 ];
 

@@ -291,7 +291,10 @@ export const TRANSITIONS: readonly Transition[] = [
     actor: "PARTNER",
     label: "Identity submitted",
     effects: {
-      partnerEmail: "partner/identity-received",
+      // Silenced: "we have your ID and are checking it". Nothing for them
+      // to do, and the next mail they get either releases the formulary or
+      // asks for a correction.
+      partnerEmail: null,
       adminEmail: {
         template: "admin/identity-submitted",
         audiences: [byPermission(PERMISSION.APPLICATIONS_REVIEW)],
@@ -349,7 +352,9 @@ export const TRANSITIONS: readonly Transition[] = [
     actor: "PARTNER",
     label: "Meeting requested",
     effects: {
-      partnerEmail: "partner/meeting-requested",
+      // Silenced: acknowledging a call request they just made. The mail
+      // that matters is the one offering times, sent when there are times.
+      partnerEmail: null,
       adminEmail: {
         template: "admin/meeting-requested",
         audiences: [byPermission(PERMISSION.PRICING_REVIEW)],
@@ -372,7 +377,10 @@ export const TRANSITIONS: readonly Transition[] = [
     permission: PERMISSION.PRICING_REVIEW,
     label: "Meeting scheduled",
     effects: {
-      partnerEmail: "partner/meeting-scheduled",
+      // Silenced: the partner booked the slot themselves and saw it
+      // confirmed on screen. A mail telling them what they just chose is
+      // the definition of noise.
+      partnerEmail: null,
       adminEmail: null,
       actingAdminEmail: null,
       notification: null,
@@ -397,7 +405,10 @@ export const TRANSITIONS: readonly Transition[] = [
     actor: "PARTNER",
     label: "Applicant picked a time",
     effects: {
-      partnerEmail: "partner/meeting-scheduled",
+      // Silenced: the partner booked the slot themselves and saw it
+      // confirmed on screen. A mail telling them what they just chose is
+      // the definition of noise.
+      partnerEmail: null,
       adminEmail: {
         template: "admin/meeting-confirmed",
         audiences: [byPermission(PERMISSION.PRICING_REVIEW)],
@@ -419,7 +430,10 @@ export const TRANSITIONS: readonly Transition[] = [
     actor: "PARTNER",
     label: "List pricing accepted without negotiation",
     effects: {
-      partnerEmail: "partner/pricing-confirmed",
+      // Silenced: "pricing agreed, account details next" is immediately
+      // followed by onboarding-start, which says the same thing and
+      // carries the link.
+      partnerEmail: null,
       adminEmail: {
         template: "admin/pricing-accepted",
         audiences: [byPermission(PERMISSION.PRICING_REVIEW)],
@@ -457,7 +471,10 @@ export const TRANSITIONS: readonly Transition[] = [
     actor: "PARTNER",
     label: "Negotiated pricing accepted",
     effects: {
-      partnerEmail: "partner/pricing-confirmed",
+      // Silenced: "pricing agreed, account details next" is immediately
+      // followed by onboarding-start, which says the same thing and
+      // carries the link.
+      partnerEmail: null,
       adminEmail: {
         template: "admin/pricing-accepted",
         audiences: [byPermission(PERMISSION.PRICING_REVIEW)],
@@ -557,7 +574,8 @@ export const TRANSITIONS: readonly Transition[] = [
     actor: "PARTNER",
     label: "Documents submitted",
     effects: {
-      partnerEmail: "partner/onboarding-received",
+      // Silenced: "we are reviewing your details". Waiting is not news.
+      partnerEmail: null,
       adminEmail: { template: "admin/documents-submitted", audiences: [byPermission(PERMISSION.ONBOARDING_REVIEW)] },
       actingAdminEmail: null,
       notification: {
@@ -592,7 +610,8 @@ export const TRANSITIONS: readonly Transition[] = [
     actor: "PARTNER",
     label: "Onboarding resubmitted",
     effects: {
-      partnerEmail: "partner/onboarding-received",
+      // Silenced: "we are reviewing your details". Waiting is not news.
+      partnerEmail: null,
       adminEmail: { template: "admin/onboarding-submitted", audiences: [byPermission(PERMISSION.ONBOARDING_REVIEW)] },
       actingAdminEmail: null,
       notification: {
@@ -610,7 +629,9 @@ export const TRANSITIONS: readonly Transition[] = [
     permission: PERMISSION.ONBOARDING_REVIEW,
     label: "Onboarding approved",
     effects: {
-      partnerEmail: "partner/onboarding-approved",
+      // Silenced: "your agreement is on its way" is followed within the
+      // minute by the agreement itself.
+      partnerEmail: null,
       adminEmail: { template: "admin/onboarding-approved", audiences: [byPermission(PERMISSION.MSA_SEND)] },
       actingAdminEmail: null,
       notification: null,
@@ -640,7 +661,9 @@ export const TRANSITIONS: readonly Transition[] = [
     actor: "SYSTEM",
     label: "MSA signed",
     effects: {
-      partnerEmail: "partner/msa-signed",
+      // Silenced: they signed it seconds ago and were redirected to a
+      // confirmation. welcome-verified follows when the account is live.
+      partnerEmail: null,
       adminEmail: { template: "admin/msa-signed", audiences: [byPermission(PERMISSION.MSA_SEND)] },
       actingAdminEmail: null,
       notification: {

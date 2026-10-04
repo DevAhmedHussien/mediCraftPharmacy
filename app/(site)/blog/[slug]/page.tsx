@@ -1,3 +1,4 @@
+import Image from "next/image";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -5,19 +6,34 @@ import { ArrowLeft } from "lucide-react";
 
 import { renderMarkdown } from "@/lib/markdown";
 import { breadcrumbJsonLd, jsonLdProps, pageMetadata } from "@/lib/seo";
-import { getPublishedPost, publishedPostSlugs } from "@/lib/services/blog";
+import { getPublishedPost } from "@/lib/services/blog";
 import { site } from "@/lib/site";
-import { prerenderFromDb } from "@/lib/static-params";
 
 export const revalidate = 3600;
 
 /** Prerender every published post; new ones are rendered on first request. */
-export async function generateStaticParams() {
-  return prerenderFromDb("/blog/[slug]", async () => {
-    const posts = await publishedPostSlugs();
-    return posts.map((p) => ({ slug: p.slug }));
-  });
-}
+/* Rendered per request.
+ *
+ * This route used to read its paths from Postgres at build time, and
+ * lib/static-params.ts degrades to zero paths when no database is reachable
+ * — which is exactly what happens inside `docker build`, by design. Next
+ * then treats the route as static with no prerendered paths and renders it
+ * on demand in a STATIC context, where the (site) layout's `auth()` call
+ * throws DYNAMIC_SERVER_USAGE and the request 500s.
+ *
+ * Locally the database is up, every path is prerendered to a file, and no
+ * page ever re-renders — so the build is green, the local site is perfect,
+ * and every one of these pages is a 500 in production. This is the line
+ * that makes the two environments agree.
+ *
+ * `generateStaticParams` is GONE rather than kept. Next 14 prioritises it
+ * over this directive — with both present the route is still prerendered
+ * and the 500 comes back — so the two cannot coexist. Nothing is lost: the
+ * layout's session read makes every page here dynamic anyway, so the
+ * prerendering only ever took effect in a local build and never in the
+ * image that actually serves production.
+ */
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
@@ -116,6 +132,23 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
               {post.readingMinutes} min read
             </p>
           </header>
+
+          {/* The cover, between the header and the body rather than above
+              the title: the headline is what a reader came for, and a
+              full-bleed photograph before it pushes the thing they are
+              looking for below the fold on a phone. */}
+          {post.cover && (
+            <figure className="relative mt-10 aspect-[16/9] overflow-hidden rounded-tile border border-line bg-sand">
+              <Image
+                src={`/api/uploads/${post.cover.key}`}
+                alt={post.cover.alt ?? ""}
+                fill
+                priority
+                sizes="(min-width: 1024px) 50rem, 94vw"
+                className="object-cover"
+              />
+            </figure>
+          )}
 
           {/* eslint-disable-next-line react/no-danger */}
           <div className="prose-body mt-10 prose-article" dangerouslySetInnerHTML={{ __html: html }} />

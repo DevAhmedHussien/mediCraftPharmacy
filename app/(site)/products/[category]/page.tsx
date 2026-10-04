@@ -5,9 +5,8 @@ import { ClosingCta, PageHero } from "@/components/blocks";
 import { Icon } from "@/components/icons/set";
 import { ProductCard } from "@/components/ProductCard";
 import { closingCta, formulary } from "@/lib/content";
-import { getCategories, getCategory, getProductsByCategory } from "@/lib/catalogue";
+import { getCategory, getProductsByCategory } from "@/lib/catalogue";
 import { media } from "@/lib/media";
-import { prerenderFromDb } from "@/lib/static-params";
 import {
   breadcrumbJsonLd,
   itemListJsonLd,
@@ -17,12 +16,28 @@ import {
 
 type Params = { params: { category: string } };
 
-export async function generateStaticParams() {
-  return prerenderFromDb("/products/[category]", async () => {
-    const categories = await getCategories();
-    return categories.map((c) => ({ category: c.slug }));
-  });
-}
+/* Rendered per request.
+ *
+ * This route used to read its paths from Postgres at build time, and
+ * lib/static-params.ts degrades to zero paths when no database is reachable
+ * — which is exactly what happens inside `docker build`, by design. Next
+ * then treats the route as static with no prerendered paths and renders it
+ * on demand in a STATIC context, where the (site) layout's `auth()` call
+ * throws DYNAMIC_SERVER_USAGE and the request 500s.
+ *
+ * Locally the database is up, every path is prerendered to a file, and no
+ * page ever re-renders — so the build is green, the local site is perfect,
+ * and every one of these pages is a 500 in production. This is the line
+ * that makes the two environments agree.
+ *
+ * `generateStaticParams` is GONE rather than kept. Next 14 prioritises it
+ * over this directive — with both present the route is still prerendered
+ * and the 500 comes back — so the two cannot coexist. Nothing is lost: the
+ * layout's session read makes every page here dynamic anyway, so the
+ * prerendering only ever took effect in a local build and never in the
+ * image that actually serves production.
+ */
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const category = await getCategory(params.category);

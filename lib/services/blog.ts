@@ -29,6 +29,11 @@ export async function listPublishedPosts(limit = 50) {
       excerpt: true,
       publishedAt: true,
       readingMinutes: true,
+      /* The cover, as the key the uploads route serves.
+         The column has existed since the schema was written and nothing
+         selected it, so every post rendered as a wall of text with an image
+         sitting unused in storage. */
+      cover: { select: { key: true, alt: true, width: true, height: true } },
       categories: { select: { category: { select: { name: true, slug: true } } } },
     },
   });
@@ -47,6 +52,11 @@ export async function getPublishedPost(slug: string) {
       readingMinutes: true,
       seoTitle: true,
       seoDescription: true,
+      /* The cover, as the key the uploads route serves.
+         The column has existed since the schema was written and nothing
+         selected it, so every post rendered as a wall of text with an image
+         sitting unused in storage. */
+      cover: { select: { key: true, alt: true, width: true, height: true } },
       categories: { select: { category: { select: { name: true, slug: true } } } },
     },
   });

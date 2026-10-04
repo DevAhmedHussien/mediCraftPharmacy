@@ -68,16 +68,50 @@ const company = (props: EmailProps) => String(props.companyName ?? "the applican
 
 const TEMPLATES: Record<EmailTemplate, (props: EmailProps) => Rendered> = {
   /* --- Partner-facing ---------------------------------------------------- */
+  /* THE WELCOME. One of two emails a partner now receives as a matter of
+     course — this on registration, and welcome-verified at the end. The
+     informational mail between them was silenced in lib/partner/status.ts.
+
+     It therefore has to carry the whole map, not just the next click: a
+     practice manager who reads one email should know what the process is,
+     roughly how long it takes, and what we will ask them for. The steps are
+     numbered because they are a sequence, and each says who is waiting —
+     "you" or "us" — because the commonest question a partner asks is which
+     of the two it is. */
   "partner/application-received": (p) => ({
-    subject: "We received your enquiry — one quick step",
-    preheader: "Confirm who you are and we will send your pricing.",
+    subject: `Welcome to ${site.name} — here is what happens next`,
+    preheader: "Your account is open. One step from you, then pricing.",
     body: `Hi ${who(p)},
 
-Thank you for your enquiry to ${site.name}. Your account is open and you are signed in.
+Thank you for your enquiry. Your account is open and you are signed in.
 
-One step before we send our formulary: confirm who is asking and upload a photo of a government-issued ID. Our Provider Cost is confidential to each practice, so it does not go out to an address that filled in a form — this is how we know it is reaching you.
+Here is the whole process, so nothing comes as a surprise:
 
-It takes a minute, and we usually release pricing the same business day.`,
+1. CONFIRM WHO YOU ARE — you, about a minute
+   Upload a photo of a government-issued ID for whoever will sign the
+   agreement. Our Provider Cost is confidential to each practice, so it does
+   not go out to an address that filled in a form.
+
+2. WE CHECK IT — us, usually the same business day
+   We match the ID against your practice and release the formulary.
+
+3. CHOOSE YOUR MEDICATIONS AND REVIEW PRICING — you
+   Pick what your practice dispenses. We price those, not the whole
+   catalogue. Accept the rates, ask for another round, or ask for a call —
+   whichever suits.
+
+4. ACCOUNT DETAILS — you, about ten minutes
+   Prescribers and their DEA and NPI numbers, plus shipping and billing
+   contacts. It saves as you type.
+
+5. SIGN THE AGREEMENT — you
+   The Master Service Agreement, with your agreed prices bound in as
+   Exhibit A-1.
+
+Then you are live and can start sending prescriptions.
+
+We will not email you at every step — only when something needs you. You can
+check where things stand in your account at any time.`,
     cta: portal("/portal/identity"),
   }),
 
@@ -315,14 +349,32 @@ We are activating your account now and will confirm shortly.`,
     cta: portal("/portal"),
   }),
 
+  /* THE OTHER ONE. Sent once, when the account goes live.
+
+     Deliberately short and does not re-explain the product. Somebody who has
+     reached this point has been through five steps with us; what they need
+     is confirmation it is done, the two or three things they can now do, and
+     how to reach a person. */
   "partner/welcome-verified": (p) => ({
-    subject: `Welcome to ${site.name}`,
-    preheader: "You are a verified partner.",
+    subject: `You are verified — ${site.name} is open to you`,
+    preheader: "Your account is live. You can start sending prescriptions.",
     body: `Hi ${who(p)},
 
-You are now a verified ${site.name} partner. Everything is in place.
+That is everything. Your account is verified and your agreed pricing is in
+force.
 
-You can send prescriptions, see your agreed pricing, and track every order through your account. Your account representative is on ${site.providerEmail} and ${site.phone} for anything you need.`,
+From here you can:
+
+  · Send prescriptions against your schedule
+  · See your agreed Provider Cost, any time, in your account
+  · Ask us to add preparations — we price them and send a change order to
+    sign, and nothing already on your schedule changes
+  · Download your signed agreement whenever you need a copy
+
+Sign in at ${site.url} and everything is on your account page.
+
+If you need a person rather than a page, we are on ${site.providerEmail} and
+${site.phone}. Thank you for choosing us.`,
     cta: portal("/portal"),
   }),
 

@@ -8,19 +8,34 @@ import { ProductCard } from "@/components/ProductCard";
 import { CarouselItem, ProductCarousel } from "@/components/ui/ProductCarousel";
 import { closingCta, formulary } from "@/lib/content";
 import { site } from "@/lib/site";
-import { getProduct, getProducts, getRelatedProducts } from "@/lib/catalogue";
+import { getProduct, getRelatedProducts } from "@/lib/catalogue";
 import { productSpecs } from "@/lib/data";
-import { prerenderFromDb } from "@/lib/static-params";
 
 type Params = { params: { slug: string } };
 
 /** Every product is prerendered at build time — fully static, no runtime fetching. */
-export async function generateStaticParams() {
-  return prerenderFromDb("/product/[slug]", async () => {
-    const products = await getProducts();
-    return products.map((p) => ({ slug: p.slug }));
-  });
-}
+/* Rendered per request.
+ *
+ * This route used to read its paths from Postgres at build time, and
+ * lib/static-params.ts degrades to zero paths when no database is reachable
+ * — which is exactly what happens inside `docker build`, by design. Next
+ * then treats the route as static with no prerendered paths and renders it
+ * on demand in a STATIC context, where the (site) layout's `auth()` call
+ * throws DYNAMIC_SERVER_USAGE and the request 500s.
+ *
+ * Locally the database is up, every path is prerendered to a file, and no
+ * page ever re-renders — so the build is green, the local site is perfect,
+ * and every one of these pages is a 500 in production. This is the line
+ * that makes the two environments agree.
+ *
+ * `generateStaticParams` is GONE rather than kept. Next 14 prioritises it
+ * over this directive — with both present the route is still prerendered
+ * and the 500 comes back — so the two cannot coexist. Nothing is lost: the
+ * layout's session read makes every page here dynamic anyway, so the
+ * prerendering only ever took effect in a local build and never in the
+ * image that actually serves production.
+ */
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const product = await getProduct(params.slug);

@@ -19,6 +19,41 @@ import { homeForRole, homeLabelForRole } from "@/lib/home-route";
  * and the Pharmacy structured data, none of which belong on an authenticated
  * screen.
  */
+/* ===========================================================================
+   This segment renders per request.
+
+   WHY IT HAS TO
+   -------------
+   The layout below calls `auth()` to decide whether the header says "Provider
+   portal" or names the signed-in account. `auth()` reads cookies, which makes
+   every page under it a dynamic render.
+
+   That was already true and already fine for the pages Next treats as
+   dynamic. It was NOT fine for the three with `generateStaticParams` —
+   /product/[slug], /products/[category] and /blog/[slug]. Next renders those
+   in a static context, `auth()` throws DYNAMIC_SERVER_USAGE, and the request
+   500s.
+
+   IT ONLY BROKE IN THE CONTAINER, which is what made it expensive to find.
+   `generateStaticParams` reads the catalogue from Postgres, and
+   lib/static-params.ts deliberately degrades to zero paths when no database
+   is reachable — because an image that can only be built next to a live
+   database cannot be built from a clean checkout. Locally the database IS
+   up, so every path was prerendered to a file at build time and no page ever
+   re-rendered. In the image, nothing was prerendered, so every request
+   rendered on demand and hit the throw. The build was green, the local site
+   was perfect, and every product and category page was a 500 in production.
+
+   THE ALTERNATIVE, IF STATIC MATTERS LATER
+   ----------------------------------------
+   Keep the pages static and move the session read behind a Suspense boundary
+   so only the account link streams dynamically. That is the better shape for
+   SEO-facing pages and a bigger change to the header than is worth making
+   while production is down. Worth revisiting if these pages ever need to be
+   served from a CDN edge.
+   ========================================================================= */
+export const dynamic = "force-dynamic";
+
 export default async function SiteLayout({ children }: { children: ReactNode }) {
   /* The products menu, built once per request and handed to the nav.
    *
