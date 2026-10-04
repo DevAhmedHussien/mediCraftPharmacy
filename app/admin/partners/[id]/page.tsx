@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 
 import { DocumentReview } from "@/components/admin/DocumentReview";
 import { PipelineActions } from "@/components/admin/PipelineActions";
+import { PipelineRail } from "@/components/admin/PipelineRail";
 import { AmendmentMeetingPanel, AmendmentPanel } from "@/components/admin/AmendmentPanel";
 import { PartnerSchedule } from "@/components/admin/PartnerSchedule";
 import { PriceListEditor } from "@/components/admin/PriceListEditor";
@@ -195,6 +196,11 @@ export default async function PartnerDetailPage({ params }: { params: { id: stri
           );
         })()}
 
+      {/* Where they are, before anything else on the page. An admin opening
+          a partner asks "what stage is this at" before they ask anything
+          else, and the answer used to be one word next to the title. */}
+      <PipelineRail status={status} />
+
       <StageWork
         data={{
           status,
@@ -232,6 +238,16 @@ export default async function PartnerDetailPage({ params }: { params: { id: stri
               }
             : null,
         }}
+      />
+
+      {/* The move that follows the work, directly under the work.
+          These were separated by the schedule and agreement panels, so the
+          thing you do after building a price list was two screens below the
+          price list. */}
+      <PipelineActions
+        partnerId={partner.id}
+        status={status}
+        moves={moves.map((m) => ({ to: m.to, label: m.label, permission: m.permission ?? null }))}
       />
 
       {/* The agreement has thirty-six commercial terms that the pharmacy fills
@@ -294,11 +310,6 @@ export default async function PartnerDetailPage({ params }: { params: { id: stri
         </a>
       </Panel>
 
-      <PipelineActions
-        partnerId={partner.id}
-        status={status}
-        moves={moves.map((m) => ({ to: m.to, label: m.label, permission: m.permission ?? null }))}
-      />
 
       <div className="grid gap-4 lg:grid-cols-[1.5fr_1fr]">
         <div className="space-y-4">

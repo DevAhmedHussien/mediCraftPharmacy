@@ -12,6 +12,7 @@
     "start": "next start",
     "lint": "next lint",
     "test": "tsx tests/masks.test.ts && tsx tests/parity.test.ts && tsx tests/msa.test.ts",
+    "render:logo": "tsx scripts/render-logo.ts",
     "email:test": "tsx --require ./scripts/node-loader.cjs scripts/test-email.ts",
     "test:e2e": "node tests/e2e.mjs",
     "test:pipeline": "node tests/pipeline.mjs",

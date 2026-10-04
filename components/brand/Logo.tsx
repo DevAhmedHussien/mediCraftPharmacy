@@ -46,7 +46,7 @@ function markFills(tone: Tone) {
 
 /* --- Geometry, shared by the mark-only and full-lockup renderings --------- */
 
-const BOWL_D =
+export const BOWL_D =
   "M 79.640625 62.425781 L 76.597657 45.160156 C 75.164063 47.351562 73.496094 49.410156 71.601563 51.304687 " +
   "C 64.429688 58.476562 54.894531 62.425781 44.75 62.425781 C 34.605469 62.425781 25.070313 58.476562 17.894531 51.304687 " +
   "C 16.003907 49.410156 14.332031 47.351562 12.902344 45.160156 L 9.859375 62.425781 L 0 62.425781 " +
@@ -54,15 +54,15 @@ const BOWL_D =
   "C 60.335938 52.71875 73.019531 40.039062 73.019531 24.449219 L 82.800781 24.449219 L 89.496094 62.425781 Z";
 
 /** The pestle's rounded knob. */
-const KNOB_D =
+export const KNOB_D =
   "M 63.699219 1.125 C 62.964844 2.253906 63.832031 4.125 65.640625 5.300781 " +
   "C 67.449219 6.480469 69.507813 6.523437 70.246094 5.394531 C 70.980469 4.265625 64.433594 0 63.699219 1.125";
 
 /** The tapered handle — wide where it sits in the bowl, narrow at the knob. */
-const HANDLE_D =
+export const HANDLE_D =
   "M 68.980469 4.570312 L 64.960938 1.949219 L 44.75 26.375 L 59.882813 22.734375 Z";
 
-const MOUTH = { cx: 44.748, cy: 24.027, rx: 25.326, ry: 4.547 };
+export const MOUTH = { cx: 44.748, cy: 24.027, rx: 25.326, ry: 4.547 };
 
 /**
  * The mark on its own, without the wordmark. Used for the favicon, the app
@@ -103,7 +103,7 @@ export function LogoMark({
    "Pharmacy", which is why these live in <defs>.
    ---------------------------------------------------------------------- */
 
-const GLYPHS: Record<string, string> = {
+export const GLYPHS: Record<string, string> = {
   // Satoshi Black — "edi"
   e:
     "M 14.90625 0.671875 C 21.9375 0.671875 27.03125 -2.984375 27.953125 -8.6875 L 20.703125 -8.6875 " +
@@ -188,12 +188,12 @@ const GLYPHS: Record<string, string> = {
 
 /** Baseline for "ediCraft", in mark-local units — the same line the M's legs
  *  land on, which is why the mark needs no vertical nudging. */
-const ROW1_Y = 62.426;
+export const ROW1_Y = 62.426;
 /** Baseline for "Pharmacy". */
-const ROW2_Y = 89.758;
+export const ROW2_Y = 89.758;
 
 /** Glyph placements, x-offsets straight from the deck's letterfit. */
-const ROW1: [string, number][] = [
+export const ROW1: [string, number][] = [
   ["e", 90.808],
   ["d", 120.362],
   ["i", 153.257],
@@ -204,7 +204,7 @@ const ROW1: [string, number][] = [
   ["t", 263.197],
 ];
 
-const ROW2: [string, number][] = [
+export const ROW2: [string, number][] = [
   ["P2", 169.416],
   ["h2", 184.552],
   ["a2", 198.406],

@@ -690,8 +690,16 @@ const MAIL = {
 function logoImage(): string {
   const src = `${site.url}/images/brand/medicraft-logo.png`;
 
-  return `<img src="${escapeHtml(src)}" alt="${escapeHtml(site.name)}" width="150" height="30"
-    style="display:block;width:150px;height:30px;border:0;outline:none;text-decoration:none;font-family:${MAIL.font};font-size:15px;font-weight:700;color:${MAIL.brand};">`;
+  /* 150x51 is the lockup's own 2.92:1, not a guess. The asset is rendered at
+     876px wide from the SVG the site itself uses — see scripts/render-logo.ts
+     — so it stays sharp at 3x and cannot drift from the mark in the header.
+
+     The file this replaced was a DIFFERENT LOGO: a blue cross with the
+     wordmark in black, nothing like the mortar and pestle. It had been sitting
+     in public/images/brand under the right filename, so every email carried a
+     brand nobody uses. */
+  return `<img src="${escapeHtml(src)}" alt="${escapeHtml(site.name)}" width="150" height="51"
+    style="display:block;width:150px;height:51px;border:0;outline:none;text-decoration:none;font-family:${MAIL.font};font-size:15px;font-weight:700;color:${MAIL.brand};">`;
 }
 
 const escapeHtml = (value: string) =>

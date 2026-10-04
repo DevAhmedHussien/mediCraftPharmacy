@@ -18,6 +18,26 @@ import { PARTNER_STATUS, type PartnerStatus } from "@/lib/partner/status";
    component, so an edge added to lib/partner/status.ts appears here and an
    edge removed disappears. The server re-derives and re-checks all of it
    anyway; this is the affordance, not the control.
+
+   ONE PRIMARY MOVE, ONE CLICK
+   ---------------------------
+   This used to render every allowed move as an identical secondary button,
+   and clicking one did not do it — it revealed a form with a second button
+   reading "Confirm: ...". Two clicks and a note field for "Release the
+   formulary", which has no decision in it. An admin working a queue could
+   not tell which of four equal buttons was the normal path, and the second
+   click taught them the first one had not worked.
+
+   So the forward move — the first non-destructive edge, which is the order
+   the pipeline table is authored in — is now one primary button that
+   submits on click. Everything else is behind "Other moves", closed by
+   default.
+
+   WHAT STILL TAKES TWO CLICKS, ON PURPOSE
+   ---------------------------------------
+   Rejecting and suspending. Those need a reason the partner will read, so
+   they open a form, and the extra step is the point: ending somebody's
+   application should not be a thing the hand does on the way past.
    ========================================================================= */
 
 type Move = { to: PartnerStatus; label: string; permission: string | null };
@@ -55,6 +75,7 @@ export function PipelineActions({
   status: PartnerStatus;
 }) {
   const [selected, setSelected] = useState<Move | null>(null);
+  const [showOthers, setShowOthers] = useState(false);
 
   // Offered only where both edges are actually available to this admin.
   const canCombine =
@@ -63,50 +84,90 @@ export function PipelineActions({
 
   if (moves.length === 0) {
     return (
-      <Panel title="Next step">
+      <Panel title="Nothing to do here">
         <p className="text-[0.8125rem] text-[color:var(--admin-ink-70)]">
-          Nothing to do here — this partner is waiting on their own action, on a
-          signature callback, or has reached a final state.
+          This partner is waiting on their own action, on a signature callback,
+          or has reached a final state. The progress cards above say which.
         </p>
       </Panel>
     );
   }
 
+  /* The forward move.
+   *
+   * The first non-destructive edge, which is the order lib/partner/status.ts
+   * authors the table in — the pipeline reads top to bottom, so the first
+   * match is the normal path. If a future table is reordered this picks the
+   * wrong one, which is why it is derived here and not guessed per status. */
+  const primary = canCombine
+    ? COMBINED_APPROVE
+    : moves.find((m) => !DESTRUCTIVE.includes(m.to)) ?? null;
+
+  const others = moves.filter((m) => m !== primary && m.to !== primary?.to);
+
+  /* A move needing a reason opens a form; everything else submits on click.
+     There is no decision inside "Release the formulary", so there is nothing
+     for a confirmation step to protect. */
+  const primaryNeedsForm = primary ? NEEDS_REASON.includes(primary.to) : false;
+
   return (
     <Panel
-      title="Next step"
-      description="Only the moves this status allows, and only the ones your permissions cover."
+      title="What to do now"
+      description="Derived from the state machine and your permissions — these are the only moves this status allows."
     >
-      <div className="flex flex-wrap gap-2">
-        {canCombine && (
-          <button
-            type="button"
-            onClick={() =>
-              setSelected(selected?.label === COMBINED_APPROVE.label ? null : COMBINED_APPROVE)
-            }
-            className="admin-btn admin-btn-primary"
-            aria-pressed={selected?.label === COMBINED_APPROVE.label}
-          >
-            {COMBINED_APPROVE.label}
-          </button>
-        )}
+      {primary && (
+        <div>
+          {primaryNeedsForm ? (
+            <button
+              type="button"
+              onClick={() => setSelected(selected?.to === primary.to ? null : primary)}
+              className="admin-btn admin-btn-primary"
+              aria-pressed={selected?.to === primary.to}
+            >
+              {primary.label}
+            </button>
+          ) : (
+            <DirectMove partnerId={partnerId} move={primary} combined={primary === COMBINED_APPROVE} />
+          )}
 
-        {moves.map((move) => (
+          <p className="mt-2.5 text-[0.75rem] text-[color:var(--admin-ink-50)]">
+            The partner is emailed and the progress cards above move as soon as this applies.
+          </p>
+        </div>
+      )}
+
+      {others.length > 0 && (
+        <div className="mt-5 border-t pt-4" style={{ borderColor: "var(--admin-border)" }}>
           <button
-            key={move.to}
             type="button"
-            onClick={() => setSelected(selected?.to === move.to ? null : move)}
-            className={
-              DESTRUCTIVE.includes(move.to)
-                ? "admin-btn admin-btn-danger"
-                : "admin-btn admin-btn-secondary"
-            }
-            aria-pressed={selected?.to === move.to}
+            onClick={() => setShowOthers((v) => !v)}
+            aria-expanded={showOthers}
+            className="admin-btn admin-btn-ghost -ml-2"
           >
-            {move.label}
+            {showOthers ? "Hide other moves" : `Other moves (${others.length})`}
           </button>
-        ))}
-      </div>
+
+          {showOthers && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {others.map((move) => (
+                <button
+                  key={move.to}
+                  type="button"
+                  onClick={() => setSelected(selected?.to === move.to ? null : move)}
+                  className={
+                    DESTRUCTIVE.includes(move.to)
+                      ? "admin-btn admin-btn-danger"
+                      : "admin-btn admin-btn-secondary"
+                  }
+                  aria-pressed={selected?.to === move.to}
+                >
+                  {move.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {selected && (
         <MoveForm
@@ -117,6 +178,44 @@ export function PipelineActions({
         />
       )}
     </Panel>
+  );
+}
+
+/**
+ * A move with nothing to decide: one button, one click, applied.
+ *
+ * Its own form element so `useFormStatus` reports this button's pending
+ * state and not some other form's on the same page.
+ */
+function DirectMove({
+  partnerId,
+  move,
+  combined,
+}: {
+  partnerId: string;
+  move: Move;
+  combined: boolean;
+}) {
+  const action = combined
+    ? approveAndSend.bind(null, partnerId)
+    : movePartner.bind(null, partnerId, move.to);
+  const [state, formAction] = useFormState(action, initialFormState);
+
+  return (
+    <form action={formAction}>
+      {state.message && <AdminAlert ok={state.ok}>{state.message}</AdminAlert>}
+      <DirectSubmit label={move.label} />
+    </form>
+  );
+}
+
+function DirectSubmit({ label }: { label: string }) {
+  const { pending } = useFormStatus();
+  return (
+    <button type="submit" disabled={pending} className="admin-btn admin-btn-primary">
+      {pending && <Loader2 className="size-3.5 animate-spin" strokeWidth={2.4} aria-hidden />}
+      {pending ? "Applying…" : label}
+    </button>
   );
 }
 
