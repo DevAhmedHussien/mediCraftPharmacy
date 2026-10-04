@@ -43,8 +43,29 @@ type Rendered = {
   /** The line an inbox shows after the subject. */
   preheader: string;
   body: string;
+  /**
+   * The H1, when the subject line will not do as one.
+   *
+   * The subject usually IS the heading, and repeating it is right — it tells
+   * a reader who opened from a notification that they are in the message they
+   * thought they were. The sign-in code is the exception: its subject leads
+   * with the digits so they can be read off a lock screen, and "272001 is
+   * your sign-in code" sitting directly above a plate showing 272001 is the
+   * same six digits three times inside four inches.
+   */
+  heading?: string;
   /** Absolute URL for the single call to action, if the email has one. */
   cta?: { label: string; path: string };
+  /**
+   * A quiet aside at the foot of the message — the "if this was not you"
+   * paragraph, and nothing else.
+   *
+   * Its own field rather than a last paragraph of `body` because it is not
+   * part of the message's argument. Set apart, the reader who needs it finds
+   * it at a glance and the reader who does not can skip the whole block
+   * instead of parsing a paragraph to learn it does not apply to them.
+   */
+  note?: { title: string; body: string };
   /**
    * A one-time code, set apart from the prose.
    *
@@ -219,13 +240,19 @@ Your application is approved and the next step is a short call about pricing.`,
        often all anyone reads — putting the digits first means the code can be
        used without opening the message at all. */
     subject: `${String(p.code)} is your MediCraft sign-in code`,
+    /* Deliberately not the subject — see `heading` on Rendered. */
+    heading: "Your sign-in code",
     preheader: "Expires in ten minutes. If this was not you, ignore it.",
     code: String(p.code),
     body: `Hi ${who(p)},
 
-Use this code to sign in. It works once and expires ten minutes after it was sent.
-
-If you did not ask to sign in, you can ignore this message — nobody can get into your account without the code, and it expires on its own.`,
+Enter this code on the sign-in page you just opened. Its terms are on the code
+itself: ten minutes, one use.`,
+    note: {
+      title: "Did not ask to sign in?",
+      body:
+        "Ignore this message and nothing happens. A code on its own cannot reach your account, and this one expires by itself. If codes you did not ask for keep arriving, reply to this email and we will look at the account.",
+    },
     /* No button, deliberately. A sign-in email with a one-click link is a
        sign-in email that works for anyone it gets forwarded to; the code has
        to be typed into the tab that asked for it, which is the whole point. */
@@ -671,10 +698,11 @@ function renderText(rendered: Rendered): string {
     : "";
 
   return [
-    rendered.code ? `    ${rendered.code}\n` : "",
+    rendered.code ? `    ${rendered.code}\n    Expires ten minutes after it was sent, and works once.\n` : "",
     rendered.body,
     steps,
     rendered.cta ? `\n${rendered.cta.label}: ${url(rendered.cta.path)}` : "",
+    rendered.note ? `\n${rendered.note.title}\n${rendered.note.body}` : "",
     `\n—\n${site.name} · ${site.address}\n${site.providerEmail} · ${site.phone}`,
   ]
     .filter(Boolean)
@@ -772,15 +800,48 @@ function paragraphs(body: string): string {
  * Letter-spaced monospace on a tinted plate. The trailing letter-space is
  * absorbed by a matching left pad, or the digits sit visibly off-centre —
  * the oldest bug in letter-spaced type.
+ *
+ * THE TERMS SIT INSIDE THE PLATE. "Expires in ten minutes, and works once"
+ * is not trivia about the code, it is the second thing a reader needs after
+ * the digits themselves — whether to type them now or go and find the tab
+ * first. As a sentence further down the message it was read after the
+ * decision it informs.
  */
 function codePlate(code: string): string {
   return `
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 22px;">
       <tr>
-        <td align="center" style="background:${MAIL.brandTint};border:1px solid #c9d8ff;border-radius:10px;padding:26px 20px;">
-          <div style="font-family:${MAIL.mono};font-size:38px;line-height:1.1;font-weight:700;letter-spacing:10px;padding-left:10px;color:${MAIL.ink};">${escapeHtml(
+        <td align="center" style="background:${MAIL.brandTint};border:1px solid #c9d8ff;border-radius:12px;padding:30px 20px 24px;">
+          <div style="font-family:${MAIL.mono};font-size:44px;line-height:1.1;font-weight:700;letter-spacing:12px;padding-left:12px;color:${MAIL.ink};">${escapeHtml(
             code
           )}</div>
+          <div style="font-family:${MAIL.font};font-size:13px;line-height:1.5;color:${MAIL.inkMuted};padding-top:14px;">
+            Expires ten minutes after it was sent, and works once.
+          </div>
+        </td>
+      </tr>
+    </table>`;
+}
+
+/**
+ * The aside.
+ *
+ * Flat tinted ground, no border, no number. It has to be distinguishable at a
+ * glance from both the code plate above it and the step cards — the one is
+ * the point of the message and the others are instructions, while this is
+ * neither. A third bordered white card would have read as a fourth step.
+ */
+function noteCard(note: NonNullable<Rendered["note"]>): string {
+  return `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:4px 0 4px;">
+      <tr>
+        <td style="background:${MAIL.ground};border-radius:10px;padding:18px 20px;">
+          <div style="font-family:${MAIL.font};font-size:14px;font-weight:700;line-height:1.4;color:${MAIL.ink};">
+            ${escapeHtml(note.title)}
+          </div>
+          <div style="font-family:${MAIL.font};font-size:13px;line-height:1.65;color:${MAIL.inkSoft};padding-top:6px;">
+            ${escapeHtml(note.body)}
+          </div>
         </td>
       </tr>
     </table>`;
@@ -815,12 +876,11 @@ function stepCards(steps: NonNullable<Rendered["steps"]>): string {
       const who = first ? "rgba(255,255,255,0.78)" : MAIL.brand;
       const detail = first ? "rgba(255,255,255,0.88)" : MAIL.inkSoft;
       const chipBg = first ? "#ffffff" : MAIL.brandTint;
-      const chipInk = first ? MAIL.brand : MAIL.brand;
 
       return `
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 10px;">
         <tr>
-          <td style="background:${bg};border:1px solid ${border};border-radius:10px;padding:16px 18px;">
+          <td style="background:${bg};border:1px solid ${border};border-radius:10px;padding:18px 20px;">
             <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
               <tr>
                 <td width="34" valign="top" style="width:34px;padding:0 12px 0 0;">
@@ -828,7 +888,7 @@ function stepCards(steps: NonNullable<Rendered["steps"]>): string {
                     <tr>
                       <td align="center" valign="middle"
                           style="width:26px;height:26px;background:${chipBg};border-radius:13px;
-                                 font-family:${MAIL.font};font-size:12px;font-weight:700;color:${chipInk};">
+                                 font-family:${MAIL.font};font-size:12px;font-weight:700;color:${MAIL.brand};">
                         ${index + 1}
                       </td>
                     </tr>
@@ -891,7 +951,12 @@ function renderHtml(rendered: Rendered): string {
   <tr>
     <td align="center" style="padding:32px 16px;">
 
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:520px;">
+      <!-- 640, not the 600 everyone uses and not the 520 this was.
+           The widest a message can be and still fit an unmaximised Outlook
+           reading pane without a horizontal scrollbar. It buys about eight
+           characters a line, which is what keeps a step card's detail to two
+           lines instead of three — the cards were the reason to widen. -->
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:640px;">
 
         <tr>
           <td style="background:${MAIL.surface};border:1px solid ${MAIL.line};border-radius:12px;padding:0;">
@@ -902,15 +967,15 @@ function renderHtml(rendered: Rendered): string {
                  outside the card and is invisible against the card itself. -->
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
               <tr>
-                <td style="padding:24px 28px 20px;border-bottom:1px solid ${MAIL.line};">
+                <td style="padding:28px 36px 22px;border-bottom:1px solid ${MAIL.line};">
                   ${logoImage()}
                 </td>
               </tr>
               <tr>
-                <td style="padding:28px;">
+                <td style="padding:32px 36px 34px;">
 
-            <h1 style="margin:0 0 18px;font-family:${MAIL.font};font-size:20px;line-height:1.3;font-weight:700;color:${MAIL.ink};">${escapeHtml(
-              rendered.subject
+            <h1 style="margin:0 0 18px;font-family:${MAIL.font};font-size:23px;line-height:1.28;font-weight:700;letter-spacing:-0.01em;color:${MAIL.ink};">${escapeHtml(
+              rendered.heading ?? rendered.subject
             )}</h1>
 
             <div style="font-family:${MAIL.font};">
@@ -918,6 +983,7 @@ function renderHtml(rendered: Rendered): string {
               ${paragraphs(rendered.body)}
               ${rendered.steps?.length ? stepCards(rendered.steps) : ""}
               ${rendered.cta ? ctaButton(rendered.cta.label, url(rendered.cta.path)) : ""}
+              ${rendered.note ? noteCard(rendered.note) : ""}
             </div>
 
                 </td>
@@ -927,7 +993,7 @@ function renderHtml(rendered: Rendered): string {
         </tr>
 
         <tr>
-          <td style="padding:20px 4px 0;font-family:${MAIL.font};font-size:12px;line-height:1.6;color:${MAIL.inkMuted};">
+          <td style="padding:22px 8px 0;font-family:${MAIL.font};font-size:12px;line-height:1.6;color:${MAIL.inkMuted};">
             ${escapeHtml(site.name)} · ${escapeHtml(site.address)}<br>
             <a href="mailto:${escapeHtml(site.providerEmail)}" style="color:${MAIL.inkMuted};">${escapeHtml(
               site.providerEmail
