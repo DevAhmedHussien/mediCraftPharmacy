@@ -20,9 +20,17 @@ import { calendar } from "@/lib/services/calendar";
    new GHL tag and a new email — for a distinction two existing columns
    already make unambiguously. */
 
+/**
+ * The partner's call about their ORIGINAL application.
+ *
+ * `amendmentId: null` is load-bearing. A verified partner negotiating a change
+ * order gets a second meeting row, and it is newer — so without this filter
+ * the portal's application card and the admin's pipeline panel would both
+ * start showing a call that is about something else entirely.
+ */
 export async function getLatestMeeting(partnerId: string) {
   return db.meeting.findFirst({
-    where: { partnerId },
+    where: { partnerId, amendmentId: null },
     orderBy: { requestedAt: "desc" },
     select: {
       id: true,
@@ -43,6 +51,28 @@ export async function getLatestMeeting(partnerId: string) {
 
 export async function requestMeeting(partnerId: string, requestNotes: string) {
   return db.meeting.create({ data: { partnerId, requestNotes } });
+}
+
+/** The call about one change order, if there is one. */
+export async function getAmendmentMeeting(amendmentId: string) {
+  return db.meeting.findFirst({
+    where: { amendmentId },
+    orderBy: { requestedAt: "desc" },
+    select: {
+      id: true,
+      requestNotes: true,
+      requestedAt: true,
+      proposedSlots: true,
+      slotsOfferedAt: true,
+      scheduledAt: true,
+      confirmedAt: true,
+      partnerNote: true,
+      durationMinutes: true,
+      location: true,
+      conferenceUrl: true,
+      adminNotes: true,
+    },
+  });
 }
 
 /**
@@ -87,10 +117,12 @@ export async function offerMeetingSlots(input: {
  * here would let an applicant book 3am on a Sunday and have the admin screen
  * report it as agreed.
  *
- * The calendar call is deliberately NOT inside the transaction. A Google
- * round trip holding a database transaction open is how a slow API becomes a
- * lock-wait, and the booking is valid without a Meet link — the link is an
- * enrichment, so a failure to mint one must not lose the applicant's choice.
+ * The calendar call is deliberately NOT inside the transaction, and is
+ * allowed to fail. Today it is a no-op — there is no calendar integration —
+ * but the seam is kept, and the rule that goes with it: a third-party round
+ * trip holding a database transaction open is how a slow API becomes a
+ * lock-wait, and the booking is valid without an external event. The
+ * applicant's choice must never be lost to an enrichment that failed.
  */
 export async function confirmMeetingSlot(input: {
   meetingId: string;

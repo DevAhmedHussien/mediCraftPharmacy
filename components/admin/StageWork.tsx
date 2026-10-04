@@ -28,10 +28,6 @@ export type StageData = {
     conferenceUrl: string | null;
     partnerNote: string | null;
   } | null;
-  /** Candidate times for the scheduler, as `datetime-local` values. */
-  suggestions: string[];
-  /** Whether those suggestions consulted a real diary. */
-  knowsAvailability: boolean;
   draftLines: EditorLine[] | null;
   /** What the applicant said when asking for another round. */
   applicantNote: string | null;
@@ -60,8 +56,6 @@ export function StageWork({ data }: { data: StageData }) {
     draftLines,
     currentList,
     applicantNote,
-    suggestions,
-    knowsAvailability,
   } = data;
 
   // A meeting has been asked for but not booked. Covers both halves of the
@@ -73,8 +67,6 @@ export function StageWork({ data }: { data: StageData }) {
         meetingId={meeting.id}
         requestNotes={meeting.requestNotes}
         requestedAt={meeting.requestedAt}
-        suggestions={suggestions}
-        knowsAvailability={knowsAvailability}
         alreadyOffered={meeting.proposedSlots}
       />
     );
@@ -129,12 +121,12 @@ export function StageWork({ data }: { data: StageData }) {
               <p className="mt-2 text-[0.875rem] text-[color:var(--admin-ink-70)]">
                 {meeting.location
                   ? meeting.location
-                  : "No joining link — send one, or set CALENDAR_DRIVER=google to attach a Meet link automatically."}
+                  : "No location set. Edit the meeting to add a phone number, a video link or an address."}
               </p>
             )}
 
             <blockquote
-              className="mt-4 rounded-[5px] border-l-2 py-2 pl-3 text-[0.8125rem] leading-relaxed text-[color:var(--admin-ink-70)]"
+              className="mt-4 rounded-lg border-l-2 py-2 pl-3 text-[0.8125rem] leading-relaxed text-[color:var(--admin-ink-70)]"
               style={{ borderColor: "var(--admin-accent)", background: "#f4f7ff" }}
             >
               {meeting.partnerNote || meeting.requestNotes}

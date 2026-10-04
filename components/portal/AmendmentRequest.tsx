@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 import { Plus, Search } from "lucide-react";
 
-import { requestAmendmentAction } from "@/app/(site)/portal/products/actions";
+import { requestAmendmentAction } from "@/app/portal/products/actions";
 import { Button } from "@/components/ui/button";
 import { FormAlert } from "@/components/ui/form/native";
 import { Input } from "@/components/ui/input";

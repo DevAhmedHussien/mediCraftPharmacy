@@ -58,6 +58,7 @@ export function Panel({
   actions,
   className,
   bodyClassName,
+  headingLevel = 2,
   children,
 }: {
   title?: string;
@@ -65,17 +66,24 @@ export function Panel({
   actions?: ReactNode;
   className?: string;
   bodyClassName?: string;
+  /**
+   * 3 when the panel sits inside a `Zone`, which owns the `h2`.
+   *
+   * Nesting is what makes a heading list navigable: a page of eleven sibling
+   * `h2`s tells a screen-reader user nothing about which three of them are
+   * the work and which eight are reference.
+   */
+  headingLevel?: 2 | 3;
   children: ReactNode;
 }) {
+  const Heading = (headingLevel === 3 ? "h3" : "h2") as "h2" | "h3";
+
   return (
     <section className={cn("admin-panel", className)}>
       {(title || actions) && (
-        <div
-          className="flex flex-wrap items-center justify-between gap-3 border-b px-4 py-2.5"
-          style={{ borderColor: "var(--admin-border)" }}
-        >
+        <div className="flex flex-wrap items-center justify-between gap-3 px-6 pb-4 pt-5">
           <div className="min-w-0">
-            {title && <h2 className="admin-section">{title}</h2>}
+            {title && <Heading className="admin-section">{title}</Heading>}
             {description && (
               <p className="mt-0.5 text-[0.75rem] text-[color:var(--admin-ink-50)]">{description}</p>
             )}
@@ -83,7 +91,12 @@ export function Panel({
           {actions && <div className="flex shrink-0 gap-2">{actions}</div>}
         </div>
       )}
-      <div className={cn("p-4", bodyClassName)}>{children}</div>
+      {/* No top padding when a header is present — the header already set the
+          card's top rhythm, and doubling it leaves a visible gap nobody
+          chose. */}
+      <div className={cn(title || actions ? "px-6 pb-6" : "p-6", bodyClassName)}>
+        {children}
+      </div>
     </section>
   );
 }
@@ -93,6 +106,17 @@ export function Panel({
  *
  * Six shadowed boxes is the default dashboard and it spends a third of the
  * screen on borders. These share one panel and are separated by rules.
+ *
+ * A `<dl>`, not a grid of paragraphs. Each figure IS the value of the label
+ * beside it, and a screen reader that knows that reads "Partners waiting on
+ * us, three" instead of two unrelated lines of text. It costs nothing in the
+ * markup and it is the difference between a table of numbers and a list of
+ * orphaned digits.
+ *
+ * URGENCY IS NEVER THE COLOUR ALONE. The alert red used to be the only signal
+ * that a figure had a person waiting behind it, which is invisible to anyone
+ * who cannot separate it from the ink — about one man in twelve. The figure
+ * now carries a marker and a word as well.
  */
 export function StatStrip({
   stats,
@@ -102,13 +126,13 @@ export function StatStrip({
     value: string | number;
     detail?: string;
     href?: string;
-    /** Draws the figure in the alert colour when it is above zero — for
-     *  queues with a person waiting at the other end. */
+    /** Flags the figure when it is above zero — for queues with a person
+     *  waiting at the other end. */
     urgent?: boolean;
   }>;
 }) {
   return (
-    <div
+    <dl
       className="admin-panel grid divide-y sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4"
       style={{ borderColor: "var(--admin-border)" }}
     >
@@ -116,17 +140,26 @@ export function StatStrip({
         const urgent = stat.urgent && Number(stat.value) > 0;
         const body = (
           <>
-            <p className="admin-label">{stat.label}</p>
-            <p
+            <dt className="admin-label">{stat.label}</dt>
+            <dd
               className={cn(
-                "mt-1 text-[1.625rem] font-semibold leading-none tabular-nums tracking-[-0.02em]",
+                "mt-1 flex items-baseline gap-1.5 text-[1.625rem] font-semibold leading-none tabular-nums tracking-[-0.02em]",
                 urgent && "text-[#9c3a2a]"
               )}
             >
+              {urgent && (
+                <span
+                  aria-hidden
+                  className="size-1.5 shrink-0 self-center rounded-full bg-current"
+                />
+              )}
               {stat.value}
-            </p>
+              {urgent && <span className="sr-only">, needs attention</span>}
+            </dd>
             {stat.detail && (
-              <p className="mt-1 text-[0.75rem] text-[color:var(--admin-ink-50)]">{stat.detail}</p>
+              <dd className="mt-1 text-[0.75rem] text-[color:var(--admin-ink-50)]">
+                {stat.detail}
+              </dd>
             )}
           </>
         );
@@ -138,7 +171,7 @@ export function StatStrip({
             style={{ borderColor: "var(--admin-border)" }}
           >
             {stat.href ? (
-              <Link href={stat.href} className="block transition-opacity hover:opacity-70">
+              <Link href={stat.href} className="admin-focus block rounded-[5px] transition-opacity hover:opacity-70">
                 {body}
               </Link>
             ) : (
@@ -147,28 +180,120 @@ export function StatStrip({
           </div>
         );
       })}
-    </div>
+    </dl>
   );
 }
 
+/**
+ * A zone heading, for a page built of several.
+ *
+ * The dashboard used to be a flat stack of panels, every one of them an `h2`
+ * of equal weight — so "Traffic" announced itself exactly as loudly as the
+ * queue of partners waiting on a reply, and a screen reader's heading list
+ * read as fourteen peers with no shape. Zones give the page an outline:
+ * `h2` for the zone, the panels inside it demoted to `h3`.
+ */
+export function Zone({
+  title,
+  description,
+  actions,
+  children,
+}: {
+  title: string;
+  description?: string;
+  actions?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <section className="space-y-3" aria-labelledby={headingId(title)}>
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-1">
+        <h2
+          id={headingId(title)}
+          className="text-[0.9375rem] font-bold tracking-[-0.01em] text-[color:var(--admin-ink)]"
+        >
+          {title}
+        </h2>
+        {description && (
+          <p className="text-[0.8125rem] text-[color:var(--admin-ink-50)]">{description}</p>
+        )}
+        {actions}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+const headingId = (title: string) =>
+  `zone-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`;
+
+/**
+ * "4d", with the real date underneath it.
+ *
+ * A relative age is the right thing to scan a queue by and the wrong thing to
+ * be the only record of when something happened: "2mo" cannot be checked
+ * against an email, and a screen reader reading "4d" says "four dee". The
+ * element carries the machine-readable date, the visible short form, and the
+ * full date for anyone who hovers or listens.
+ */
+export function Since({ date }: { date: Date | string }) {
+  const value = new Date(date);
+  const full = value.toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
+
+  return (
+    <time dateTime={value.toISOString()} title={full} className="tabular-nums">
+      <span aria-hidden>{relativeDays(value)}</span>
+      <span className="sr-only">{full}</span>
+    </time>
+  );
+}
+
+/* ---------------------------------------------------------------------
+   Status pills.
+
+   A soft tint with saturated text, not a solid block of colour. Six of these
+   in a table column, each a filled chip, is a column that reads as the
+   loudest thing on the page — which is wrong, because a status is context for
+   the row, not the point of it.
+
+   Each tone carries its own dot colour. The dot is the scanning aid: in a
+   long list the eye finds the shape and the position before it reads the
+   word, which is how a queue gets triaged at a glance. The WORD is what
+   carries the meaning — the colour never does it alone.
+   ------------------------------------------------------------------ */
 const TONES = {
-  neutral: "bg-[#e8ebee] text-[#4a5470]",
-  good: "bg-[#e4efe8] text-[#2c6b4d]",
-  warn: "bg-[#f7efdc] text-[#8a6416]",
-  bad: "bg-[#f8e9e5] text-[#9c3a2a]",
-  info: "bg-[#e7edf5] text-[#2c4a68]",
+  neutral: { chip: "bg-[#eceff3] text-[#49536b]", dot: "#8a93a8" },
+  good: { chip: "bg-[#e3f0e8] text-[#246848]", dot: "#2f9163" },
+  warn: { chip: "bg-[#fbefd8] text-[#805c12]", dot: "#d79a1f" },
+  bad: { chip: "bg-[#fbe8e3] text-[#8f3526]", dot: "#c4553c" },
+  info: { chip: "bg-[#e6edfb] text-[#1f4190]", dot: "#3a6ae8" },
 } as const;
 
 export type Tone = keyof typeof TONES;
 
-export function Pill({ children, tone = "neutral" }: { children: ReactNode; tone?: Tone }) {
+export function Pill({
+  children,
+  tone = "neutral",
+  /** Drops the dot, for a pill that is a count or a label rather than a state. */
+  plain,
+}: {
+  children: ReactNode;
+  tone?: Tone;
+  plain?: boolean;
+}) {
   return (
     <span
       className={cn(
-        "inline-flex shrink-0 items-center whitespace-nowrap rounded-[4px] px-1.5 py-0.5 text-[0.6875rem] font-medium",
-        TONES[tone]
+        "inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-2 py-[0.1875rem] text-[0.6875rem] font-semibold leading-none",
+        TONES[tone].chip
       )}
     >
+      {!plain && (
+        <span
+          aria-hidden
+          className="size-1.5 shrink-0 rounded-full"
+          style={{ background: TONES[tone].dot }}
+        />
+      )}
       {children}
     </span>
   );
@@ -179,19 +304,28 @@ export function DataTable({
   head,
   children,
   empty,
+  caption,
 }: {
   head: ReactNode[];
   children: ReactNode;
   empty?: string;
+  /**
+   * What the table is, for anyone who cannot see the panel heading above it.
+   * Visually hidden — the heading is already on screen; this is the same
+   * sentence reaching the people the heading does not.
+   */
+  caption?: string;
 }) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full border-collapse text-[0.8125rem]">
+        {caption && <caption className="sr-only">{caption}</caption>}
         <thead>
           <tr style={{ borderBottom: "1px solid var(--admin-border)" }}>
             {head.map((cell, index) => (
               <th
                 key={index}
+                scope="col"
                 className="admin-label whitespace-nowrap px-4 py-2 text-left font-semibold"
               >
                 {cell}
@@ -239,6 +373,74 @@ export function Cell({
       {children}
     </td>
   );
+}
+
+/* ---------------------------------------------------------------------
+   Row actions.
+
+   WHY ICONS
+   ---------
+   An actions column of text links — "View  Archive  Edit" — spends the
+   widest part of the row on three verbs that are the same on every row, and
+   a column of repeated words is harder to scan than a column of repeated
+   shapes: the eye learns a pencil's silhouette once and then finds it by
+   position, where it has to re-read each word.
+
+   WHAT THAT COSTS, AND HOW IT IS PAID
+   -----------------------------------
+   An unlabelled icon is a guess. Every action here therefore carries a real
+   accessible name and a native tooltip, both saying the verb AND the subject
+   — "Edit Semaglutide 2.5 mg", not "Edit" — so a screen reader moving down
+   the column hears which row it is on rather than "edit, edit, edit".
+
+   Destructive actions get the danger tint on hover only. A row with a red
+   control sitting in it at rest reads as a row in trouble.
+   ------------------------------------------------------------------ */
+
+export type RowActionTone = "default" | "danger";
+
+export function RowAction({
+  icon: Icon,
+  label,
+  href,
+  tone = "default",
+  type = "button",
+}: {
+  icon: LucideIcon;
+  /** The verb and the subject. Used as the accessible name and the tooltip. */
+  label: string;
+  /** A link action. Omit for a submit button inside a form. */
+  href?: string;
+  tone?: RowActionTone;
+  type?: "button" | "submit";
+}) {
+  const className = cn(
+    "admin-focus inline-flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors",
+    tone === "danger"
+      ? "text-[color:var(--admin-ink-50)] hover:bg-[#fbe8e3] hover:text-[#8f3526]"
+      : "text-[color:var(--admin-ink-50)] hover:bg-[color:var(--admin-bg)] hover:text-[color:var(--admin-ink)]"
+  );
+
+  const body = <Icon className="size-4" strokeWidth={1.9} aria-hidden />;
+
+  if (href) {
+    return (
+      <Link href={href} className={className} title={label} aria-label={label}>
+        {body}
+      </Link>
+    );
+  }
+
+  return (
+    <button type={type} className={className} title={label} aria-label={label}>
+      {body}
+    </button>
+  );
+}
+
+/** The cluster at the right edge of a row. */
+export function RowActions({ children }: { children: ReactNode }) {
+  return <div className="flex items-center justify-end gap-0.5">{children}</div>;
 }
 
 /** Label and value, for a record's details. */

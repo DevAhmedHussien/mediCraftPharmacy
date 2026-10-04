@@ -3,12 +3,13 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Eye, Loader2, X } from "lucide-react";
+import { StatusBadge } from "@/components/admin/StatusBadge";
 
 import {
   adminDocumentUrl,
   reviewDocument,
 } from "@/app/admin/partners/[id]/document-actions";
-import { Panel, Pill, type Tone } from "@/components/admin/ui";
+import { Panel } from "@/components/admin/ui";
 import { DocumentDialog, type ViewableDocument } from "@/components/DocumentDialog";
 
 /* ===========================================================================
@@ -29,12 +30,6 @@ export type ReviewDocument = {
   status: "PENDING_REVIEW" | "ACCEPTED" | "REJECTED";
   reviewerComment: string | null;
   uploadedAt: string;
-};
-
-const TONES: Record<ReviewDocument["status"], Tone> = {
-  ACCEPTED: "good",
-  REJECTED: "bad",
-  PENDING_REVIEW: "warn",
 };
 
 function readableSize(bytes: number): string {
@@ -115,7 +110,7 @@ function Row({
   return (
     <div className="rounded-[5px] border p-3" style={{ borderColor: "var(--admin-border)" }}>
       <div className="flex flex-wrap items-center gap-3">
-        <Pill tone={TONES[document.status]}>{document.status.replace(/_/g, " ").toLowerCase()}</Pill>
+        <StatusBadge kind="document" status={document.status} />
 
         <span className="min-w-0 flex-1">
           <span className="block text-[0.8125rem] font-semibold">{document.label}</span>

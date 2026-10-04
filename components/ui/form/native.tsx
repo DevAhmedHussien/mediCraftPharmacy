@@ -79,6 +79,9 @@ export function TextField({
   defaultValue,
   readOnly = false,
   hint,
+  inputMode,
+  maxLength,
+  className,
 }: {
   name: string;
   label: string;
@@ -87,6 +90,12 @@ export function TextField({
   error?: string;
   autoComplete?: string;
   placeholder?: string;
+  /** For a field that wants the numeric keypad on a phone — a code, a ZIP. */
+  inputMode?: "numeric" | "tel" | "email" | "text";
+  /** A hard cap the browser enforces, for fixed-length values. */
+  maxLength?: number;
+  /** Extra classes on the input itself — a code box wants its own setting. */
+  className?: string;
   /**
    * Uncontrolled on purpose. The admin edit forms are server-rendered with
    * their current values and posted natively, so React never needs to own the
@@ -113,6 +122,9 @@ export function TextField({
         placeholder={placeholder}
         defaultValue={defaultValue}
         readOnly={readOnly}
+        inputMode={inputMode}
+        maxLength={maxLength}
+        className={className}
         aria-invalid={invalid}
         aria-describedby={describedBy}
       />
@@ -334,13 +346,33 @@ export function RadioGroup({
  * the hook reports nothing for a form rendered by the same component that
  * calls it.
  */
-export function ActionSubmitButton({ children }: { children: React.ReactNode }) {
+export function ActionSubmitButton({
+  children,
+  name,
+  value,
+  block = true,
+}: {
+  children: React.ReactNode;
+  /**
+   * Submitter name/value, for a form with more than one thing it can do.
+   *
+   * The clicked button's pair is part of the FormData the browser sends, so a
+   * single action can branch on it — and it still works with JavaScript off,
+   * which a click handler setting client state would not.
+   */
+  name?: string;
+  value?: string;
+  /** Full width by default; `false` to sit beside something. */
+  block?: boolean;
+}) {
   const { pending } = useFormStatus();
 
   return (
     <Button
       type="submit"
-      block
+      name={name}
+      value={value}
+      block={block}
       disabled={pending}
       /* aria-disabled as well as disabled: some screen readers skip a disabled
          control entirely, so the label change alone would go unannounced. */

@@ -141,11 +141,24 @@ async function selectedProducts(partnerId: string) {
   });
 }
 
-export async function startDraft(partnerId: string, actorId: string) {
+/**
+ * Open a draft price list.
+ *
+ * `onlyProductIds` narrows the seed to a specific set — a change order prices
+ * the handful of preparations that were asked for, not the partner's whole
+ * working formulary. Without it an admin pricing two new items would be handed
+ * every line the partner already has, and the quote they sent back would look
+ * like a renegotiation of the entire schedule.
+ */
+export async function startDraft(
+  partnerId: string,
+  actorId: string,
+  onlyProductIds?: string[]
+) {
   const existing = await getDraftPriceList(partnerId);
   if (existing) return existing;
 
-  const [products, latest] = await Promise.all([
+  const [seeded, latest] = await Promise.all([
     /* The partner's own selection, not the whole catalogue.
      *
      * A draft used to seed from every active product, which after the 2026
@@ -158,13 +171,21 @@ export async function startDraft(partnerId: string, actorId: string) {
      *
      * Quote-only items are excluded either way: MSA §4.1 prices them by
      * written quote, and they have no list price to discount. */
-    selectedProducts(partnerId),
+    onlyProductIds?.length
+      ? db.product.findMany({
+          where: { id: { in: onlyProductIds } },
+          select: { id: true, name: true, listPrice: true, isQuoteOnly: true },
+          orderBy: { name: "asc" },
+        })
+      : selectedProducts(partnerId),
     db.priceListVersion.findFirst({
       where: { partnerId },
       orderBy: { version: "desc" },
       select: { version: true, items: { select: { productId: true, discountPercent: true } } },
     }),
   ]);
+
+  const products = seeded;
 
   // Carry the previous round's discounts forward. A second round almost
   // always adjusts a few lines rather than starting from nothing.
@@ -349,6 +370,44 @@ export async function listCatalogPricing() {
       route: true,
       coldChain: true,
       deaSchedule: true,
+    },
+  });
+}
+
+/**
+ * The prices a partner can actually order at today.
+ *
+ * `PartnerPricing` rather than the accepted price list: the list is what was
+ * agreed in one negotiation, and a partner with signed change orders has
+ * several of those. The book is the sum of them, which is the only thing that
+ * answers "what does this practice pay for this preparation".
+ *
+ * Superseded rows are left out. They are kept for history — `effectiveTo`
+ * says when each stopped applying — but a schedule that lists two prices for
+ * one preparation is a schedule nobody can bill from.
+ */
+export async function getPartnerSchedule(partnerId: string) {
+  return db.partnerPricing.findMany({
+    where: { partnerId, isActive: true },
+    orderBy: { product: { name: "asc" } },
+    select: {
+      id: true,
+      price: true,
+      effectiveFrom: true,
+      sourceVersionId: true,
+      product: {
+        select: {
+          id: true,
+          name: true,
+          strength: true,
+          form: true,
+          packageSize: true,
+          unit: true,
+          listPrice: true,
+          deaSchedule: true,
+          coldChain: true,
+        },
+      },
     },
   });
 }

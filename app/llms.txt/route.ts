@@ -2,6 +2,23 @@ import { getCategories, getProducts } from "@/lib/catalogue";
 import { listPublishedPosts } from "@/lib/services/blog";
 import { site, hasRealPhone } from "@/lib/site";
 
+/*
+ * Rendered on demand, not baked at build.
+ *
+ * Both of the things this enumerates — the catalogue and the published posts —
+ * live in the database and change without a deploy. Prerendering it meant a
+ * sitemap that silently described whatever the catalogue looked like the last
+ * time someone shipped, which is the one way a sitemap can be actively worse
+ * than not having one.
+ *
+ * It also made the production image unbuildable without a live database,
+ * because Next has to run this to prerender it. Crawlers fetch it a handful of
+ * times a day and the query is small, so generating per request costs nothing
+ * worth saving.
+ */
+export const dynamic = "force-dynamic";
+
+
 /* ===========================================================================
    /llms.txt — the site, written for a language model.
 

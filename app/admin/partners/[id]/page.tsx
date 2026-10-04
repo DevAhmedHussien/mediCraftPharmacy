@@ -2,47 +2,41 @@ import { notFound } from "next/navigation";
 
 import { DocumentReview } from "@/components/admin/DocumentReview";
 import { PipelineActions } from "@/components/admin/PipelineActions";
-import { AmendmentPanel } from "@/components/admin/AmendmentPanel";
+import { AmendmentMeetingPanel, AmendmentPanel } from "@/components/admin/AmendmentPanel";
+import { PartnerSchedule } from "@/components/admin/PartnerSchedule";
+import { PriceListEditor } from "@/components/admin/PriceListEditor";
 import { StageWork } from "@/components/admin/StageWork";
+import { StatusBadge } from "@/components/admin/StatusBadge";
 import { StatusTimeline } from "@/components/admin/StatusTimeline";
-import { Facts, PageHeader, Panel, Pill, relativeDays, type Tone } from "@/components/admin/ui";
+import { Facts, PageHeader, Panel, Pill, relativeDays } from "@/components/admin/ui";
 import { hasPermission, requirePermissionPage } from "@/lib/guard";
 import { missingTerms } from "@/lib/msa-terms";
 import { specFor } from "@/lib/partner/documents";
 import { displayDate, displayUsPhone } from "@/lib/masks";
 import {
-  ADMIN_ACTIONABLE_STATUSES,
   allowedTransitions,
   PARTNER_STATUS,
   progressStep,
   type PartnerStatus,
 } from "@/lib/partner/status";
+import { localInputValue } from "@/lib/services/calendar";
 import { getSelection } from "@/lib/services/formulary";
 import { getOpenAmendment } from "@/lib/services/amendments";
-import { calendar, localInputValue, suggestSlots } from "@/lib/services/calendar";
 import { getLatestMeeting } from "@/lib/services/meetings";
 import { getPartnerDetail } from "@/lib/services/partners";
-import { getCurrentPriceList, getDraftPriceList } from "@/lib/services/pricing";
+import {
+  getCurrentPriceList,
+  getDraftPriceList,
+  getPartnerSchedule,
+} from "@/lib/services/pricing";
 import { getStatusHistory } from "@/lib/services/transition";
 
 export const metadata = { title: "Partner" };
 
-function statusTone(status: PartnerStatus): Tone {
-  if (status === PARTNER_STATUS.VERIFIED) return "good";
-  if (
-    status === PARTNER_STATUS.REJECTED ||
-    status === PARTNER_STATUS.MSA_DECLINED ||
-    status === PARTNER_STATUS.SUSPENDED
-  ) {
-    return "bad";
-  }
-  return ADMIN_ACTIONABLE_STATUSES.includes(status) ? "warn" : "neutral";
-}
-
 export default async function PartnerDetailPage({ params }: { params: { id: string } }) {
   const session = await requirePermissionPage("partners.view");
 
-  const [partner, history, meeting, draft, currentList, selection, amendment] =
+  const [partner, history, meeting, draft, currentList, selection, amendment, schedule] =
     await Promise.all([
       getPartnerDetail(params.id),
       getStatusHistory(params.id),
@@ -51,6 +45,7 @@ export default async function PartnerDetailPage({ params }: { params: { id: stri
       getCurrentPriceList(params.id),
       getSelection(params.id),
       getOpenAmendment(params.id),
+      getPartnerSchedule(params.id),
     ]);
 
   if (!partner) notFound();
@@ -59,14 +54,25 @@ export default async function PartnerDetailPage({ params }: { params: { id: stri
   const onboarding = partner.onboarding;
   const status = partner.status as PartnerStatus;
 
-  /* Candidate times, fetched only for the stage that offers them. With Google
-     configured this is a free/busy call, so doing it on every partner page
-     would be a round trip nine screens out of ten never read. A failure here
-     must not take the page down — the admin can still type times by hand. */
-  const suggestions =
-    status === PARTNER_STATUS.MEETING_REQUESTED && meeting && !meeting.scheduledAt
-      ? await suggestSlots({ durationMinutes: meeting.durationMinutes ?? 30 }).catch(() => [])
-      : [];
+  /* The open draft, shaped for the editor. Lifted out of the StageWork props
+     because a change order needs the same editor and StageWork renders
+     nothing for a VERIFIED partner. */
+  const draftLines =
+    draft?.items.map((item) => ({
+      itemId: item.id,
+      productName: item.product.name,
+      strength: item.product.strength,
+      form: item.product.form,
+      unit: item.product.unit,
+      // Decimal does not cross the client boundary; strings keep the
+      // exactness that Number() would throw away.
+      listPrice: item.listPrice.toString(),
+      discountPercent: item.discountPercent.toString(),
+      adminComment: item.adminComment,
+      categoryName: item.product.category?.name ?? null,
+      deaSchedule: item.product.deaSchedule,
+      coldChain: item.product.coldChain,
+    })) ?? null;
 
 
   // What this admin may do next, derived from the state machine rather than
@@ -88,7 +94,7 @@ export default async function PartnerDetailPage({ params }: { params: { id: stri
         actions={
           <div className="flex items-center gap-2">
             <span className="admin-label">{progressStep(status)}</span>
-            <Pill tone={statusTone(status)}>{status.replace(/_/g, " ").toLowerCase()}</Pill>
+            <StatusBadge kind="partner" status={status} />
           </div>
         }
       />
@@ -143,18 +149,51 @@ export default async function PartnerDetailPage({ params }: { params: { id: stri
           is the most time-sensitive thing on this page — and the stage panel
           below shows nothing at all for a VERIFIED partner, so without this
           the request would be invisible here. */}
-      {amendment && (
-        <AmendmentPanel
-          amendment={{
+      {amendment &&
+        (() => {
+          const view = {
             id: amendment.id,
             number: amendment.number,
             status: amendment.status,
             requestNotes: amendment.requestNotes,
             requestedAt: amendment.requestedAt.toISOString(),
+            partnerNote: amendment.partnerNote,
             items: amendment.items,
-          }}
-        />
-      )}
+            meeting: amendment.meetings[0]
+              ? {
+                  id: amendment.meetings[0].id,
+                  requestNotes: amendment.meetings[0].requestNotes,
+                  requestedAt: amendment.meetings[0].requestedAt.toISOString(),
+                  proposedSlots: amendment.meetings[0].proposedSlots.map((slot) =>
+                    localInputValue(slot)
+                  ),
+                  scheduledAt: amendment.meetings[0].scheduledAt?.toISOString() ?? null,
+                  confirmedAt: amendment.meetings[0].confirmedAt?.toISOString() ?? null,
+                  durationMinutes: amendment.meetings[0].durationMinutes,
+                  location: amendment.meetings[0].location,
+                  partnerNote: amendment.meetings[0].partnerNote,
+                }
+              : null,
+          };
+
+          return (
+            <>
+              <AmendmentPanel amendment={view} hasDraft={Boolean(draftLines?.length)} />
+              {/* The change order's own call, offered with the same scheduler
+                  the first application uses. */}
+              <AmendmentMeetingPanel amendment={view} partnerId={partner.id} />
+
+              {/* The editor the panel above asks for.
+                  `StageWork` renders nothing for a VERIFIED partner — it only
+                  covers the original pipeline — so without this the admin was
+                  told to price a change order in an editor that was not on the
+                  page. */}
+              {draftLines && draftLines.length > 0 && (
+                <PriceListEditor partnerId={partner.id} lines={draftLines} canSend={false} />
+              )}
+            </>
+          );
+        })()}
 
       <StageWork
         data={{
@@ -173,28 +212,11 @@ export default async function PartnerDetailPage({ params }: { params: { id: stri
                 partnerNote: meeting.partnerNote,
               }
             : null,
-          suggestions: suggestions.map((slot) => localInputValue(slot.start)),
-          knowsAvailability: calendar.knowsAvailability,
           // The note from the most recent "another round" request, so the
           // admin revising can see what they are revising against.
           applicantNote:
             history.find((entry) => entry.toStatus === "PRICING_CHANGES_REQUESTED")?.note ?? null,
-          draftLines:
-            draft?.items.map((item) => ({
-              itemId: item.id,
-              productName: item.product.name,
-              strength: item.product.strength,
-              form: item.product.form,
-              unit: item.product.unit,
-              // Decimal does not cross the client boundary; strings keep the
-              // exactness that Number() would throw away.
-              listPrice: item.listPrice.toString(),
-              discountPercent: item.discountPercent.toString(),
-              adminComment: item.adminComment,
-              categoryName: item.product.category?.name ?? null,
-              deaSchedule: item.product.deaSchedule,
-              coldChain: item.product.coldChain,
-            })) ?? null,
+          draftLines,
           currentList: currentList
             ? {
                 version: currentList.version,
@@ -231,6 +253,29 @@ export default async function PartnerDetailPage({ params }: { params: { id: stri
             {unfilledTerms.length > 6 ? `, and ${unfilledTerms.length - 6} more.` : "."}
           </p>
         )}
+
+      {/* What they pay today, across the original agreement and every signed
+          change order since. The pipeline panels above only ever show one
+          negotiation's numbers, and they show nothing at all once a partner is
+          verified — so without this, the live prices of a live account were
+          not on this page anywhere. */}
+      <PartnerSchedule
+        lines={schedule.map((row) => ({
+          id: row.id,
+          productName: row.product.name,
+          strength: row.product.strength,
+          form: row.product.form,
+          packageSize: row.product.packageSize,
+          unit: row.product.unit,
+          // Decimal columns are stringified at the boundary, like everywhere
+          // else in this page — Number() would round them on the way out.
+          listPrice: row.product.listPrice.toString(),
+          price: row.price.toString(),
+          deaSchedule: row.product.deaSchedule,
+          coldChain: row.product.coldChain,
+          effectiveFrom: row.effectiveFrom?.toISOString() ?? null,
+        }))}
+      />
 
       {/* The agreement as it stands for this partner, with their own price
           book spliced in as Schedule A-1. Generated on request — a stored copy

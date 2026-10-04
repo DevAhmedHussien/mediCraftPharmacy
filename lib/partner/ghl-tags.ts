@@ -74,6 +74,40 @@ export const EVENT_TAG_BY_LABEL: Record<string, string> = {
   "MSA envelope voided": "system_msa_voided",
 };
 
+/**
+ * Formulary change orders.
+ *
+ * A separate map because these are not status transitions. An amendment runs
+ * its own small lifecycle against a partner who is already ACTIVE and whose
+ * `status` never moves, so these labels are deliberately absent from the
+ * transition table — and `assertTagCoverage` would otherwise flag every one of
+ * them as a tag for a transition that does not exist.
+ *
+ * They still belong in the CRM: the brief asks for *every* action between a
+ * partner and an admin to be tagged, and "asked to add six preparations" is
+ * exactly the kind of thing sales wants to see before calling.
+ *
+ * These are event tags — they accumulate and are never removed. The stage
+ * pointer is untouched, because an amendment does not move the partner
+ * anywhere.
+ */
+export const AMENDMENT_TAG_BY_LABEL: Record<string, string> = {
+  // ---- Partner moves ----
+  "Formulary change requested": "partner_formulary_change_requested",
+  "Formulary change round requested": "partner_formulary_change_round_requested",
+  "Formulary change call requested": "partner_formulary_change_call_requested",
+  "Formulary change call booked": "partner_formulary_change_call_booked",
+  "Formulary change pricing accepted": "partner_formulary_change_accepted",
+  "Formulary change signed": "partner_formulary_change_signed",
+
+  // ---- Admin decisions, approvals and refusals alike ----
+  "Formulary change under review": "admin_formulary_change_under_review",
+  "Formulary change pricing sent": "admin_formulary_change_pricing_sent",
+  "Formulary change edits requested": "admin_formulary_change_edits_requested",
+  "Formulary change order sent": "admin_formulary_change_order_sent",
+  "Formulary change declined": "admin_formulary_change_declined",
+};
+
 /** The mutually exclusive stage pointer, one per progress step. */
 export const STAGE_TAG_BY_STEP: Record<ProgressStep, string> = {
   Application: "stage_application",
@@ -87,7 +121,7 @@ export const STAGE_TAG_BY_STEP: Record<ProgressStep, string> = {
 export const ALL_STAGE_TAGS: string[] = PROGRESS_STEPS.map((s) => STAGE_TAG_BY_STEP[s]);
 
 export function eventTagFor(label: string): string | undefined {
-  return EVENT_TAG_BY_LABEL[label];
+  return EVENT_TAG_BY_LABEL[label] ?? AMENDMENT_TAG_BY_LABEL[label];
 }
 
 export function stageTagFor(status: Parameters<typeof progressStep>[0]): string {
@@ -119,10 +153,15 @@ export function assertTagCoverage(labels: string[]): void {
     );
   }
 
-  const used = Object.values(EVENT_TAG_BY_LABEL);
+  /* Across both maps: an amendment tag colliding with a transition tag would
+     make a GHL smart list silently wrong, and nothing else would catch it. */
+  const used = [
+    ...Object.values(EVENT_TAG_BY_LABEL),
+    ...Object.values(AMENDMENT_TAG_BY_LABEL),
+  ];
   const duplicated = used.filter((tag, i) => used.indexOf(tag) !== i);
   if (duplicated.length) {
-    throw new Error(`The same GHL tag is used by two transitions: ${[...new Set(duplicated)].join(", ")}`);
+    throw new Error(`The same GHL tag is used twice: ${[...new Set(duplicated)].join(", ")}`);
   }
 
   const stray = Object.keys(EVENT_TAG_BY_LABEL).filter((label) => !labels.includes(label));

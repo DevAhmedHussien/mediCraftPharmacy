@@ -15,8 +15,7 @@ import { Icon } from "@/components/icons/set";
 import { CoverageMap } from "@/components/sections/CoverageMap";
 import { Reveal } from "@/components/ui/Reveal";
 import { closingCta, coverage } from "@/lib/content";
-import { GradientPlate } from "@/components/media/GradientPlate";
-import { site } from "@/lib/site";
+import { BrandFigure } from "@/components/sections/BrandFigure";
 
 export const metadata: Metadata = pageMetadata({
   title: "State Coverage",
@@ -35,27 +34,6 @@ export default function CoveragePage() {
         lead={coverage.intro.body}
         media={media.licensesCover}
       >
-        {/* The same specification plate as the home hero, so coverage reads as
-            a stated fact rather than a marketing figure. The first value is a
-            two-letter state code, which is the whole point: coverage is Florida
-            today, and overstating it on a pharmacy site is a licensing problem
-            rather than a marketing one. */}
-        <div className="spec-plate mt-12">
-          <div className="spec-plate-head">
-            <span className="spec-plate-head-label">Licensure status</span>
-            <span className="spec-plate-head-meta">Current · {site.established}</span>
-          </div>
-          <dl className="spec-plate-grid-3">
-            {coverage.features.map((f) => (
-              <div key={f.label} className="spec-cell">
-                <dt className="spec-cell-label">{f.label}</dt>
-                <dd>
-                  <span className="spec-cell-value">{f.value}</span>
-                </dd>
-              </div>
-            ))}
-          </dl>
-        </div>
       </PageHero>
 
       {/* ---- Licensed today ---- */}
@@ -75,27 +53,34 @@ export default function CoveragePage() {
            * designer. This renders from lib/coverage.ts — flipping one status
            * there updates the map, the legend and the counts together.
            */}
+          {/* The map takes the full column width.
+              It used to sit in a 1.35fr track beside the state list, which
+              left it about 55% of the page — small enough that the two-letter
+              codes on the north-eastern states were the first thing to become
+              unreadable, on exactly the states a reader is most likely to be
+              hunting for. The list and the note read perfectly well underneath
+              it, so the width goes to the thing that needs it. */}
           <Reveal delay={0.05} className="mt-10">
-            <div className="grid gap-10 lg:grid-cols-[1.35fr_1fr] lg:gap-14">
-              <CoverageMap />
+            <CoverageMap />
+          </Reveal>
 
-              <div>
-                <ul className="flex flex-wrap gap-3">
-                  {coverage.licensed.states.map((state) => (
-                    <li
-                      key={state}
-                      className="inline-flex items-center gap-2.5 rounded-lg border-[1.5px] border-brand-500 bg-brand-50 px-5 py-3 text-body font-bold text-brand-700"
-                    >
-                      <Icon name="pin" className="h-[1.1rem] w-[1.1rem]" />
-                      {state}
-                    </li>
-                  ))}
-                </ul>
+          <Reveal delay={0.1} className="mt-12">
+            <div className="grid gap-8 lg:grid-cols-2 lg:gap-14">
+              <ul className="flex flex-wrap content-start gap-3">
+                {coverage.licensed.states.map((state) => (
+                  <li
+                    key={state}
+                    className="inline-flex items-center gap-2.5 rounded-lg border-[1.5px] border-brand-500 bg-brand-50 px-5 py-3 text-body font-bold text-brand-700"
+                  >
+                    <Icon name="pin" className="h-[1.1rem] w-[1.1rem]" />
+                    {state}
+                  </li>
+                ))}
+              </ul>
 
-                <Callout label={coverage.licensed.noteLabel} className="mt-6">
-                  {coverage.licensed.note}
-                </Callout>
-              </div>
+              <Callout label={coverage.licensed.noteLabel}>
+                {coverage.licensed.note}
+              </Callout>
             </div>
           </Reveal>
 
@@ -119,11 +104,15 @@ export default function CoveragePage() {
             </Reveal>
 
             <Reveal delay={0.1} className="space-y-6">
-              <GradientPlate
-                ratio="3/2"
-                icon="truck"
-                label="Shipping — Phase 1"
-                subject="Validated cold-chain shipper, open mid-pack: gel packs, insulated liner and a temperature indicator strip in frame, shot slightly overhead."
+              {/* The real packaging, not a placeholder describing a shot
+                  nobody has taken. */}
+              <BrandFigure
+                variant="framed"
+                src="/images/brand/stationery-box.webp"
+                alt="MediCraft Pharmacy packaging"
+                width={1600}
+                height={900}
+                sizes="(min-width: 1024px) 32rem, 92vw"
               />
               <NavyPanel
                 badge={coverage.shipping.panel.badge}

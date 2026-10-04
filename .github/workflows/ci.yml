@@ -1,0 +1,83 @@
+# =============================================================================
+# CI — runs on every push and every pull request.
+#
+# Nothing here touches AWS or needs a secret. It is the gate that has to be
+# green before deploy.yml will push an image anywhere: the deploy workflow
+# depends on this one rather than repeating it, so a broken build cannot
+# reach staging by way of a second, slightly different pipeline.
+# =============================================================================
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_call: # deploy.yml calls this before it builds anything
+
+concurrency:
+  # One run per branch. A force-push mid-run cancels the stale one rather
+  # than racing it to the finish.
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    # The app talks to Postgres at build time? No — but `prisma generate`
+    # wants a schema it can parse, and the unit tests import modules that
+    # construct a client. A throwaway database costs nothing and removes the
+    # class of failure where a test passes locally against a real database
+    # and fails here against none.
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: medicraft_ci
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+        ports: ["5432:5432"]
+
+    env:
+      DATABASE_URL: postgresql://postgres:ci@localhost:5432/medicraft_ci
+      # Values the env schema requires to parse. Not secrets — this database
+      # is destroyed with the runner.
+      AUTH_SECRET: ci-only-not-a-real-secret-0000000000000000
+      FIELD_ENCRYPTION_KEY: ci0000000000000000000000000000000000000000000=
+      APP_URL: http://localhost:3000
+      NEXT_TELEMETRY_DISABLED: "1"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # Matches .nvmrc and the engines field. The Prisma CLI crashes on
+          # Node 21 with an ESM resolution error, so this is load-bearing.
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Generate the Prisma client
+        run: npx prisma generate
+
+      - name: Apply migrations to the throwaway database
+        run: npx prisma migrate deploy
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Build
+        run: npm run build

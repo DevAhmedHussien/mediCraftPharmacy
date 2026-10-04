@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { PartnersTable } from "@/components/admin/PartnersTable";
+import { statusEntry } from "@/components/admin/StatusBadge";
 import { EmptyState, PageHeader, Panel, StatStrip } from "@/components/admin/ui";
 import { requirePermissionPage } from "@/lib/guard";
 import { ADMIN_ACTIONABLE_STATUSES, PARTNER_STATUS, type PartnerStatus } from "@/lib/partner/status";
@@ -72,7 +73,10 @@ export default async function AdminPartnersPage({
                 : "border-[color:var(--admin-border-strong)] bg-[color:var(--admin-surface)] text-[color:var(--admin-ink-70)] hover:text-[color:var(--admin-ink)]"
             )}
           >
-            {s.replace(/_/g, " ").toLowerCase()} · {counts[s]}
+            {/* The same label the badge in the table uses. A filter chip
+                reading "onboarding submitted" above a row badged "Details to
+                review" is two names for one thing. */}
+            {statusEntry("partner", s).label} · {counts[s]}
           </Link>
         ))}
       </div>

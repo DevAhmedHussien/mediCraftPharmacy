@@ -3,8 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { Role } from "@prisma/client";
-import { BarChart3, FileText, FolderTree, Inbox, Package, ScrollText, Users } from "lucide-react";
-
+import { ADMIN_NAV_GROUPS } from "@/lib/admin/nav";
 import type { Permission } from "@/lib/partner/status";
 import { cn } from "@/lib/utils";
 
@@ -19,45 +18,6 @@ import { cn } from "@/lib/utils";
  * Hiding a link is a courtesy, not a control: every route re-checks its
  * permission server-side, so typing the URL gets a redirect, not access.
  */
-const GROUPS: Array<{
-  heading: string;
-  items: Array<{
-    href: string;
-    label: string;
-    icon: typeof Package;
-    exact?: boolean;
-    permission?: Permission;
-    badge?: boolean;
-  }>;
-}> = [
-  {
-    heading: "Work",
-    items: [
-      { href: "/admin", label: "Overview", icon: BarChart3, exact: true },
-      {
-        href: "/admin/partners",
-        label: "Partners",
-        icon: Users,
-        permission: "partners.view",
-        badge: true,
-      },
-    ],
-  },
-  {
-    heading: "Website",
-    items: [
-      { href: "/admin/products", label: "Products", icon: Package },
-      { href: "/admin/categories", label: "Categories", icon: FolderTree },
-      { href: "/admin/enquiries", label: "Enquiries", icon: Inbox },
-      { href: "/admin/blog", label: "Articles", icon: FileText },
-    ],
-  },
-  {
-    heading: "System",
-    items: [{ href: "/admin/audit", label: "Audit log", icon: ScrollText }],
-  },
-];
-
 export function AdminNav({
   waiting,
   role,
@@ -72,15 +32,18 @@ export function AdminNav({
 
   return (
     <nav aria-label="Admin" className="space-y-5">
-      {GROUPS.map((group) => {
-        const visible = group.items.filter(
-          (item) => !item.permission || isSuper || permissions.includes(item.permission)
-        );
+      {ADMIN_NAV_GROUPS.map((group) => {
+        const visible = group.items.filter((item) => {
+          // Team management cannot sit behind a permission — see the note on
+          // `superAdminOnly` in lib/admin/nav.ts.
+          if (item.superAdminOnly) return isSuper;
+          return !item.permission || isSuper || permissions.includes(item.permission);
+        });
         if (visible.length === 0) return null;
 
         return (
           <div key={group.heading}>
-            <p className="px-3 pb-1.5 text-[0.625rem] font-semibold uppercase tracking-[0.12em] text-white/35">
+            <p className="px-3 pb-1.5 text-[0.625rem] font-semibold uppercase tracking-[0.12em] text-[color:var(--admin-ink-50)]">
               {group.heading}
             </p>
             <ul className="space-y-px">
@@ -103,7 +66,7 @@ export function AdminNav({
                       {item.badge && waiting > 0 && (
                         <span
                           className={cn(
-                            "shrink-0 rounded-[4px] px-1.5 py-px text-[0.6875rem] font-semibold tabular-nums",
+                            "shrink-0 rounded px-1.5 py-px text-[0.6875rem] font-semibold tabular-nums",
                             "bg-[#f8e9e5] text-[#9c3a2a]"
                           )}
                         >

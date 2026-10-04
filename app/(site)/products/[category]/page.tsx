@@ -7,6 +7,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { closingCta, formulary } from "@/lib/content";
 import { getCategories, getCategory, getProductsByCategory } from "@/lib/catalogue";
 import { media } from "@/lib/media";
+import { prerenderFromDb } from "@/lib/static-params";
 import {
   breadcrumbJsonLd,
   itemListJsonLd,
@@ -17,8 +18,10 @@ import {
 type Params = { params: { category: string } };
 
 export async function generateStaticParams() {
-  const categories = await getCategories();
-  return categories.map((c) => ({ category: c.slug }));
+  return prerenderFromDb("/products/[category]", async () => {
+    const categories = await getCategories();
+    return categories.map((c) => ({ category: c.slug }));
+  });
 }
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {

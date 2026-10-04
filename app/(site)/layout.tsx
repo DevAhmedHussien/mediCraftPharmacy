@@ -1,8 +1,10 @@
 import type { ReactNode } from "react";
 
 import { Footer } from "@/components/Footer";
+import { ContactChannelsBand } from "@/components/sections/ContactChannels";
 import { categoryThumb } from "@/lib/media";
 import { Navbar } from "@/components/Navbar";
+import { CookieConsent } from "@/components/CookieConsent";
 import { site, hasRealPhone } from "@/lib/site";
 import { auth } from "@/lib/auth";
 import { getCategories, getProductsByCategory } from "@/lib/catalogue";
@@ -65,11 +67,12 @@ export default async function SiteLayout({ children }: { children: ReactNode }) 
    * address, a ZIP, a fax line and three separate branch locations, none of
    * which appear in the pharmacy's own identity document — publishing invented
    * NAP data is actively harmful for a licensed pharmacy's local search. What
-   * is stated here is only what the owner states: Palm Harbor, Florida, one
+   * is stated here is only what the owner states: Tampa, Florida, one
    * location, licensed in Florida.
    *
-   * Add `streetAddress` and `postalCode` here once the suite address is
-   * confirmed; Google needs both for a Pharmacy entity to rank locally.
+   * The street address and postal code are now published, which is what
+   * Google needs before a Pharmacy entity can rank locally at all — a
+   * locality-only PostalAddress is treated as an incomplete record.
    */
   const jsonLd = {
     "@context": "https://schema.org",
@@ -85,8 +88,10 @@ export default async function SiteLayout({ children }: { children: ReactNode }) 
     foundingDate: site.llcEstablished,
     address: {
       "@type": "PostalAddress",
+      streetAddress: site.addressParts.street,
       addressLocality: site.addressParts.city,
       addressRegion: site.addressParts.state,
+      postalCode: site.addressParts.postalCode,
       addressCountry: site.addressParts.country,
     },
     geo: {
@@ -174,7 +179,17 @@ export default async function SiteLayout({ children }: { children: ReactNode }) 
       <main id="main" tabIndex={-1} className="site-main">
         {children}
       </main>
+
+      {/* Every page ends with how to reach the pharmacy. Outside <main> on
+          purpose: it is site furniture like the footer, not the content of
+          the page it sits under, so "skip to content" does not land in it and
+          the heading outline of each page is left alone. */}
+      <ContactChannelsBand />
+
       <Footer />
+      {/* Client-only: the stored choice is in localStorage, which the server
+          cannot read, so the banner mounts hidden and appears once checked. */}
+      <CookieConsent />
     </>
   );
 }

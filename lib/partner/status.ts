@@ -166,6 +166,7 @@ export type EmailTemplate =
   | "admin/product-list-sent"
   | "admin/meeting-requested"
   | "admin/meeting-confirmed"
+  | "auth/login-code"
   | "admin/amendment-requested"
   | "partner/amendment-pricing-ready"
   | "partner/change-order-ready"

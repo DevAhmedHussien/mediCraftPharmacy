@@ -10,6 +10,7 @@ import { sendEmail } from "@/lib/services/email";
 import { offerMeetingSlots, scheduleMeeting } from "@/lib/services/meetings";
 import { saveDraftLines, sendDraft, startDraft } from "@/lib/services/pricing";
 import { applyTransition } from "@/lib/services/transition";
+import { fromLocalInputValue } from "@/lib/services/calendar";
 
 /* Pricing-stage admin actions.
 
@@ -51,12 +52,18 @@ export async function offerMeetingSlotsAction(
 
   /* Up to three, and the form posts a `slots` entry per filled box. Blank
      boxes are dropped rather than rejected — offering two times is a normal
-     thing to want to do. */
+     thing to want to do.
+
+     Parsed in the PHARMACY'S zone, not with `new Date(v)`. A datetime-local
+     value carries no offset, so `new Date` reads it as the server's local
+     time: an admin typing 9:00 AM became 09:00 UTC on a UTC host, which is
+     5:00 AM in Florida. The time offered then depended on where the app
+     happened to be deployed. See fromLocalInputValue. */
   const slots = data
     .getAll("slots")
     .map((v) => String(v))
     .filter((v) => v.length > 0)
-    .map((v) => new Date(v));
+    .map((v) => fromLocalInputValue(v));
 
   if (slots.length === 0) {
     return { ok: false, errors: { slots: "Offer at least one time." } };

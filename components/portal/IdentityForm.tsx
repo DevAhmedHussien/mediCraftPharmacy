@@ -9,7 +9,7 @@ import { FormBanner, SubmitButton, useFormAction } from "@/components/ui/form/su
 import { DocumentRow, type UploadedDocument } from "@/components/portal/DocumentUploader";
 import { specFor } from "@/lib/partner/documents";
 import { emptyIdentity, identitySchema, type IdentityValues } from "@/lib/schemas/identity";
-import { submitIdentity } from "@/app/(site)/portal/identity/actions";
+import { submitIdentity } from "@/app/portal/identity/actions";
 
 /* ===========================================================================
    Confirming who is asking for the price list.

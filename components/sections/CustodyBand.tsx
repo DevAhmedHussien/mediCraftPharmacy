@@ -21,7 +21,7 @@ export function CustodyBand() {
   const { panel } = quality.custody;
 
   return (
-    <section className="relative isolate overflow-hidden bg-navy py-20 text-white md:py-28">
+    <section className="relative isolate overflow-hidden border-y border-line bg-sand py-20 text-ink md:py-28">
       <div
         aria-hidden
         className="absolute inset-0 -z-10"
@@ -46,7 +46,7 @@ export function CustodyBand() {
             {panel.metrics.map((m) => (
               <div
                 key={m.label}
-                className="rounded-tile border border-white/15 bg-navy/70 p-5 backdrop-blur-sm"
+                className="rounded-tile border border-line bg-white p-5"
               >
                 <dt className="sr-only">{m.label}</dt>
                 <dd>

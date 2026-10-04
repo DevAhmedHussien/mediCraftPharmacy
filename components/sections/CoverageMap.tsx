@@ -1,41 +1,48 @@
-import {
-  GRID_COLS,
-  GRID_ROWS,
-  coverageCounts,
-  stateGrid,
-  type LicenceStatus,
-} from "@/lib/coverage";
+import { coverageCounts, stateGrid, type LicenceStatus } from "@/lib/coverage";
+import { US_MAP_VIEWBOX, US_STATE_SHAPES } from "@/lib/us-map-shapes";
 import { cn } from "@/lib/utils";
 
 /* ===========================================================================
    Licensure map.
 
-   Brief §4.14: no stock US map, and this must be "a data-driven SVG the team can
-   update without a designer" delivered "as a component, not a flat image". So it
-   renders from lib/coverage.ts — flip a status there and the map, legend and
-   counts all follow.
+   Brief §4.14: no stock US map, and this must be "a data-driven SVG the team
+   can update without a designer" delivered "as a component, not a flat image".
+   It renders from lib/coverage.ts — flip a status there and the map, the
+   legend and the counts all follow.
 
-   Status is never carried by colour alone. A solid fill also gets a solid
-   border; a pending state gets a dashed one; and the accessible summary below
-   the map states the position in words. Colour-blind readers, screen-reader
-   users and anyone printing in greyscale all still get the distinction — which
-   matters more here than usual, because the difference between the two is the
-   difference between "we can fill this" and "we legally cannot".
+   WHY REAL GEOGRAPHY AND NOT A GRID OF SQUARES
+   --------------------------------------------
+   This was a tile cartogram: every state an equal rounded square laid out on a
+   12x8 grid. That form is honest about area (it refuses to let Montana shout
+   over New Jersey) but it asks the reader to learn a diagram before they can
+   answer the only question they came with — "can you ship to me?" A prescriber
+   in Ohio finds Ohio on a map of the United States instantly and finds it on a
+   grid of squares only by reading labels one at a time.
+
+   So the geometry is now the real thing: US Census state outlines, projected
+   with d3-geo's Albers USA (which insets Alaska and Hawaii), simplified and
+   baked into lib/us-map-shapes.ts at build time. The browser ships no
+   projection code, no TopoJSON and no map library — just path data, about 24KB
+   of it. Regenerate with `node scripts/generate-us-map.mjs`.
+
+   It is still a component driven by data, not the flat image the brief
+   forbids: nothing here is an exported picture, and no status is hardcoded.
+
+   STATUS IS NEVER CARRIED BY COLOUR ALONE
+   ---------------------------------------
+   A solid fill also gets a solid border; a pending state gets a dashed one;
+   and the summary under the map states the position in words. Colour-blind
+   readers, screen-reader users and anyone printing in greyscale all still get
+   the distinction — which matters more here than usual, because the difference
+   between the two is the difference between "we can fill this" and "we legally
+   cannot".
    ========================================================================= */
-
-/** Tile geometry, in SVG user units. */
-const TILE = 34;
-const GAP = 4;
-const PITCH = TILE + GAP;
-
-const W = GRID_COLS * PITCH - GAP;
-const H = GRID_ROWS * PITCH - GAP;
 
 /**
  * Fills. The brief names #2456F7 / #69D8DF / #EDF1F7; these use the site's own
  * tokens, which are the same three roles a few percent apart — keeping the map
  * consistent with every other surface matters more than matching the brief's
- * hexes exactly. See the note in the handover about which palette is canonical.
+ * hexes exactly.
  */
 const STYLE: Record<
   LicenceStatus,
@@ -43,33 +50,59 @@ const STYLE: Record<
 > = {
   licensed: {
     fill: "fill-brand-500",
-    stroke: "stroke-brand-600",
+    stroke: "stroke-brand-700",
     dashed: false,
-    label: "text-white",
+    label: "fill-white",
   },
   pursuing: {
-    fill: "fill-brand-500/25",
-    stroke: "stroke-brand-500/70",
+    fill: "fill-brand-500/20",
+    stroke: "stroke-brand-500/60",
     dashed: true,
-    label: "text-brand-700",
+    label: "fill-brand-700",
   },
   none: {
     fill: "fill-[#EDF1F7]",
     stroke: "stroke-line",
     dashed: false,
-    // ink-soft, not ink-muted: at 11px on the pale tile the muted grey measured
-    // 4.49:1, a hair under AA. This clears it at 6.9:1.
-    label: "text-ink-soft",
+    label: "fill-ink-soft",
   },
+};
+
+/**
+ * States too small to hold a two-letter code inside their own outline.
+ *
+ * Printing one anyway is what produces the smear of overlapping type in the
+ * north-east on every generic US map. These are identified by hover title and
+ * by the written summary instead — the label is a convenience for scanning,
+ * not the accessible name.
+ */
+const UNLABELLED = new Set([
+  "RI", "DE", "DC", "CT", "NJ", "MA", "NH", "VT", "MD",
+]);
+
+/**
+ * Nudges for labels that would otherwise collide with something.
+ *
+ * Florida is the only one today: its centroid is where the Tampa marker
+ * goes, so the code and the dot were drawn on top of each other. The label
+ * moves down the peninsula, which is empty.
+ */
+const LABEL_NUDGE: Record<string, { dx: number; dy: number }> = {
+  FL: { dx: 12, dy: 26 },
 };
 
 export function CoverageMap({ className }: { className?: string }) {
   const { licensed, pursuing, licensedNames } = coverageCounts();
 
+  // Geometry joined to status by postal code. The map is driven by
+  // lib/coverage.ts; a shape with no entry there simply is not drawn, so the
+  // two files cannot silently disagree about which states exist.
+  const byCode = new Map(stateGrid.map((s) => [s.code, s]));
+
   return (
     <figure className={cn("not-prose", className)}>
       <svg
-        viewBox={`0 0 ${W} ${H}`}
+        viewBox={US_MAP_VIEWBOX}
         className="h-auto w-full"
         role="img"
         aria-labelledby="coverage-map-title coverage-map-desc"
@@ -81,58 +114,56 @@ export function CoverageMap({ className }: { className?: string }) {
           {`Licensed and able to dispense in ${licensedNames.join(", ")}. Licensure in progress in ${pursuing} further states, which cannot be served until a permit is granted.`}
         </desc>
 
-        {stateGrid.map((s) => {
-          const style = STYLE[s.status];
-          const x = s.col * PITCH;
-          const y = s.row * PITCH;
+        {US_STATE_SHAPES.map((shape) => {
+          const state = byCode.get(shape.code);
+          if (!state) return null;
+
+          const style = STYLE[state.status];
 
           return (
-            <g key={s.code}>
-              <rect
-                x={x}
-                y={y}
-                width={TILE}
-                height={TILE}
-                rx={5}
-                className={cn(style.fill, style.stroke)}
-                strokeWidth={1.5}
-                // The dash is the non-colour carrier of "pending".
-                strokeDasharray={style.dashed ? "3 2.5" : undefined}
-              />
-              <text
-                x={x + TILE / 2}
-                y={y + TILE / 2}
-                textAnchor="middle"
-                dominantBaseline="central"
-                // 11px in a 34px tile — small, but these are two-letter codes
-                // and the mono face keeps them even.
-                className={cn(
-                  "font-mono text-[11px] font-semibold",
-                  style.label
-                )}
-                fill="currentColor"
-              >
-                {s.code}
-              </text>
-            </g>
+            <path
+              key={shape.code}
+              d={shape.d}
+              className={cn(style.fill, style.stroke)}
+              strokeWidth={state.status === "licensed" ? 1.5 : 0.75}
+              strokeDasharray={style.dashed ? "3 2.5" : undefined}
+              // Every state is reachable by pointer, including the ones too
+              // small to carry a printed label.
+              aria-hidden
+            >
+              <title>{`${state.name} — ${LABEL_FOR[state.status]}`}</title>
+            </path>
           );
         })}
 
-        {/* Palm Harbor origin marker, on Florida. Brief §4.14 asks for a cyan
+        {/* Labels in a second pass, so no neighbouring state's fill can paint
+            over a label drawn before it. */}
+        {US_STATE_SHAPES.map((shape) => {
+          const state = byCode.get(shape.code);
+          if (!state || UNLABELLED.has(shape.code)) return null;
+
+          return (
+            <text
+              key={shape.code}
+              x={shape.cx + (LABEL_NUDGE[shape.code]?.dx ?? 0)}
+              y={shape.cy + (LABEL_NUDGE[shape.code]?.dy ?? 0)}
+              textAnchor="middle"
+              dominantBaseline="central"
+              className={cn(
+                "pointer-events-none font-mono text-[11px] font-semibold",
+                STYLE[state.status].label
+              )}
+              aria-hidden
+            >
+              {shape.code}
+            </text>
+          );
+        })}
+
+        {/* Tampa origin marker, on Florida. Brief §4.14 asks for a cyan
             dot with a soft radial pulse; the pulse is CSS so it can be switched
             off under prefers-reduced-motion. */}
-        {(() => {
-          const fl = stateGrid.find((s) => s.code === "FL");
-          if (!fl) return null;
-          const cx = fl.col * PITCH + TILE / 2;
-          const cy = fl.row * PITCH + TILE / 2;
-          return (
-            <g className="origin-pulse" style={{ transformOrigin: `${cx}px ${cy}px` }}>
-              <circle className="origin-pulse-ring" cx={cx} cy={cy} r={TILE / 2} />
-              <circle cx={cx} cy={cy} r={3.5} className="fill-cyan-400" />
-            </g>
-          );
-        })()}
+        <Origin />
       </svg>
 
       {/* Legend. Spells out the consequence of each status rather than just
@@ -142,11 +173,11 @@ export function CoverageMap({ className }: { className?: string }) {
         <ul className="flex flex-wrap gap-x-7 gap-y-3">
           <LegendItem
             swatch="bg-brand-500"
-            label={`Licensed — ${licensed} state`}
+            label={`Licensed — ${licensed} ${licensed === 1 ? "state" : "states"}`}
             note="Prescriptions filled today"
           />
           <LegendItem
-            swatch="border-[1.5px] border-dashed border-brand-500/70 bg-brand-500/25"
+            swatch="border-[1.5px] border-dashed border-brand-500/60 bg-brand-500/20"
             label={`In progress — ${pursuing} states`}
             note="Cannot be filled until the permit is granted"
           />
@@ -158,6 +189,31 @@ export function CoverageMap({ className }: { className?: string }) {
         </ul>
       </figcaption>
     </figure>
+  );
+}
+
+const LABEL_FOR: Record<LicenceStatus, string> = {
+  licensed: "licensed, prescriptions filled today",
+  pursuing: "licensure in progress, cannot be filled yet",
+  none: "not currently pursued",
+};
+
+/** The Tampa dot, placed on Florida's own centroid. */
+function Origin() {
+  const fl = US_STATE_SHAPES.find((s) => s.code === "FL");
+  if (!fl) return null;
+
+  // Nudged west of the centroid: Florida's centroid sits where the panhandle
+  // pulls it, and Tampa is on the Gulf coast below it. The label is
+  // moved the other way (see LABEL_NUDGE) so the two do not overlap.
+  const cx = fl.cx - 7;
+  const cy = fl.cy + 9;
+
+  return (
+    <g className="origin-pulse" style={{ transformOrigin: `${cx}px ${cy}px` }} aria-hidden>
+      <circle className="origin-pulse-ring" cx={cx} cy={cy} r={14} />
+      <circle cx={cx} cy={cy} r={3.5} className="fill-cyan-400" />
+    </g>
   );
 }
 

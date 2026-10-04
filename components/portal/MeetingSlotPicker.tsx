@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 
-import { confirmMeetingSlotAction } from "@/app/(site)/portal/actions";
+import { confirmMeetingSlotAction } from "@/app/portal/actions";
 import { FormAlert } from "@/components/ui/form/native";
 import { Button } from "@/components/ui/button";
 import { initialFormState } from "@/lib/forms";

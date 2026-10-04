@@ -1,4 +1,5 @@
 import type { Role } from "@prisma/client";
+import { statusEntry } from "@/components/admin/StatusBadge";
 
 import { Panel } from "@/components/admin/ui";
 
@@ -43,7 +44,13 @@ export function StatusTimeline({
                 style={{ borderColor: "var(--admin-accent)" }}
               />
               <div className="min-w-0">
-                <p className="admin-id uppercase">{entry.toStatus.replace(/_/g, " ")}</p>
+                {/* The event in the same words the rest of the console uses
+                    for it, rather than the enum member set in monospace. A
+                    history is read by people asking what happened, and
+                    MSA_SIGNED is not an answer to that. */}
+                <p className="text-[0.8125rem] font-semibold text-[color:var(--admin-ink)]">
+                  {statusEntry("partner", entry.toStatus).label}
+                </p>
                 <p className="mt-0.5 text-[0.75rem] text-[color:var(--admin-ink-50)]">
                   {new Date(entry.createdAt).toLocaleString("en-US", {
                     month: "short",

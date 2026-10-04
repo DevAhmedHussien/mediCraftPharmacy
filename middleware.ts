@@ -37,6 +37,16 @@ const CSP = [
   "form-action 'self'",
   "frame-ancestors 'none'",
   "object-src 'none'",
+  /* Documents are shown in-page from a blob: URL — the signed agreement, an
+     uploaded licence, a W-9. Without this, `frame-src` falls back to
+     `default-src 'self'`, a blob: frame is refused, and the viewer renders
+     Chrome's "This content is blocked. Contact the site owner to fix the
+     issue." in place of the PDF.
+
+     `blob:` only ever names bytes this origin already fetched and held in
+     memory; it cannot address anything remote, so this does not widen what the
+     page can reach. */
+  "frame-src 'self' blob:",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
   "style-src 'self' 'unsafe-inline'",

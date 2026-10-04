@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { Eye, EyeOff, Pencil } from "lucide-react";
 import { useMemo } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 
 import { SortableTable } from "@/components/admin/SortableTable";
 import { toggleProduct } from "@/app/admin/products/actions";
-import { Pill } from "@/components/admin/ui";
+import { Pill, RowAction, RowActions } from "@/components/admin/ui";
 
 export type ProductRow = {
   id: string;
@@ -122,19 +123,24 @@ export function ProductsTable({ rows, canEdit }: { rows: ProductRow[]; canEdit: 
         meta: { align: "right" },
         cell: ({ row }) =>
           canEdit ? (
-            <div className="flex items-center justify-end gap-3">
+            <RowActions>
               <form action={toggleProduct.bind(null, row.original.id, !row.original.isActive)}>
-                <button type="submit" className="text-[color:var(--admin-ink-70)] transition-colors hover:text-[color:var(--admin-ink)]">
-                  {row.original.isActive ? "Hide" : "Show"}
-                </button>
+                <RowAction
+                  type="submit"
+                  icon={row.original.isActive ? EyeOff : Eye}
+                  label={
+                    row.original.isActive
+                      ? `Hide ${row.original.name} from the site`
+                      : `Show ${row.original.name} on the site`
+                  }
+                />
               </form>
-              <Link
+              <RowAction
+                icon={Pencil}
                 href={`/admin/products/${row.original.id}`}
-                className="font-medium text-[color:var(--admin-accent)] hover:underline"
-              >
-                Edit
-              </Link>
-            </div>
+                label={`Edit ${row.original.name}`}
+              />
+            </RowActions>
           ) : null,
       },
     ],

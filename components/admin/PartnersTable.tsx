@@ -6,7 +6,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 
 import { SortableTable } from "@/components/admin/SortableTable";
 import { ADMIN_ACTIONABLE_STATUSES, type PartnerStatus } from "@/lib/partner/status";
-import { Pill, type Tone } from "@/components/admin/ui";
+import { StatusBadge } from "@/components/admin/StatusBadge";
 import { cn } from "@/lib/utils";
 
 export type PartnerRow = {
@@ -22,15 +22,6 @@ export type PartnerRow = {
 /** Days a partner has sat in its current status. */
 function waitingDays(iso: string): number {
   return Math.floor((Date.now() - new Date(iso).getTime()) / 864e5);
-}
-
-function tone(status: PartnerStatus): Tone {
-  if (status === "VERIFIED") return "good";
-  if (status === "REJECTED" || status === "MSA_DECLINED" || status === "SUSPENDED") return "bad";
-  // Amber means "this one is waiting on us", which is the only distinction an
-  // operator working the queue actually needs from a status colour.
-  if (ADMIN_ACTIONABLE_STATUSES.includes(status)) return "warn";
-  return "neutral";
 }
 
 export function PartnersTable({ rows }: { rows: PartnerRow[] }) {
@@ -62,8 +53,7 @@ export function PartnersTable({ rows }: { rows: PartnerRow[] }) {
         accessorKey: "status",
         header: "Status",
         cell: ({ getValue }) => {
-          const status = getValue() as PartnerStatus;
-          return <Pill tone={tone(status)}>{status.replace(/_/g, " ").toLowerCase()}</Pill>;
+          return <StatusBadge kind="partner" status={String(getValue())} />;
         },
       },
       {

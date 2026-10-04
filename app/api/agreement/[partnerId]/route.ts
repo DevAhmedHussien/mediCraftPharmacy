@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { hasPermission } from "@/lib/guard";
 import { recordAudit } from "@/lib/services/audit";
-import { buildAgreementFor } from "@/lib/services/agreement";
+import { buildAgreementFor, buildChangeOrderFor } from "@/lib/services/agreement";
 
 /* ===========================================================================
    The partner's agreement, as a PDF.
@@ -44,14 +44,18 @@ export async function GET(
     return NextResponse.json({ error: "Not allowed." }, { status: 403 });
   }
 
-  const agreement = await buildAgreementFor(
-    params.partnerId,
-    /* Which one. A partner with change orders has several agreements, and
-       the history list on their products page links to each by id. Ownership
-       is already settled above, so an id here can only select among that
-       partner's own envelopes. */
-    new URL(request.url).searchParams.get("envelope") ?? undefined
-  );
+  /* Which one. A partner with change orders has several agreements, and the
+     history list on their products page links to each by id. Ownership is
+     already settled above, so an id here can only select among that partner's
+     own envelopes. */
+  const envelopeId = new URL(request.url).searchParams.get("envelope") ?? undefined;
+
+  /* A change order is a different document, not the MSA with a different
+     signature on it. Tried first, and only when an envelope was named: the
+     bare URL always means "my agreement". */
+  const agreement =
+    (envelopeId ? await buildChangeOrderFor(params.partnerId, envelopeId) : null) ??
+    (await buildAgreementFor(params.partnerId, envelopeId));
   if (!agreement) {
     return NextResponse.json({ error: "Not found." }, { status: 404 });
   }

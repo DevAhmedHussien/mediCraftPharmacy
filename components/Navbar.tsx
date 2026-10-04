@@ -1,35 +1,36 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowRight, ChevronDown, Phone, UserRound } from "lucide-react";
+import { ArrowRight, ChevronDown, UserRound } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
-import { Icon, type IconName } from "@/components/icons/set";
+import type { IconName } from "@/components/icons/set";
 import { NavDrawer } from "@/components/nav/NavDrawer";
-import {
-  headerNav,
-  navCtas,
-  site,
-  topbar,
-  hasRealPhone,
-  telHref,
-  type HeaderNavItem,
-} from "@/lib/site";
+import { headerNav, navCtas, type HeaderNavItem } from "@/lib/site";
 
-import { media, type CategoryThumb } from "@/lib/media";
+import type { CategoryThumb } from "@/lib/media";
 import { cn } from "@/lib/utils";
 
 /**
- * Two-tier chrome: a navy utility strip carrying the facts a prescriber checks
- * first, then a white header with the lockup, navigation and the two calls to
- * action.
+ * One bar: the lockup, the navigation, and the three ways in.
  *
- * A client component, for three things a server component cannot do:
+ * IT WAS TWO BARS.
+ * ----------------
+ * A utility strip sat above this one carrying the location, the opening
+ * hours, the phone number, a Contact link and a Portal Login link — 36px of
+ * the first screen, on top of a 72px bar, for five facts of which three were
+ * already in the footer and two were already in the bar directly beneath it.
+ * It then slid away on scroll, which meant the chrome had two heights and
+ * every sticky sub-bar on the site had to know both.
+ *
+ * What was actually load-bearing in that strip was the portal login, so that
+ * moved into the actions at the right edge where the other two entry points
+ * already are. The location and hours belong to the footer, which is where
+ * someone looks for them.
+ *
+ * Still a client component, for two things a server component cannot do:
  *   · mark the current route, so a visitor always knows where they are
- *   · condense on scroll — the utility strip slides away and the bar tightens,
- *     which gives long regulatory pages their vertical space back
  *   · keep the Products panel open on hover *and* on keyboard focus
  *
  * The mega-panel's markup is always present in the DOM regardless of state, so
@@ -65,7 +66,6 @@ export function Navbar({
   account: HeaderAccount;
 }) {
   const pathname = usePathname();
-  const [condensed, setCondensed] = useState(false);
 
   /* The products menu is state-driven rather than a CSS :hover.
    *
@@ -87,15 +87,6 @@ export function Navbar({
     return () => document.removeEventListener("keydown", onKey);
   }, [openMenu]);
 
-  useEffect(() => {
-    // Threshold matches the topbar's height, so the strip is fully gone by the
-    // time it would otherwise be half-clipped.
-    const onScroll = () => setCondensed(window.scrollY > 36);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
 
@@ -103,93 +94,15 @@ export function Navbar({
 
   return (
     <header className="fixed inset-x-0 top-0 z-50">
-      {/* ---- Utility topbar ----
-          Collapses to zero height on scroll rather than unmounting, so the
-          transition is a single smooth movement and nothing reflows. */}
-      <div
-        className={cn(
-          "hidden overflow-hidden bg-navy text-white/70 transition-[height,opacity] duration-300 md:block",
-          condensed ? "h-0 opacity-0" : "h-9 opacity-100"
-        )}
-      >
-        <div className="container-x flex h-9 items-center justify-between gap-6 text-caption">
-          <div className="flex items-center gap-5">
-            <span className="flex items-center gap-1.5">
-              <Icon name="pin" className="h-3.5 w-3.5 text-cyan-300" />
-              {topbar.location}
-            </span>
-            <span aria-hidden className="text-white/20">
-              |
-            </span>
-            <span>{topbar.hours}</span>
-          </div>
-
-          <div className="flex items-center gap-5">
-            <a
-              href={telHref() ?? "/contact"}
-              className="flex items-center gap-1.5 font-medium text-cyan-300 transition-colors hover:text-cyan-200"
-            >
-              <Phone className="h-3.5 w-3.5" strokeWidth={1.8} />
-              {hasRealPhone ? site.phone : "Contact us"}
-            </a>
-            <span aria-hidden className="text-white/20">
-              |
-            </span>
-            <Link href="/contact" className="transition-colors hover:text-white">
-              Contact
-            </Link>
-            <span aria-hidden className="text-white/20">
-              |
-            </span>
-            {/* Same tab, and a Link rather than an anchor: the portal is part
-                of this site, not somewhere else. Opening it in a new tab left
-                the visitor with two windows and a back button that did
-                nothing.
-
-                Signed in, it names where you are going instead of offering a
-                sign-in you have already done. */}
-            {account ? (
-              <Link
-                href={account.href}
-                className="flex items-center gap-1.5 transition-colors hover:text-white"
-              >
-                <UserRound className="h-3.5 w-3.5" strokeWidth={1.8} aria-hidden />
-                {account.label}
-              </Link>
-            ) : (
-              <Link href="/login" className="transition-colors hover:text-white">
-                Provider Portal Login
-              </Link>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* ---- Main bar ---- */}
-      <div
-        className={cn(
-          "chrome border-b transition-[box-shadow,border-color] duration-300",
-          condensed ? "border-line" : "border-line/70"
-        )}
-      >
-        <nav
-          className={cn(
-            "container-x flex items-center justify-between gap-6 transition-[height] duration-300",
-            condensed ? "h-[3.75rem]" : "h-[4.5rem]"
-          )}
-        >
+      {/* ---- The bar ---- */}
+      <div className="chrome border-b border-line">
+        <nav className="container-x flex h-[var(--chrome-h)] items-center justify-between gap-6">
           {/* `.logo-lockup` is the hover/focus target that drives the grind. */}
           <Link
             href="/"
             className="logo-lockup flex shrink-0 items-center rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
           >
-            <Logo
-              animate="load"
-              className={cn(
-                "w-auto transition-[height] duration-300",
-                condensed ? "h-9" : "h-11"
-              )}
-            />
+            <Logo className="h-10 w-auto" />
           </Link>
 
           {/* ---- Desktop navigation ---- */}
@@ -245,20 +158,47 @@ export function Navbar({
             </div>
           </div>
 
-          {/* ---- Calls to action ---- */}
-          <div className="hidden shrink-0 items-center gap-2.5 lg:flex">
-            {navCtas.map((cta) => (
+          {/* ---- The ways in ----
+              Three, in increasing commitment: sign in if you already have an
+              account, refill if you are a patient, open one if you are not.
+              The portal link is a quiet text link rather than a third button —
+              three buttons side by side is three primary actions, which is
+              none. */}
+          <div className="hidden shrink-0 items-center gap-4 lg:flex">
+            {account ? (
               <Link
-                key={cta.href}
-                href={cta.href}
-                className={cn(
-                  "btn-sm",
-                  cta.style === "primary" ? "btn-primary" : "btn-outline"
-                )}
+                href={account.href}
+                className="flex items-center gap-1.5 text-caption font-medium text-ink-soft transition-colors hover:text-ink"
               >
-                {cta.label}
+                <UserRound className="h-3.5 w-3.5" strokeWidth={1.8} aria-hidden />
+                {account.label}
               </Link>
-            ))}
+            ) : (
+              <Link
+                href="/login"
+                className="flex items-center gap-1.5 text-caption font-medium text-ink-soft transition-colors hover:text-ink"
+              >
+                <UserRound className="h-3.5 w-3.5" strokeWidth={1.8} aria-hidden />
+                Provider portal
+              </Link>
+            )}
+
+            <span aria-hidden className="h-4 w-px bg-line" />
+
+            <div className="flex items-center gap-2.5">
+              {navCtas.map((cta) => (
+                <Link
+                  key={cta.href}
+                  href={cta.href}
+                  className={cn(
+                    "btn-sm",
+                    cta.style === "primary" ? "btn-primary" : "btn-outline"
+                  )}
+                >
+                  {cta.label}
+                </Link>
+              ))}
+            </div>
           </div>
 
           <NavDrawer categories={categories} account={account} />
@@ -391,7 +331,7 @@ function MegaPanel({
           <div>
             <p className="eyebrow">Shop by category</p>
 
-            <div className="mt-6 grid gap-x-4 gap-y-1 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-6 grid gap-x-8 gap-y-1 sm:grid-cols-2 lg:grid-cols-3">
               {categories.map((c) => {
                 const count = c.count;
                 return (
@@ -399,39 +339,16 @@ function MegaPanel({
                     key={c.slug}
                     href={`/products/${c.slug}`}
                     onClick={onNavigate}
-                    className="group/item flex items-center gap-2.5 rounded-lg px-2.5 py-2.5 transition-colors hover:bg-sand focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+                    className="group/item flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-sand focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
                   >
-                    {/* The category's own artwork, or its first product's
-                        packshot. `aria-hidden` and empty alt: the name sits
-                        beside it, so announcing the picture as well would read
-                        every row twice. Categories with no products have no
-                        thumbnail and keep the rule instead. */}
-                    {c.thumb ? (
-                      <span
-                        aria-hidden
-                        className={cn(
-                          "relative size-10 shrink-0 overflow-hidden rounded-[0.5rem] border border-line",
-                          c.thumb.fit === "contain" ? "bg-navy" : "bg-sand"
-                        )}
-                      >
-                        <Image
-                          src={c.thumb.src}
-                          alt=""
-                          fill
-                          sizes="40px"
-                          className={
-                            c.thumb.fit === "contain"
-                              ? "object-contain p-1"
-                              : "object-cover"
-                          }
-                        />
-                      </span>
-                    ) : (
-                      <span
-                        aria-hidden
-                        className="h-8 w-px shrink-0 bg-line transition-colors group-hover/item:bg-brand-500"
-                      />
-                    )}
+                    {/* A rule, not a thumbnail.
+                        Eleven packshots in a menu is eleven images fetched to
+                        decorate a list of eleven words, and the words are what
+                        anyone reads. */}
+                    <span
+                      aria-hidden
+                      className="h-8 w-px shrink-0 bg-line transition-colors group-hover/item:bg-brand-500"
+                    />
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-meta font-bold text-ink">
                         {c.name}
@@ -460,43 +377,21 @@ function MegaPanel({
             </div>
           </div>
 
-          {/* Featured panel. Gives the menu a visual anchor and points at the
-              action a prescriber is actually here to take.
-
-              The square carries the hero's own product shot: it is MediCraft's
-              catalogue wearing MediCraft's labels, so unlike a stock dispensary
-              shelf it makes no claim about a room. `object-contain` because the
-              cut-out has no background of its own — the plate's gradient is
-              what it stands on.
-
-              The copy is absolutely positioned over the square rather than
-              stacked under it, so the panel stays the height of one image
-              instead of image-plus-text. The scrim is what keeps the copy
-              legible where it crosses the vials. */}
-          <div className="gradient-plate relative hidden aspect-square self-start lg:block">
-            <span aria-hidden className="gradient-plate-grid" />
-
-            <Image
-              src={media.homeHero.src}
-              alt={media.homeHero.alt}
-              fill
-              sizes="22rem"
-              className="object-contain px-16 pt-12 pb-36"
-            />
-
-            <div className="absolute inset-x-0 bottom-0 z-10 p-6 pt-16 bg-gradient-to-t from-navy via-navy/85 to-transparent">
-              <p className="panel-badge mb-3">Provider accounts</p>
-              <p className="text-[1.0625rem] font-bold leading-snug text-white text-balance">
-                Request the current formulary for your specialty
-              </p>
-              <p className="mt-2 text-caption text-white/70">
-                A pharmacy liaison responds within one business day.
-              </p>
-              <Link href="/contact" className="btn-accent btn-sm mt-5 self-start">
-                Request formulary
-                <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.2} />
-              </Link>
-            </div>
+          {/* A quiet aside, not a picture.
+              The panel used to carry a product square the size of the menu's
+              whole right-hand column — a lot of weight for decoration beside a
+              list someone opened to navigate. */}
+          <div className="hidden self-start rounded-tile border border-line bg-sand p-6 lg:block">
+            <p className="text-[1.0625rem] font-bold leading-snug text-ink text-balance">
+              Request the current formulary for your specialty
+            </p>
+            <p className="mt-2 text-caption leading-relaxed text-ink-soft">
+              A pharmacy liaison responds within one business day.
+            </p>
+            <Link href="/contact" className="btn-primary btn-sm mt-5">
+              Request formulary
+              <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.2} />
+            </Link>
           </div>
         </div>
       </div>

@@ -3,6 +3,8 @@ import "server-only";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 
+import type { Prisma } from "@prisma/client";
+
 import { db } from "@/lib/db";
 import { env, isProduction } from "@/lib/env";
 import { site } from "@/lib/site";
@@ -43,6 +45,15 @@ type Rendered = {
   body: string;
   /** Absolute URL for the single call to action, if the email has one. */
   cta?: { label: string; path: string };
+  /**
+   * A one-time code, set apart from the prose.
+   *
+   * Carried as its own field rather than left inside `body` so the HTML
+   * layout can give it the treatment it needs — big, monospaced, selectable
+   * — while the plain-text part still reads as a sentence. A code buried in
+   * a paragraph is a code somebody has to pick out of a paragraph.
+   */
+  code?: string;
 };
 
 const portal = (path: string) => ({ label: "Open your account", path });
@@ -149,6 +160,23 @@ Your application is approved and the next step is a short call about pricing.`,
     cta: portal("/portal"),
   }),
 
+  "auth/login-code": (p) => ({
+    /* The code leads the subject line. On a phone the notification preview is
+       often all anyone reads — putting the digits first means the code can be
+       used without opening the message at all. */
+    subject: `${String(p.code)} is your MediCraft sign-in code`,
+    preheader: "Expires in ten minutes. If this was not you, ignore it.",
+    code: String(p.code),
+    body: `Hi ${who(p)},
+
+Use this code to sign in. It works once and expires ten minutes after it was sent.
+
+If you did not ask to sign in, you can ignore this message — nobody can get into your account without the code, and it expires on its own.`,
+    /* No button, deliberately. A sign-in email with a one-click link is a
+       sign-in email that works for anyone it gets forwarded to; the code has
+       to be typed into the tab that asked for it, which is the whole point. */
+  }),
+
   "partner/amendment-pricing-ready": (p) => ({
     subject: `Pricing for your new preparations`,
     preheader: "Review it and accept to start the change order.",
@@ -170,7 +198,7 @@ Accept the prices and we will send the change order to sign. Nothing on your cur
 Your change order${
       p.changeOrderNumber ? ` (${String(p.changeOrderNumber)})` : ""
     } is ready to sign. The new preparations go live on your schedule the moment it is signed.`,
-    cta: portal("/portal/agreement"),
+    cta: portal("/portal/agreement/change-order"),
   }),
 
   "partner/negotiated-pricing": (p) => ({
@@ -527,6 +555,223 @@ export function renderTemplate(template: EmailTemplate, props: EmailProps): Rend
   return build(props);
 }
 
+/* --- The HTML part -------------------------------------------------------
+   Email is not the web, and the differences are not stylistic:
+
+     · NO WEBFONTS. Satoshi and Lato will not load. A system stack is what
+       actually renders, so the design is made of weight, size and spacing
+       rather than a typeface.
+     · NO FLEX OR GRID. Outlook renders through Word. Tables, or nothing.
+     · NO EXTERNAL IMAGES. Most clients block them by default, and a logo
+       that fails to load leaves a broken-image box at the top of a security
+       email — the worst possible first impression for a message whose whole
+       job is to be trusted. The wordmark is type.
+     · INLINE STYLES. `<style>` blocks are stripped or clipped often enough
+       that anything load-bearing has to be on the element.
+     · DARK MODE IS NOT CONTROLLABLE. Several clients invert colours
+       unasked. Every surface therefore sets its own background explicitly
+       rather than inheriting, so an inversion produces something legible
+       instead of white-on-white.
+
+   WHY THE CODE IS TEXT AND NEVER AN IMAGE. People copy it. An image of six
+   digits cannot be selected, cannot be read by a screen reader, and vanishes
+   entirely under image blocking — which is the default in the clients most
+   likely to receive this.
+   ------------------------------------------------------------------ */
+
+/**
+ * The plain-text part.
+ *
+ * Not a fallback nobody reads: a message sent without one scores worse with
+ * every spam filter there is, and some clients still prefer it. The code is
+ * indented rather than run into a sentence so it can be picked out at a
+ * glance in a text-only reader.
+ */
+function renderText(rendered: Rendered): string {
+  const url = (p: string) => `${env.APP_URL}${p}`;
+
+  return [
+    rendered.code ? `    ${rendered.code}\n` : "",
+    rendered.body,
+    rendered.cta ? `\n${rendered.cta.label}: ${url(rendered.cta.path)}` : "",
+    `\n—\n${site.name} · ${site.address}\n${site.providerEmail} · ${site.phone}`,
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+/** Brand values, duplicated here because email cannot read a CSS variable. */
+const MAIL = {
+  ground: "#f5f8fd",
+  surface: "#ffffff",
+  line: "#dde4f0",
+  ink: "#0f1a33",
+  inkSoft: "#46536f",
+  inkMuted: "#636e89",
+  brand: "#1b54fb",
+  brandTint: "#eef3ff",
+  font: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+  mono: "ui-monospace, SFMono-Regular, Menlo, Consolas, 'Courier New', monospace",
+} as const;
+
+/**
+ * The wordmark, as a hosted image with a typed fallback.
+ *
+ * WHY THE URL COMES FROM `site.url` AND NOT `env.APP_URL`. APP_URL is
+ * `http://localhost:3000` in development, and an email carrying a localhost
+ * image shows every recipient a broken box. `site.url` resolves to the
+ * canonical public origin, which is the only kind of address an inbox can
+ * fetch.
+ *
+ * WHY IT IS STILL SAFE WHEN THE IMAGE DOES NOT LOAD. Most clients block
+ * remote images by default and show the alt text instead, so the alt is the
+ * brand name — not "logo" — and it is styled, because the common clients
+ * apply an img's own font and colour to its alt text. Blocked, this degrades
+ * to "MediCraft Pharmacy" set in brand blue; it never degrades to a broken
+ * icon, which on a sign-in email would be the worst possible first
+ * impression.
+ *
+ * The asset is 1120×226 and served at 150px wide, so it stays sharp on a
+ * retina screen. `width`/`height` attributes as well as CSS: Outlook ignores
+ * the style and needs the attribute to reserve the space.
+ */
+function logoImage(): string {
+  const src = `${site.url}/images/brand/medicraft-logo.png`;
+
+  return `<img src="${escapeHtml(src)}" alt="${escapeHtml(site.name)}" width="150" height="30"
+    style="display:block;width:150px;height:30px;border:0;outline:none;text-decoration:none;font-family:${MAIL.font};font-size:15px;font-weight:700;color:${MAIL.brand};">`;
+}
+
+const escapeHtml = (value: string) =>
+  value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+
+/** Blank-line-separated prose becomes paragraphs. */
+function paragraphs(body: string): string {
+  return body
+    .split(/\n{2,}/)
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .map(
+      (part) =>
+        `<p style="margin:0 0 16px;font-size:15px;line-height:1.65;color:${MAIL.inkSoft};">` +
+        escapeHtml(part).replace(/\n/g, "<br>") +
+        `</p>`
+    )
+    .join("");
+}
+
+/**
+ * The one-time code, set as the thing the message is for.
+ *
+ * Letter-spaced monospace on a tinted plate. The trailing letter-space is
+ * absorbed by a matching left pad, or the digits sit visibly off-centre —
+ * the oldest bug in letter-spaced type.
+ */
+function codePlate(code: string): string {
+  return `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;">
+      <tr>
+        <td align="center" style="background:${MAIL.brandTint};border:1px solid #c9d8ff;border-radius:10px;padding:26px 20px;">
+          <div style="font-family:${MAIL.mono};font-size:38px;line-height:1.1;font-weight:700;letter-spacing:10px;padding-left:10px;color:${MAIL.ink};">${escapeHtml(
+            code
+          )}</div>
+        </td>
+      </tr>
+    </table>`;
+}
+
+function ctaButton(label: string, href: string): string {
+  return `
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:4px 0 20px;">
+      <tr>
+        <td style="background:${MAIL.brand};border-radius:8px;">
+          <a href="${escapeHtml(href)}" style="display:inline-block;padding:13px 26px;font-family:${MAIL.font};font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;">${escapeHtml(
+            label
+          )}</a>
+        </td>
+      </tr>
+    </table>`;
+}
+
+/** The whole message, as one table-based document. */
+function renderHtml(rendered: Rendered): string {
+  const url = (p: string) => `${env.APP_URL}${p}`;
+
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>${escapeHtml(rendered.subject)}</title>
+</head>
+<body style="margin:0;padding:0;background:${MAIL.ground};">
+<!-- The inbox preview line. Hidden in the body, then padded with zero-width
+     spaces so the client does not pull the first sentence of the message in
+     after it. -->
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;">${escapeHtml(
+    rendered.preheader
+  )}${"&#847;&zwnj;&nbsp;".repeat(60)}</div>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${MAIL.ground};">
+  <tr>
+    <td align="center" style="padding:32px 16px;">
+
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:520px;">
+
+        <tr>
+          <td style="background:${MAIL.surface};border:1px solid ${MAIL.line};border-radius:12px;padding:0;">
+
+            <!-- The mark sits inside the card, on white.
+                 The asset carries a near-white plate baked into it, which
+                 would read as a faint rectangle against the sand ground
+                 outside the card and is invisible against the card itself. -->
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="padding:24px 28px 20px;border-bottom:1px solid ${MAIL.line};">
+                  ${logoImage()}
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:28px;">
+
+            <h1 style="margin:0 0 18px;font-family:${MAIL.font};font-size:20px;line-height:1.3;font-weight:700;color:${MAIL.ink};">${escapeHtml(
+              rendered.subject
+            )}</h1>
+
+            <div style="font-family:${MAIL.font};">
+              ${rendered.code ? codePlate(rendered.code) : ""}
+              ${paragraphs(rendered.body)}
+              ${rendered.cta ? ctaButton(rendered.cta.label, url(rendered.cta.path)) : ""}
+            </div>
+
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding:20px 4px 0;font-family:${MAIL.font};font-size:12px;line-height:1.6;color:${MAIL.inkMuted};">
+            ${escapeHtml(site.name)} · ${escapeHtml(site.address)}<br>
+            <a href="mailto:${escapeHtml(site.providerEmail)}" style="color:${MAIL.inkMuted};">${escapeHtml(
+              site.providerEmail
+            )}</a>
+          </td>
+        </tr>
+
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>`;
+}
+
 /* --- Delivery ------------------------------------------------------------- */
 
 type SendResult = { providerMessageId: string | null };
@@ -548,12 +793,10 @@ async function sendViaConsole(
 
   const stamp = new Date().toISOString().replace(/[:.]/g, "-");
   const safeTemplate = template.replace(/\//g, "__");
-  const file = path.join(directory, `${stamp}_${safeTemplate}_${to.replace(/[^\w.@-]/g, "_")}.txt`);
-
-  const url = (p: string) => `${env.APP_URL}${p}`;
+  const base = path.join(directory, `${stamp}_${safeTemplate}_${to.replace(/[^\w.@-]/g, "_")}`);
 
   await writeFile(
-    file,
+    `${base}.txt`,
     [
       `From:    ${env.EMAIL_FROM}`,
       `To:      ${to}`,
@@ -563,52 +806,93 @@ async function sendViaConsole(
       "",
       "─".repeat(72),
       "",
-      rendered.body,
-      "",
-      rendered.cta ? `[ ${rendered.cta.label} ] → ${url(rendered.cta.path)}` : "",
+      renderText(rendered),
       "",
       "─".repeat(72),
-      `${site.name} · ${site.address}`,
-      `${site.providerEmail} · ${site.phone}`,
-      "",
       "This message was written by the console mail driver and was NOT sent.",
       "Set EMAIL_DRIVER=resend with a RESEND_API_KEY to deliver for real.",
     ].join("\n"),
     "utf8"
   );
 
-  console.log(`[email] ${template} → ${to}  (written to ${path.relative(process.cwd(), file)})`);
+  /* The HTML part alongside it, openable in a browser.
+     Reviewing email design by reading a text dump does not work — the whole
+     point of the HTML is how it looks, and this is the only way to see it
+     without sending a real message to a real person. */
+  await writeFile(`${base}.html`, renderHtml(rendered), "utf8");
+
+  console.log(
+    `[email] ${template} → ${to}  (${path.relative(process.cwd(), base)}.txt / .html)`
+  );
   return { providerMessageId: null };
 }
 
-async function sendViaResend(
-  to: string,
-  rendered: Rendered
-): Promise<SendResult> {
-  const url = (p: string) => `${env.APP_URL}${p}`;
-  const text = [
-    rendered.body,
-    rendered.cta ? `\n${rendered.cta.label}: ${url(rendered.cta.path)}` : "",
-    `\n—\n${site.name} · ${site.address}\n${site.providerEmail} · ${site.phone}`,
-  ].join("\n");
+/**
+ * What each Resend status actually means to whoever is reading the log.
+ *
+ * The raw body is kept — it carries the detail — but a bare "422" in
+ * `EmailLog.error` tells an operator nothing, and these four are the ones
+ * that happen: a key that was rotated, a domain that was never verified, a
+ * burst over the plan's rate, and a malformed address.
+ */
+const RESEND_HINTS: Record<number, string> = {
+  401: "the API key was rejected (check RESEND_API_KEY)",
+  403: "the sending domain is not verified for this key",
+  422: "Resend could not accept the message as addressed",
+  429: "rate limited by Resend",
+};
 
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${env.RESEND_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: env.EMAIL_FROM,
-      to,
-      reply_to: env.EMAIL_REPLY_TO,
-      subject: rendered.subject,
-      text,
-    }),
-  });
+/** Give up on a hung provider rather than holding a request open. */
+const RESEND_TIMEOUT_MS = 10_000;
+
+async function sendViaResend(to: string, rendered: Rendered): Promise<SendResult> {
+  /* Both parts, always. A multipart message renders as designed where HTML
+     is supported and still reads where it is not — and sending HTML alone is
+     one of the strongest spam signals there is. */
+  const text = renderText(rendered);
+  const html = renderHtml(rendered);
+
+  let response: Response;
+  try {
+    response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: env.EMAIL_FROM,
+        to,
+        /* Snake case: this is the REST API, not the Node SDK. The SDK takes
+           `replyTo` and silently drops `reply_to`; the HTTP endpoint is the
+           other way round. Getting it wrong costs nothing visible — the mail
+           sends, replies just go to a mailbox nobody reads. */
+        reply_to: env.EMAIL_REPLY_TO,
+        subject: rendered.subject,
+        html,
+        text,
+      }),
+      /* Without this, a provider that accepts the connection and then stalls
+         holds the caller open indefinitely. The outbox is built to retry; it
+         cannot retry something that never returns. */
+      signal: AbortSignal.timeout(RESEND_TIMEOUT_MS),
+    });
+  } catch (error) {
+    /* A timeout or a DNS failure is not a rejected message — it is an
+       unreachable provider, and the distinction matters when reading why a
+       run of messages failed at 3am. */
+    const reason = error instanceof Error ? error.message : String(error);
+    throw new Error(`Resend was unreachable: ${reason}`);
+  }
 
   if (!response.ok) {
-    throw new Error(`Resend rejected the message: ${response.status} ${await response.text()}`);
+    const detail = await response.text().catch(() => "");
+    const hint = RESEND_HINTS[response.status];
+    throw new Error(
+      `Resend rejected the message: ${response.status}` +
+        (hint ? ` — ${hint}` : "") +
+        (detail ? ` · ${detail}` : "")
+    );
   }
 
   const body = (await response.json()) as { id?: string };
@@ -616,15 +900,35 @@ async function sendViaResend(
 }
 
 /**
- * Send one message and log the attempt.
+ * Send one message now, log the attempt, and queue a retry if it failed.
  *
- * Callers are the outbox worker and nothing else — application code enqueues,
- * it does not send, so a failed provider can never roll back a status change.
+ * TWO KINDS OF CALLER, AND WHY THE RETRY IS HERE
+ * ----------------------------------------------
+ * The header on this function used to claim the outbox worker was the only
+ * caller. That stopped being true: four server actions — amendment pricing,
+ * change orders, admin notifications, and the login code — call it directly,
+ * because queueing a sign-in code for the next cron tick would make the
+ * feature unusable.
+ *
+ * Direct sending is right for those. What was wrong is what happened when one
+ * failed: an `EmailLog` row marked FAILED, a rethrow, and a call site that
+ * swallows it — correctly, because a bounced notification must not roll back
+ * a change order the partner has already signed. The message was gone. No
+ * retry, nobody told, and the only trace was a log row nothing reads.
+ *
+ * So a failed direct send now lands in `EmailOutbox`, which is the machinery
+ * that already exists for exactly this: backoff, five attempts, then DEAD and
+ * visible. The caller still gets the throw, and may still swallow it; the
+ * message survives either way.
+ *
+ * `fromOutbox` stops the worker queueing its own retries — it owns the row it
+ * is draining and records the failure against it itself.
  */
 export async function sendEmail(
   template: EmailTemplate,
   to: string,
-  props: EmailProps
+  props: EmailProps,
+  options: { fromOutbox?: boolean } = {}
 ): Promise<void> {
   const rendered = renderTemplate(template, props);
 
@@ -644,16 +948,62 @@ export async function sendEmail(
       },
     });
   } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+
     await db.emailLog.create({
       data: {
         to,
         template,
         partnerId: typeof props.partnerId === "string" ? props.partnerId : null,
         status: "FAILED",
-        error: error instanceof Error ? error.message : String(error),
+        error: message,
       },
     });
+
+    if (!options.fromOutbox) await queueRetry(template, to, props, message);
+
     throw error;
+  }
+}
+
+/**
+ * Put a failed direct send on the queue so it is retried rather than lost.
+ *
+ * Never throws. This runs inside a catch block on a path the caller is about
+ * to be told failed; an error here would replace a useful provider message
+ * with a database one and lose the original.
+ *
+ * The idempotency key carries a coarse timestamp — the minute — so a flow
+ * retried by a human a moment later does not silently collapse into the row
+ * already queued, while a genuine double-submit within the same minute does.
+ */
+async function queueRetry(
+  template: EmailTemplate,
+  to: string,
+  props: EmailProps,
+  lastError: string
+): Promise<void> {
+  try {
+    const minute = new Date().toISOString().slice(0, 16);
+
+    await db.emailOutbox.createMany({
+      data: [
+        {
+          idempotencyKey: `direct:${template}:${to}:${minute}`,
+          template,
+          to,
+          props: props as Prisma.InputJsonValue,
+          status: "FAILED",
+          attempts: 1,
+          lastError,
+          // One minute out, matching the worker's first backoff step.
+          nextAttemptAt: new Date(Date.now() + 60_000),
+        },
+      ],
+      skipDuplicates: true,
+    });
+  } catch {
+    /* The EmailLog row above is the record either way. */
   }
 }
 
@@ -695,7 +1045,9 @@ export async function processOutbox(limit = 25): Promise<{
     if (claimed.count === 0) continue;
 
     try {
-      await sendEmail(row.template as never, row.to, (row.props ?? {}) as EmailProps);
+      await sendEmail(row.template as never, row.to, (row.props ?? {}) as EmailProps, {
+        fromOutbox: true,
+      });
       await db.emailOutbox.update({
         where: { id: row.id },
         data: { status: "SENT", sentAt: new Date(), lastError: null },

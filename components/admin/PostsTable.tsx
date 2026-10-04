@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { Archive, ExternalLink, Pencil } from "lucide-react";
 import { useMemo } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { PostStatus } from "@prisma/client";
 
 import { SortableTable } from "@/components/admin/SortableTable";
 import { archive } from "@/app/admin/blog/actions";
-import { Pill, relativeDays, type Tone } from "@/components/admin/ui";
+import { Pill, relativeDays, type Tone, RowAction, RowActions } from "@/components/admin/ui";
 
 export type PostRow = {
   id: string;
@@ -74,23 +75,30 @@ export function PostsTable({ rows }: { rows: PostRow[] }) {
         enableSorting: false,
         meta: { align: "right" },
         cell: ({ row }) => (
-          <div className="flex items-center justify-end gap-3">
+          <RowActions>
             {row.original.status === "PUBLISHED" && (
-              <Link href={`/blog/${row.original.slug}`} className="text-[color:var(--admin-ink-70)] transition-colors hover:text-[color:var(--admin-ink)]">
-                View
-              </Link>
+              <RowAction
+                icon={ExternalLink}
+                href={`/blog/${row.original.slug}`}
+                label={`View “${row.original.title}” on the site`}
+              />
             )}
             {row.original.status !== "ARCHIVED" && (
               <form action={archive.bind(null, row.original.id)}>
-                <button type="submit" className="text-[color:var(--admin-ink-70)] transition-colors hover:text-[color:var(--admin-ink)]">
-                  Archive
-                </button>
+                <RowAction
+                  type="submit"
+                  icon={Archive}
+                  tone="danger"
+                  label={`Archive “${row.original.title}”`}
+                />
               </form>
             )}
-            <Link href={`/admin/blog/${row.original.id}`} className="font-medium text-[color:var(--admin-accent)] hover:underline">
-              Edit
-            </Link>
-          </div>
+            <RowAction
+              icon={Pencil}
+              href={`/admin/blog/${row.original.id}`}
+              label={`Edit “${row.original.title}”`}
+            />
+          </RowActions>
         ),
       },
     ],

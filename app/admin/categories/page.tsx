@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Pencil, Plus } from "lucide-react";
 
-import { Cell, DataTable, EmptyState, PageHeader, Panel, Pill, Row } from "@/components/admin/ui";
+import { Cell, DataTable, EmptyState, PageHeader, Panel, Pill, Row, RowAction, RowActions } from "@/components/admin/ui";
 import { hasPermission, requireAdminPage } from "@/lib/guard";
 import { listCategories } from "@/lib/services/categories";
 
@@ -103,14 +103,15 @@ function CategoryTable({ rows, canEdit }: { rows: CategoryRow[]; canEdit: boolea
               <Pill tone="info">formulary</Pill>
             )}
           </Cell>
-          <Cell>
+          <Cell numeric>
             {canEdit && (
-              <Link
-                href={`/admin/categories/${category.id}`}
-                className="text-[0.8125rem] font-medium text-[color:var(--admin-accent)] hover:underline"
-              >
-                Edit
-              </Link>
+              <RowActions>
+                <RowAction
+                  icon={Pencil}
+                  href={`/admin/categories/${category.id}`}
+                  label={`Edit ${category.name}`}
+                />
+              </RowActions>
             )}
           </Cell>
         </Row>

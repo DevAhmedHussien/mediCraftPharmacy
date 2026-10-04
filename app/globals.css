@@ -14,27 +14,37 @@
    ========================================================================= */
 
 :root {
+  /* Two faces, both from the branding folder, split by what each one ships.
+   *
+   * Satoshi is packaged with a Regular, so it carries running text — every
+   * paragraph, label, table cell and control inherits this.
+   *
+   * Lato is packaged as Bold and Black only. That is no use for body copy and
+   * exactly right for headings, so it takes those. The split is the fonts'
+   * own, not a preference. */
   --font-sans: var(--font-satoshi), system-ui, -apple-system, sans-serif;
+  --font-display: var(--font-ui), system-ui, -apple-system, sans-serif;
 
   /* The sticky header sits under a translucent white; the saturation boost
      keeps the brand blue vivid when it scrolls beneath instead of going grey. */
   --chrome-bg: rgba(255, 255, 255, 0.86);
   --chrome-blur: saturate(160%) blur(16px);
 
-  /* Height of the fixed chrome at rest. The document is inset by this, so it
-     must match the *expanded* bar — otherwise the page jumps at scroll 0. The
-     utility strip is hidden below `md`, hence two values. */
+  /* Height of the fixed chrome. One value, at every width and every scroll
+     position — the document is inset by it, sticky sub-bars offset by it, and
+     the hero subtracts it from the first screen.
+     
+     IT USED TO BE THREE VALUES. A navy utility strip sat above the bar on
+     desktop, so the chrome was 6.75rem at rest and 3.75rem once the strip had
+     slid away — 108px of the first screen spent on a row repeating the
+     location, the hours, the phone number and two links that were already in
+     the footer and the bar beneath it. Removing the strip removes the reason
+     any of those numbers differed. */
   --chrome-h: 4.5rem;
-  /* Height once the bar has condensed. Sticky sub-bars (the formulary filter,
-     the product bar) offset by this, because by the time they matter the user
-     has scrolled and the bar has already shrunk — so they sit flush. */
-  --chrome-h-condensed: 3.75rem;
-}
-
-@media (min-width: 768px) {
-  :root {
-    --chrome-h: 6.75rem;
-  }
+  /* Kept as an alias so the sticky sub-bars that offset by it — the formulary
+     filter, the product bar — do not each need editing to say the same thing.
+     They sit flush under a bar that no longer changes height. */
+  --chrome-h-condensed: var(--chrome-h);
 }
 
 html {
@@ -46,6 +56,19 @@ html {
 body {
   @apply bg-white text-body text-ink antialiased;
   font-family: var(--font-sans);
+}
+
+/* Headings carry the identity face.
+ *
+ * Set on the elements rather than on a utility class so a heading written as
+ * plain markup — the hero h1, a page masthead, anything inside prose — is in
+ * Satoshi without anyone remembering to add `font-display`. The class-based
+ * heading styles ask for it too, which is harmless and keeps either route
+ * correct on its own. */
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
 }
 
 /* The chrome is fixed, so the document is inset by its height once here rather
@@ -122,11 +145,31 @@ body {
    * across pages this long and leave nothing for the headings to contrast with.
    * brand-500 is the exact logo blue and clears 4.5:1 on white (5.66:1).
    */
+  /* Headings are ink, not brand blue.
+   *
+   * Every section title on the site used to be set in brand-500. At display
+   * size that is a lot of saturated blue on a white page — it competes with
+   * the primary button, with the accent word in the hero, and with the product
+   * photography, which is itself mostly blue. Ink headings let the blue mean
+   * one thing: the thing you can click.
+   *
+   * The hero keeps a single blue word, deliberately, because it is the only
+   * one on the page. */
+  /* BOLD, NOT BLACK.
+   *
+   * Every section title on the site was set in Lato Black — nine or ten
+   * blocks of 900-weight display type per page, each as loud as the last. At
+   * that density the weight stops being emphasis and becomes the page's
+   * normal voice, which leaves the hero nothing to be louder than and reads,
+   * on a page about laboratory procedure, as shouting.
+   *
+   * 700 is still unmistakably a heading at 36–46px. Black is now spent in one
+   * place: the home page headline. */
   .section-title {
-    @apply text-display-md font-black text-brand-500 md:text-display-lg;
+    @apply font-display text-display-md font-bold tracking-tight text-ink md:text-display-lg;
   }
   .section-title-sm {
-    @apply text-display-sm font-black text-brand-500 md:text-display-md;
+    @apply font-display text-display-sm font-bold tracking-tight text-ink md:text-display-md;
   }
   .band-navy .section-title,
   .band-navy .section-title-sm {
@@ -215,7 +258,7 @@ body {
   /* brand-600 rather than brand-500: these are set at body size, where the
      deeper blue holds up better (7.47:1 on white). */
   .card-title {
-    @apply mb-2.5 text-[1.0625rem] font-bold text-brand-600;
+    @apply font-display mb-2.5 text-[1.0625rem] font-bold text-brand-600;
   }
   /* Keeps a two-line title clear of the corner arrow on linked cards. */
   a.card .card-title {
@@ -255,9 +298,17 @@ body {
      Navy panel — the recurring dark counterweight. The HTML used this for
      "visual panels" and quality banners; here it is one component.
      ------------------------------------------------------------------ */
+  /* Light, not navy.
+   *
+   * This panel carried a navy gradient and appeared on five pages, which on a
+   * white site meant a dark slab interrupting every other section. The content
+   * is unchanged — badge, title, body, metrics — but it now reads as a quiet
+   * aside on the page rather than a different page pasted into it.
+   *
+   * The brand tint, not white: a white card on a white section has nothing to
+   * separate it, and a border alone would make it a box. */
   .panel-navy {
-    @apply relative overflow-hidden rounded-panel bg-navy p-8 text-white md:p-10;
-    background-image: linear-gradient(140deg, #0d193e 0%, #152f83 62%, #1b54fb 130%);
+    @apply relative overflow-hidden rounded-panel border border-brand-100 bg-brand-50/60 p-8 text-ink md:p-10;
   }
   /*
    * No bloom here. This panel appears a dozen times across the site, so a
@@ -268,22 +319,50 @@ body {
   .panel-navy > * {
     @apply relative z-10;
   }
+
+  /* Text colour follows the surface, not the markup.
+   *
+   * The pages inside this panel were written against a navy ground, so they
+   * ask for `text-white/70` and `text-cyan-300` directly. Now that the panel
+   * is light, that text is invisible — and editing five pages to flip each
+   * utility would leave the same trap for the next person who changes the
+   * panel's ground.
+   *
+   * So the container reverses them. A descendant selector (0,2,0) outranks a
+   * bare utility (0,1,0), which is what lets a container override a utility
+   * without !important. Change `.panel-navy` back to a dark ground and these
+   * rules come out; nothing in the pages has to move either way. */
+  .panel-navy :is(
+    .text-white,
+    .text-white\/50,
+    .text-white\/60,
+    .text-white\/70,
+    .text-white\/85
+  ) {
+    @apply text-ink-soft;
+  }
+  .panel-navy :is(.text-cyan-200, .text-cyan-300, .text-cyan-400) {
+    @apply text-brand-600;
+  }
+  .panel-navy :is(.border-white\/10, .border-white\/15, .border-white\/20) {
+    @apply border-brand-100;
+  }
   .panel-badge {
-    @apply mb-5 inline-flex items-center gap-2 rounded-full border border-cyan-400/40 bg-cyan-400/15 px-3.5 py-1.5 text-label font-semibold uppercase text-cyan-200;
+    @apply mb-5 inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white px-3.5 py-1.5 text-label font-semibold uppercase text-brand-700;
   }
   .panel-title {
-    @apply text-display-sm font-black leading-[1.15] text-white md:text-[2rem];
+    @apply font-display text-display-sm font-black leading-[1.15] tracking-tight text-ink md:text-[2rem];
   }
 
-  /* Metric grid inside a navy panel. */
+  /* Metric grid inside the panel. */
   .metric {
-    @apply rounded-[0.75rem] border border-white/10 bg-white/[0.06] p-4;
+    @apply rounded-lg border border-brand-100 bg-white p-4;
   }
   .metric-value {
-    @apply text-[1.5rem] font-black leading-none text-cyan-300;
+    @apply text-[1.5rem] font-black leading-none text-brand-600;
   }
   .metric-label {
-    @apply mt-1.5 block text-caption leading-snug text-white/60;
+    @apply mt-1.5 block text-caption leading-snug text-ink-muted;
   }
 
   /* ---------------------------------------------------------------------
@@ -377,7 +456,7 @@ body {
     @apply flex gap-5;
   }
   .step-num {
-    @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.7rem] bg-brand-500 text-meta font-black text-white;
+    @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-500 text-meta font-black text-white;
   }
   .process-card {
     @apply relative rounded-tile border border-line bg-white p-6;
@@ -398,13 +477,16 @@ body {
   .chip-active {
     @apply border-brand-500 bg-brand-500 text-white;
   }
+  /* Both badges were drawn for a navy footer — translucent white on dark, and
+     a pale amber that only reads against it. On the light footer they were
+     invisible and washed out respectively. */
   .badge-pill {
-    @apply inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3 py-1 text-caption font-medium text-white/80;
+    @apply inline-flex items-center rounded-full border border-line bg-white px-3 py-1 text-caption font-medium text-ink-soft;
   }
   /* "In progress" needs to read as honest rather than as an accreditation
      already held — amber, not cyan, and the copy always says so. */
   .badge-progress {
-    @apply inline-flex items-center gap-1.5 rounded-full border border-amber-400/40 bg-amber-400/15 px-3 py-1 text-caption font-semibold text-amber-200;
+    @apply inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-caption font-semibold text-amber-800;
   }
 
   /* Callout — a tinted aside with a brand rule down the left edge. */
@@ -463,53 +545,6 @@ body {
 
 
   /* ---------------------------------------------------------------------
-     Accreditation ticker.
-
-     One track carrying two copies of the list, translated -50% — when copy one
-     has left the frame, copy two is exactly where it started. Seamless, with no
-     measurement and no JavaScript.
-
-     `transform` only, so the animation never triggers layout, and the track is
-     `w-max` so its width is driven by content rather than a magic number.
-     ------------------------------------------------------------------ */
-  .marquee {
-    @apply flex overflow-hidden;
-    /* Fades both ends so items enter and leave rather than being clipped. */
-    -webkit-mask-image: linear-gradient(
-      to right,
-      transparent,
-      #000 6rem,
-      #000 calc(100% - 6rem),
-      transparent
-    );
-    mask-image: linear-gradient(
-      to right,
-      transparent,
-      #000 6rem,
-      #000 calc(100% - 6rem),
-      transparent
-    );
-  }
-  .marquee-track {
-    @apply flex w-max animate-marquee;
-  }
-  /* Stops for anyone who wants to actually read an item. */
-  .marquee:hover .marquee-track,
-  .marquee:focus-within .marquee-track {
-    animation-play-state: paused;
-  }
-  .marquee-list {
-    @apply flex w-max items-center;
-  }
-  .marquee-item {
-    @apply flex shrink-0 items-center gap-4 whitespace-nowrap text-[1.25rem] font-black tracking-[-0.02em] text-white md:text-[1.625rem];
-  }
-  /* The logo's mouth ellipse, holding its 18:5 ratio, doing the separating. */
-  .marquee-sep {
-    @apply mx-8 block h-[5px] w-[18px] shrink-0 rounded-full bg-cyan-400 md:mx-11;
-  }
-
-  /* ---------------------------------------------------------------------
      Skip link — off-screen until focused, then pinned over the chrome.
      ------------------------------------------------------------------ */
   .skip-link {
@@ -529,9 +564,22 @@ body {
      Gradient plate — the honest stand-in for an un-shot photographic slot.
      Brief §6: "an honest gradient beats a dishonest photograph."
      ------------------------------------------------------------------ */
+  /* Light, like everything else now. Same reversal rule as .panel-navy: the
+     markup inside was written for a dark ground, and the container flips it
+     rather than five files being edited. */
   .gradient-plate {
-    @apply relative isolate overflow-hidden rounded-panel border border-navy-soft/60;
-    background-image: linear-gradient(140deg, #0a1330 0%, #142b6b 58%, #1b54fb 128%);
+    @apply relative isolate overflow-hidden rounded-panel border border-brand-100 bg-brand-50/60;
+  }
+  .gradient-plate :is(
+    .text-white,
+    .text-white\/45,
+    .text-white\/60,
+    .text-white\/70
+  ) {
+    @apply text-ink-soft;
+  }
+  .gradient-plate :is(.text-cyan-200, .text-cyan-300, .text-cyan-400) {
+    @apply text-brand-600;
   }
   /*
    * HEPA ceiling grid, drawn rather than photographed — brief §4.5 asks for that
@@ -855,6 +903,30 @@ body {
   /* Capped rather than full-bleed: at `w-full` of its column the vials ran to
      the container edge and crowded the headline. The cap keeps the product
      inside its half with air on both sides at every width. */
+  /* The hero vial: tilted, and breathing.
+   *
+   * One piece of non-user-triggered motion on the whole site, on the single
+   * object the page is about. It animates `transform` only, so it never
+   * triggers layout or paint — the cost is a composited transform per frame
+   * and nothing else.
+   *
+   * Reduced motion stops it dead and keeps the tilt, because the rotation is
+   * composition rather than animation. */
+  .hero-vial {
+    animation: hero-float 6s ease-in-out infinite;
+    transform: rotate(20deg);
+    will-change: transform;
+  }
+  @keyframes hero-float {
+    0%, 100% { transform: rotate(20deg) translateY(0); }
+    50%      { transform: rotate(20deg) translateY(-14px); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-vial {
+      animation: none;
+    }
+  }
+
   .hero-product {
     @apply relative z-10 mx-auto w-full max-w-[22rem] sm:max-w-[26rem] lg:mr-0 lg:max-w-[28rem] xl:max-w-[32rem];
   }
@@ -904,16 +976,18 @@ body {
      ------------------------------------------------------------------ */
   /* The plate sits on a flat tint of its own rather than a translucent white,
      so the cell rules below can be drawn deterministically. */
+  /* Light. The plate is a specification sheet, and a sheet is white — the
+     navy ground was the one thing making it read as a widget rather than as
+     the document it is modelled on. */
   .spec-plate {
-    @apply overflow-hidden rounded-tile border border-white/15;
-    background: #111e49;
+    @apply overflow-hidden rounded-tile border border-line bg-white;
   }
   .spec-plate-head {
-    @apply flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b border-white/15 px-5 py-2.5;
+    @apply flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b border-line bg-sand px-5 py-2.5;
     background: #16255a;
   }
   .spec-plate-head-label {
-    @apply inline-flex items-center gap-2.5 font-mono text-label font-medium uppercase text-cyan-300;
+    @apply inline-flex items-center gap-2.5 font-mono text-label font-medium uppercase text-brand-600;
   }
   /* The mortar's mouth again, as the document's bullet. */
   .spec-plate-head-label::before {
@@ -921,7 +995,7 @@ body {
     @apply block h-[4px] w-[15px] shrink-0 rounded-full bg-cyan-400;
   }
   .spec-plate-head-meta {
-    @apply font-mono text-label uppercase text-white/55;
+    @apply font-mono text-label uppercase text-ink-muted;
   }
   /*
    * Hairline cell grid, drawn with a 1px gap over a rule-coloured ground
@@ -942,13 +1016,13 @@ body {
     background: #111e49;
   }
   .spec-cell-label {
-    @apply block font-mono text-label font-medium uppercase text-white/55;
+    @apply block font-mono text-label font-medium uppercase text-ink-muted;
   }
   .spec-cell-value {
-    @apply mt-2.5 block text-[1.75rem] font-black leading-none text-cyan-300;
+    @apply mt-2.5 block text-[1.75rem] font-black leading-none text-brand-600;
   }
   .spec-cell-note {
-    @apply mt-1.5 block text-caption leading-snug text-white/60;
+    @apply mt-1.5 block text-caption leading-snug text-ink-muted;
   }
 
   /* Trust bar — the strip of accreditation signals under the hero. */
@@ -1041,29 +1115,6 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  /*
-   * The ticker cannot simply have its duration collapsed — that would leave the
-   * track parked at -50% with half the credentials off-screen. It becomes a
-   * static, centred, wrapping list instead, and the duplicate copy is removed
-   * so nothing reads twice.
-   */
-  .marquee {
-    -webkit-mask-image: none;
-    mask-image: none;
-  }
-  .marquee-track {
-    @apply w-full flex-wrap justify-center;
-    animation: none !important;
-  }
-  .marquee-list {
-    @apply w-full flex-wrap justify-center gap-y-4;
-  }
-  .marquee-track > .marquee-list[aria-hidden="true"] {
-    display: none;
-  }
-  .marquee-item:last-child .marquee-sep {
-    display: none;
-  }
   /* The origin marker keeps its dot and drops the ring animation entirely,
      rather than being frozen mid-expansion at an arbitrary radius. */
   .origin-pulse-ring {
@@ -1132,10 +1183,10 @@ body {
     @apply rounded bg-sand px-1.5 py-0.5 font-mono text-[0.875em] text-ink;
   }
   .prose-article pre {
-    @apply mt-5 overflow-x-auto rounded-tile bg-navy p-4 text-caption text-white;
+    @apply mt-5 overflow-x-auto rounded-tile bg-navy p-4 text-caption text-ink;
   }
   .prose-article pre code {
-    @apply bg-transparent p-0 text-white;
+    @apply bg-transparent p-0 text-ink;
   }
   .prose-article hr {
     @apply my-10 border-line;
@@ -1167,18 +1218,62 @@ body {
    storefront — which is exactly what the previous MediCraft admin was.
    ========================================================================= */
 @layer components {
-  .admin {
-    --admin-bg: #eef0f3;
+  .admin,
+  .dashboard {
+    /* ---------------------------------------------------------------------
+       Surface language, taken from the Ascend Rehab admin.
+
+       Three things carry that look, and they are all here rather than spread
+       through components:
+
+         · the page is a blue-tinted grey, not white, so a white card reads as
+           a raised object instead of a boxed-off region of the same sheet
+         · cards have NO border and a wide, soft shadow — the separation is
+           depth, not a hairline
+         · cards are padded generously (2rem), which is what stops a dense
+           admin from feeling like a spreadsheet
+
+       The palette stays MediCraft's. Ascend Rehab's own primary is an indigo
+       (#4839EB); ours is the brand blue, so only the geometry and the
+       surfaces are borrowed.
+       ------------------------------------------------------------------ */
+    font-family: var(--font-sans);
+    line-height: 1.45;
+
+    --admin-bg: #f0f5fa;
     --admin-surface: #ffffff;
-    --admin-rail: #0d193e;
-    --admin-rail-text: #b6c0d6;
+    /* The marketing `tile` radius, so a card in the admin and a card on the
+       public site are the same shape. They were 0.428rem and 0.875rem — close
+       enough to look like a mistake rather than a decision. */
+    --admin-card-radius: 0.875rem;
+    --admin-card-pad: 1.5rem;
+    --admin-shadow: 0 4px 24px 0 rgb(16 31 77 / 0.08);
+    --admin-shadow-sm: 0 2px 8px 0 rgb(16 31 77 / 0.06);
+    /* The rail is white, not navy.
+       A dark rail is the console convention and it was here to make the
+       working panel unambiguous. But it is the only dark surface left in the
+       product — the marketing site dropped navy entirely — so signing in went
+       from an all-white site to a slab of navy, and it read as a different
+       application. The working area is already obvious from the page's own
+       background sitting a shade off white. */
+    --admin-rail: #ffffff;
+    --admin-rail-text: var(--admin-ink-70);
     --admin-border: #dde1e8;
     --admin-border-strong: #c7cdd8;
     --admin-ink: #161f33;
     --admin-ink-70: #4a5470;
     --admin-ink-50: #78829a;
     --admin-accent: #1b54fb;
+  }
 
+  /* Only the admin paints the whole page in its own surface.
+     `.dashboard` exists so the partner portal can render the SAME components —
+     Panel, Pill, DataTable, Facts, StatStrip — inside the white marketing
+     chrome. Those components are written against these custom properties, so
+     without this they resolved to nothing outside /admin and every panel came
+     out unstyled. Scoping the tokens to one of the two places that needs them
+     was what forced the portal to grow its own parallel set of cards. */
+  .admin {
     background: var(--admin-bg);
     color: var(--admin-ink);
     /* Tabular numerals everywhere: a column of prices that does not line up
@@ -1205,10 +1300,56 @@ body {
     font-size: 0.9375rem;
   }
 
+  /* Borderless, raised. The hairline border this used to carry fought the
+     shadow: two separation cues doing one job, which is what made the old
+     admin read as flat panels rather than cards. */
+  /* ---------------------------------------------------------------------
+     The partner portal wears the same surfaces as the admin.
+
+     It is the other half of the same product — a partner working through
+     onboarding and an operator reviewing it should not look like they are
+     using two different applications. The marketing site keeps Satoshi and
+     its white ground; everything behind a login shares this one.
+     ------------------------------------------------------------------ */
+  .portal {
+    font-family: var(--font-sans);
+    line-height: 1.45;
+    background: #f0f5fa;
+  }
+  .portal-card {
+    background: #fff;
+    border: 0;
+    border-radius: 0.875rem;
+    box-shadow: 0 4px 24px 0 rgb(16 31 77 / 0.08);
+    padding: 1.5rem;
+  }
+
+  /* Lift the marketing tiles the portal pages are built from.
+   *
+   * Those pages compose `rounded-tile border border-line`, which is the right
+   * treatment on the white marketing ground and the wrong one here: a hairline
+   * box on a tinted background reads as a drawn region rather than a card.
+   * Rewriting every portal page to a new class would touch a dozen files to
+   * change one visual decision, so the decision is made once, here, and only
+   * inside `.portal`.
+   *
+   * Tiles that carry their own tint — the brand-coloured "next step" card, the
+   * emerald success notes, the red reasons — keep their borders, because there
+   * the border is what makes the tint legible rather than decoration. */
+  .portal .rounded-tile.border-line {
+    border-color: transparent;
+    background: #fff;
+    box-shadow: 0 4px 24px 0 rgb(16 31 77 / 0.08);
+  }
+  .portal .rounded-tile.border-dashed {
+    box-shadow: none;
+  }
+
   .admin-panel {
     background: var(--admin-surface);
-    border: 1px solid var(--admin-border);
-    border-radius: 6px;
+    border: 0;
+    border-radius: var(--admin-card-radius);
+    box-shadow: var(--admin-shadow);
   }
 
   /* Identifiers line up when they are tabular and monospaced. Comparing two
@@ -1232,7 +1373,7 @@ body {
     transition: background-color 120ms ease;
   }
   .admin-row:hover {
-    background: #f5f7fa;
+    background: #f6f9fd;
   }
   .admin-row:last-child {
     border-bottom: 0;
@@ -1243,7 +1384,7 @@ body {
      thumb on a phone. An operator clicks with a mouse and needs six controls
      in a toolbar, so these are 32px with a 0.8125rem label. */
   .admin-btn {
-    @apply inline-flex shrink-0 items-center justify-center gap-1.5 rounded-[5px] px-3 py-1.5 text-[0.8125rem] font-medium transition-colors;
+    @apply inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-[0.8125rem] font-medium transition-colors;
     @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1;
     --tw-ring-color: var(--admin-accent);
   }
@@ -1281,8 +1422,18 @@ body {
     color: var(--admin-ink);
   }
 
+  /* A visible keyboard focus ring on anything that is not a .admin-btn.
+     Rows, stat tiles and worklist links are all links, and a link with no
+     ring is a link a keyboard user cannot find — the one accessibility
+     failure that makes a dense console unusable rather than merely awkward. */
+  .admin-focus {
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
+    --tw-ring-color: var(--admin-accent);
+    --tw-ring-offset-color: var(--admin-surface);
+  }
+
   .admin-input {
-    @apply w-full rounded-[5px] px-2.5 py-1.5 text-[0.8125rem];
+    @apply w-full rounded-lg px-2.5 py-1.5 text-[0.8125rem];
     background: var(--admin-surface);
     border: 1px solid var(--admin-border-strong);
     color: var(--admin-ink);
@@ -1301,16 +1452,18 @@ body {
 
   /* Rail navigation. */
   .admin-rail-link {
-    @apply flex items-center gap-2.5 rounded-[5px] px-3 py-1.5 text-[0.8125rem] transition-colors;
+    @apply flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-[0.8125rem] transition-colors;
     color: var(--admin-rail-text);
   }
   .admin-rail-link:hover {
-    background: rgb(255 255 255 / 0.06);
-    color: #fff;
+    background: var(--admin-bg);
+    color: var(--admin-ink);
   }
+  /* The active item carries the accent, which on a light rail is what the
+     white overlay used to do on a dark one. */
   .admin-rail-link[aria-current="page"] {
-    background: rgb(255 255 255 / 0.1);
-    color: #fff;
+    background: #e8eefe;
+    color: var(--admin-accent);
     font-weight: 600;
   }
 }

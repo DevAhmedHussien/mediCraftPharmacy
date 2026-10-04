@@ -1,4 +1,5 @@
 import NextAuth from "next-auth";
+import type { Role } from "@prisma/client";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
@@ -47,6 +48,41 @@ const credentialsSchema = z.object({
  * keeps both paths the same length.
  */
 const DUMMY_HASH = "$2b$12$C6UzMDM.H6dfI/f/IKcEeO1eQ0Gu0Q7dFqZ3QqjxZcZ5rQ7bW1lJ2";
+
+const otpSchema = z.object({
+  email: z.string().email().toLowerCase(),
+  /** Six digits. Anything else never reaches the database. */
+  code: z.string().regex(/^\d{6}$/),
+});
+
+/**
+ * The session payload, from a user row.
+ *
+ * Shared by both providers so a password sign-in and a code sign-in produce
+ * byte-identical sessions. Two copies of this mapping is how one of them ends
+ * up shipping the Prisma enum member name and the other the wire string, and
+ * every permission check silently fails for half the logins.
+ */
+function sessionUser(user: {
+  id: string;
+  email: string;
+  name: string;
+  role: Role;
+  permissions: { permission: string }[];
+}) {
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    role: user.role,
+    // Prisma returns the member name (PRODUCTS_SEND); the whole app speaks
+    // the dotted wire string (products.send). Convert once, here, so nothing
+    // downstream has to know the mapping exists.
+    permissions: user.permissions.map(
+      (p) => PERMISSION[p.permission as keyof typeof PERMISSION] as Permission
+    ),
+  };
+}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   secret: env.AUTH_SECRET,
@@ -109,18 +145,79 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           .update({ where: { id: user.id }, data: { lastLoginAt: new Date() } })
           .catch(() => undefined);
 
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-          // Prisma returns the member name (PRODUCTS_SEND); the whole app
-          // speaks the dotted wire string (products.send). Convert once, here,
-          // so nothing downstream has to know the mapping exists.
-          permissions: user.permissions.map(
-            (p) => PERMISSION[p.permission as keyof typeof PERMISSION] as Permission
-          ),
-        };
+        return sessionUser(user);
+      },
+    }),
+
+    /* ---------------------------------------------------------------
+       The emailed code.
+
+       A SECOND PROVIDER, NOT A BRANCH IN THE FIRST. `authorize` returning a
+       user is the moment a session is minted, and a single function that
+       accepts either a password or a code is one `if` away from accepting
+       neither — the shape where a missing field falls through to the wrong
+       arm. Two providers cannot be confused for each other: this one has no
+       password parameter to omit.
+
+       The code is verified by `consumeLoginCode`, which burns it in the same
+       update that checks it. By the time this returns a user the code is
+       already spent, so a replayed POST authenticates nothing.
+       --------------------------------------------------------------- */
+    Credentials({
+      id: "otp",
+      name: "Email code",
+      credentials: { email: {}, code: {} },
+
+      async authorize(raw) {
+        const parsed = otpSchema.safeParse(raw);
+        if (!parsed.success) return null;
+
+        const { email, code } = parsed.data;
+
+        /* The same budget the password path uses, on the same key. Eight
+           failures in fifteen minutes across BOTH methods — otherwise the
+           code form is a fresh allowance for anyone who has exhausted the
+           password form against the same address. */
+        const limitKey = `login:${email}`;
+        if (!peek(limitKey, RATE_LIMITS.login).ok) return null;
+
+        const { consumeLoginCode } = await import("@/lib/services/login-codes");
+        const ok = await consumeLoginCode(email, code);
+
+        if (!ok) {
+          rateLimit(limitKey, RATE_LIMITS.login);
+          return null;
+        }
+
+        /* Read the account only after the code has been proved. Looking it up
+           first would mean a database round trip whose timing differs for
+           addresses that exist. */
+        const user = await db.user.findUnique({
+          where: { email },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            role: true,
+            isActive: true,
+            permissions: { select: { permission: true } },
+          },
+        });
+
+        // Deactivated between the code being issued and used. Rare, and the
+        // check belongs here rather than being assumed from issuance.
+        if (!user?.isActive) {
+          rateLimit(limitKey, RATE_LIMITS.login);
+          return null;
+        }
+
+        resetLimit(limitKey);
+
+        void db.user
+          .update({ where: { id: user.id }, data: { lastLoginAt: new Date() } })
+          .catch(() => undefined);
+
+        return sessionUser(user);
       },
     }),
   ],

@@ -80,10 +80,21 @@ const config: Config = {
         line: "#dde4f0",
       },
       fontFamily: {
-        // Satoshi is the identity typeface; the deck sets the lockup in
-        // Satoshi Black over Satoshi Regular and the site does the same.
+        /*
+         * Two families, as the branding guideline packages them.
+         *
+         * Satoshi carries the lockup and the display type — it is the face the
+         * logo is drawn in, so headings set in it tie the page to the mark.
+         * Lato carries running text: it was built for body copy, holds its
+         * colour at 15px where Satoshi's wide apertures start to feel loose,
+         * and is the second family the guideline itself uses.
+         *
+         * `sans` is what every unstyled element inherits, so that is Lato.
+         * `display` is opt-in through `font-display`, which the heading
+         * classes apply.
+         */
         sans: ["var(--font-satoshi)", "system-ui", "sans-serif"],
-        display: ["var(--font-satoshi)", "system-ui", "sans-serif"],
+        display: ["var(--font-ui)", "system-ui", "sans-serif"],
         // Reserved for regulatory micro-data — USP chapters, lot numbers,
         // beyond-use dates. Never for prose.
         mono: ["var(--font-mono)", "ui-monospace", "monospace"],
@@ -118,10 +129,6 @@ const config: Config = {
         "fade-up": {
           "0%": { opacity: "0", transform: "translateY(20px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
-        },
-        marquee: {
-          "0%": { transform: "translateX(0)" },
-          "100%": { transform: "translateX(-50%)" },
         },
 
         /* ---- Logo motion ----------------------------------------------
@@ -169,7 +176,6 @@ const config: Config = {
       },
       animation: {
         "fade-up": "fade-up 0.7s cubic-bezier(0.22,1,0.36,1) forwards",
-        marquee: "marquee 34s linear infinite",
       },
     },
   },

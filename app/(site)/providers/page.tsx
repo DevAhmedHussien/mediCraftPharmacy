@@ -2,17 +2,17 @@ import type { Metadata } from "next";
 import { media } from "@/lib/media";
 import { breadcrumbJsonLd, jsonLdProps, pageMetadata } from "@/lib/seo";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import {
   CheckList,
   IconCard,
-  NavyPanel,
   PageHero,
   SectionHead,
   TwoCol,
 } from "@/components/blocks";
 import { Stagger, StaggerItem } from "@/components/motion/Motion";
-import { StickyStack } from "@/components/motion/StickyStack";
-import { GradientPlate } from "@/components/media/GradientPlate";
+import { CardsBesideFigure } from "@/components/sections/CardsBesideFigure";
+import { areaMedia } from "@/lib/media";
 import { Reveal } from "@/components/ui/Reveal";
 import { providers } from "@/lib/content";
 import { getCategoryMetaLabel } from "@/lib/catalogue";
@@ -70,60 +70,39 @@ export default async function ProvidersPage() {
       </section>
 
       {/* ---- Onboarding ----
-          Four steps in a fixed order, so they are numbered. */}
+          The same shape as the Partnership section above: a still on one
+          side, a column of cards on the other, built from the same `IconCard`
+          so the two sections are one layout used twice rather than two that
+          happen to look alike. No pinning and no numerals — the order is in
+          the markup, which is where it belongs. */}
       <section className="band section">
         <div className="container-x">
           <Reveal>
             <SectionHead
+              align="center"
               eyebrow={providers.onboarding.eyebrow}
               title={providers.onboarding.title}
               lead={providers.onboarding.lead}
+              className="mx-auto max-w-2xl"
             />
           </Reveal>
 
-          {/* Onboarding is a fixed order — application, then liaison, then
-              portal, then first prescription — so the cards pin and stack in
-              that order rather than sitting in a grid a reader can skim out of
-              sequence. */}
-          <div className="mt-12">
-            <StickyStack
-              steps={providers.onboarding.steps}
-              eyebrow="Under ten minutes"
-            />
-          </div>
+          <CardsBesideFigure
+            className="mt-16"
+            items={providers.onboarding.steps}
+            image={{
+              src: "/images/brand/vial-clear-glass-shelf.webp",
+              alt: "A MediCraft semaglutide vial on a glass shelf",
+              width: 1086,
+              height: 1448,
+            }}
+          />
 
-          <div className="mt-16 grid gap-10 lg:grid-cols-2 lg:gap-14">
-            <Reveal>
-              <NavyPanel
-                badge={providers.onboarding.panel.badge}
-                title={providers.onboarding.panel.title}
-              >
-                {/* A real quotation, so it is marked up as one. The source is
-                    anonymised in the owner's document, so no name is invented
-                    here — the attribution says exactly what he says. */}
-                <blockquote className="mt-5">
-                  <p className="text-body text-white/85 text-pretty">
-                    “{providers.onboarding.panel.quote}”
-                  </p>
-                  <footer className="mt-4 text-caption text-white/50">
-                    — {providers.onboarding.panel.attribution}
-                  </footer>
-                </blockquote>
-                <Link href="#apply" className="btn-accent mt-7 inline-flex">
-                  {providers.onboarding.panel.cta.label} <span aria-hidden>→</span>
-                </Link>
-              </NavyPanel>
-
-            </Reveal>
-
-            <Reveal delay={0.1}>
-              <GradientPlate
-                ratio="4/3"
-                icon="graduation"
-                label="Providers — Phase 1 · P1"
-                subject="A pharmacist and a clinician in conversation over a formulation document — a working discussion, neither looking at camera. Not a handshake."
-              />
-            </Reveal>
+          <div className="mt-16 flex justify-center">
+            <Link href="#apply" className="btn-primary btn-lg">
+              {providers.onboarding.panel.cta.label}
+              <ArrowRight className="h-4 w-4" strokeWidth={2.2} />
+            </Link>
           </div>
         </div>
       </section>
@@ -140,8 +119,14 @@ export default async function ProvidersPage() {
           <Stagger className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {providers.therapeuticAreas.items.map((area) => (
               <StaggerItem key={area.title} className="h-full">
+                {/* `areaMedia` has artwork for six of the eleven areas,
+                    keyed by the same href the card links to. Passing
+                    `undefined` for the rest is the correct outcome: InfoCard
+                    simply renders without a picture rather than reserving an
+                    empty well. */}
                 <IconCard
                   {...area}
+                  media={areaMedia[area.href]}
                   meta={areaMeta[area.href]}
                   className="h-full"
                 />

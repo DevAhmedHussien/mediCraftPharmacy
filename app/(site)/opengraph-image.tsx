@@ -115,7 +115,7 @@ export default async function OpengraphImage() {
             </div>
 
             <div style={{ display: "flex", marginTop: 22, fontSize: 24, color: "rgba(255,255,255,0.78)" }}>
-              503A sterile compounding · Palm Harbor, Florida
+              503A sterile compounding · Tampa, Florida
             </div>
           </div>
 

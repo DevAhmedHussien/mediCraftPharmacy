@@ -1,66 +1,61 @@
 "use client";
 
 import { type ReactNode } from "react";
-import { motion, useReducedMotion, type Variants } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 /* ===========================================================================
    Motion primitives.
 
-   One easing curve and one distance across the whole site, so scroll reveals
-   read as a single system rather than a pile of effects. Every component here
-   returns plain, visible markup when reduced motion is requested — the content
-   is never gated behind an animation.
+   ONE MOMENT, NOT SIXTY.
+   ----------------------
+   Every section of every page used to rise 22px into view as it was scrolled
+   past — `Reveal` alone was called in fifty-nine places, plus `Stagger` on
+   five card grids and `FadeIn` on seven blocks of the home page. Each one was
+   defensible; together they meant nothing on the site was ever simply there.
+   Reading a page of regulatory prose became a sequence of things arriving,
+   and a visitor scrolling back up found the page had already played.
+
+   Scroll-triggered fade-ups on every section are also the most recognisable
+   tell of a template. A pharmacy asking prescribers to trust its documentation
+   is the last site that should read as one.
+
+   So `FadeIn`, `Stagger` and `StaggerItem` now render exactly what they
+   already rendered under `prefers-reduced-motion`: the element, visible,
+   where it is. The components are kept rather than deleted from sixty call
+   sites — they are the seam where a motion decision is made, and a future
+   change belongs here rather than in sixty files.
+
+   WHAT STILL MOVES
+   ----------------
+   `RevealWords`, on the home page headline, once per visit. That is the one
+   orchestrated moment the site allows itself, and it lands because nothing
+   else competes with it. Everything else that moves is answering a click —
+   a menu opening, a dialog, a form confirming — which is motion showing
+   somebody what just changed rather than decorating a scroll.
    ========================================================================= */
 
 const EASE = [0.22, 1, 0.36, 1] as const;
-const DISTANCE = 22;
 
-/** A single element that rises into view once. */
+/**
+ * A section, where it is.
+ *
+ * Keeps `delay` in its signature because around sixty call sites pass it. It
+ * is ignored — there is nothing left to delay — and a prop that does nothing
+ * is cheaper than editing sixty files to drop it.
+ */
 export function FadeIn({
   children,
-  delay = 0,
   className,
 }: {
   children: ReactNode;
   delay?: number;
   className?: string;
 }) {
-  const reduce = useReducedMotion();
-  if (reduce) return <div className={className}>{children}</div>;
-
-  return (
-    <motion.div
-      data-reveal=""
-      className={className}
-      initial={{ opacity: 0, y: DISTANCE }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-80px" }}
-      transition={{ duration: 0.6, delay, ease: EASE }}
-    >
-      {children}
-    </motion.div>
-  );
+  return <div className={className}>{children}</div>;
 }
 
-const parentVariants: Variants = {
-  hidden: {},
-  shown: { transition: { staggerChildren: 0.07, delayChildren: 0.04 } },
-};
-
-const childVariants: Variants = {
-  hidden: { opacity: 0, y: DISTANCE },
-  shown: { opacity: 1, y: 0, transition: { duration: 0.55, ease: EASE } },
-};
-
-/**
- * Staggers its direct children into view.
- *
- * Wrap a grid in `<Stagger>` and each `<StaggerItem>` inside it arrives a beat
- * after the last. The delay is deliberately short — 70ms — because a long
- * stagger on a 6-card grid makes the last card feel broken rather than
- * choreographed.
- */
+/** A grid, where it is. */
 export function Stagger({
   children,
   className,
@@ -68,22 +63,10 @@ export function Stagger({
   children: ReactNode;
   className?: string;
 }) {
-  const reduce = useReducedMotion();
-  if (reduce) return <div className={className}>{children}</div>;
-
-  return (
-    <motion.div
-      className={className}
-      variants={parentVariants}
-      initial="hidden"
-      whileInView="shown"
-      viewport={{ once: true, margin: "-60px" }}
-    >
-      {children}
-    </motion.div>
-  );
+  return <div className={className}>{children}</div>;
 }
 
+/** A card in that grid, where it is. */
 export function StaggerItem({
   children,
   className,
@@ -91,14 +74,7 @@ export function StaggerItem({
   children: ReactNode;
   className?: string;
 }) {
-  const reduce = useReducedMotion();
-  if (reduce) return <div className={className}>{children}</div>;
-
-  return (
-    <motion.div data-reveal="" className={className} variants={childVariants}>
-      {children}
-    </motion.div>
-  );
+  return <div className={className}>{children}</div>;
 }
 
 /**

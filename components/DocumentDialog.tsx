@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Download, FileText, Loader2, X } from "lucide-react";
+import { Download, FileText, Loader2 } from "lucide-react";
 
+import { Modal } from "@/components/ui/Modal";
 import { cn } from "@/lib/utils";
 
 /* ===========================================================================
@@ -18,6 +19,10 @@ import { cn } from "@/lib/utils";
    button rather than as the only behaviour. The presigned URL never reaches
    the address bar, so a copied link cannot be passed around while it is still
    valid.
+
+   The dialog shell — focus trap, scroll lock, Escape, focus restore — is
+   `Modal`. This file is only about getting the bytes and choosing a viewer
+   for them.
    ========================================================================= */
 
 export type ViewableDocument = {
@@ -85,83 +90,58 @@ export function DocumentDialog({
     };
   }, [doc, fetchUrl]);
 
-  useEffect(() => {
-    if (!doc) return;
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [doc, onClose]);
-
   if (!doc) return null;
 
   const isImage = (doc.mime ?? "").startsWith("image/");
   const isPdf = (doc.mime ?? "").includes("pdf");
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-label={doc.label}
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-navy/50 p-4"
-      onClick={onClose}
+    <Modal
+      open
+      onClose={onClose}
+      size="wide"
+      padded={false}
+      title={doc.label}
+      subtitle={`${doc.filename}${doc.size ? ` · ${readableSize(doc.size)}` : ""}`}
+      actions={
+        <a
+          href={blobUrl ?? undefined}
+          download={doc.filename}
+          aria-disabled={!blobUrl}
+          className={cn("btn-outline btn-sm", !blobUrl && "pointer-events-none opacity-40")}
+        >
+          <Download className="size-3.5" strokeWidth={2.4} aria-hidden />
+          Download
+        </a>
+      }
     >
-      <div
-        className="flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-tile border border-line bg-white"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <header className="flex items-center justify-between gap-4 border-b border-line px-5 py-3">
-          <div className="min-w-0">
-            <p className="truncate text-meta font-bold text-ink">{doc.label}</p>
-            <p className="truncate font-mono text-caption text-ink-muted">
-              {doc.filename}
-              {doc.size ? ` · ${readableSize(doc.size)}` : ""}
-            </p>
-          </div>
-
-          <div className="flex shrink-0 items-center gap-2">
-            <a
-              href={blobUrl ?? undefined}
-              download={doc.filename}
-              aria-disabled={!blobUrl}
-              className={cn("btn-outline btn-sm", !blobUrl && "pointer-events-none opacity-40")}
-            >
-              <Download className="size-3.5" strokeWidth={2.4} aria-hidden />
-              Download
-            </a>
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Close"
-              className="grid size-8 place-items-center rounded-[0.4rem] text-ink-soft transition-colors hover:bg-sand hover:text-ink"
-            >
-              <X className="size-4" strokeWidth={2.2} aria-hidden />
-            </button>
-          </div>
-        </header>
-
-        <div className="min-h-[18rem] flex-1 overflow-auto bg-sand">
-          {error ? (
-            <p className="px-6 py-16 text-center text-meta text-ink-soft">{error}</p>
-          ) : !blobUrl ? (
-            <p className="flex items-center justify-center gap-2 px-6 py-16 text-meta text-ink-muted">
-              <Loader2 className="size-4 animate-spin" strokeWidth={2.4} aria-hidden />
-              Opening…
-            </p>
-          ) : isImage ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={blobUrl} alt={doc.label} className="mx-auto max-h-full" />
-          ) : isPdf ? (
-            <iframe src={blobUrl} title={doc.label} className="h-[65vh] w-full border-0" />
-          ) : (
-            <p className="flex flex-col items-center gap-3 px-6 py-16 text-center text-meta text-ink-soft">
-              <FileText className="size-8 text-ink-muted" strokeWidth={1.6} aria-hidden />
-              This file type cannot be previewed. Use Download to open it.
-            </p>
-          )}
-        </div>
+      <div className="min-h-[18rem] bg-sand">
+        {error ? (
+          <p className="px-6 py-16 text-center text-meta text-ink-soft">{error}</p>
+        ) : !blobUrl ? (
+          <p className="flex items-center justify-center gap-2 px-6 py-16 text-meta text-ink-muted">
+            <Loader2 className="size-4 animate-spin" strokeWidth={2.4} aria-hidden />
+            Opening…
+          </p>
+        ) : isImage ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={blobUrl} alt={doc.label} className="mx-auto max-h-full" />
+        ) : isPdf ? (
+          <iframe
+            src={blobUrl}
+            title={doc.label}
+            /* Not a tab stop: Escape pressed inside the viewer never reaches
+               this document. See the note in Modal. */
+            tabIndex={-1}
+            className="h-[70vh] w-full border-0"
+          />
+        ) : (
+          <p className="flex flex-col items-center gap-3 px-6 py-16 text-center text-meta text-ink-soft">
+            <FileText className="size-8 text-ink-muted" strokeWidth={1.6} aria-hidden />
+            This file type cannot be previewed. Use Download to open it.
+          </p>
+        )}
       </div>
-    </div>
+    </Modal>
   );
 }

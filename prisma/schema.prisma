@@ -170,6 +170,13 @@ enum AmendmentStatus {
   PRICING_SENT
   /// They asked for another round.
   CHANGES_REQUESTED
+  /// They want to talk the prices through before deciding. Mirrors the
+  /// MEETING_REQUESTED stop on the first application — a verified partner
+  /// adding items negotiates exactly as they did the first time, they just do
+  /// not re-upload a licence to do it.
+  MEETING_REQUESTED
+  /// A time is booked. The revised prices follow the call.
+  MEETING_SCHEDULED
   /// They accepted; the change order has not gone out yet.
   ACCEPTED
   /// The change order is out for signature.
@@ -292,6 +299,38 @@ model PasswordResetToken {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([expiresAt])
+}
+
+/// A one-time code emailed to sign in without a password.
+///
+/// WHY THE CODE IS HASHED
+/// Same reasoning as `PasswordResetToken` above: the plaintext exists only in
+/// the email. Six digits is a small enough space that a leaked table of them
+/// would be a leaked table of live sessions, so what is stored is a bcrypt of
+/// the code and nothing else.
+///
+/// WHY THE EMAIL IS NOT A FOREIGN KEY
+/// A code is requested by typing an address, and the request must behave
+/// identically whether or not that address has an account — otherwise the
+/// login form answers "does this practice bank with you?" to anyone with a
+/// list of addresses. Rows are only ever written for real users, but the
+/// column is the address rather than a userId so the lookup on verify is the
+/// same shape as the lookup on request.
+model LoginCode {
+  id    String @id @default(cuid())
+  email String
+
+  /// bcrypt of the six digits. Never the digits.
+  codeHash String
+
+  expiresAt  DateTime
+  /// Wrong guesses against this code. Burned at five.
+  attempts   Int       @default(0)
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([email, createdAt])
   @@index([expiresAt])
 }
 
@@ -733,10 +772,21 @@ model Meeting {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  /// Which change order this call is about, when it is not the first
+  /// application.
+  ///
+  /// Nullable, and null on every meeting that already exists: a meeting with
+  /// no amendment is the original negotiation. Hanging a second table off
+  /// `Meeting` was the alternative and it would have duplicated slot offers,
+  /// confirmation and the picker UI for the sake of one foreign key.
+  amendmentId String?
+
+  partner   Partner             @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  amendment FormularyAmendment? @relation(fields: [amendmentId], references: [id], onDelete: Cascade)
 
   @@index([partnerId, requestedAt])
   @@index([scheduledAt])
+  @@index([amendmentId])
 }
 
 // ---------------------------------------------------------------------------
@@ -824,10 +874,15 @@ model FormularyAmendment {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
+  /// What the partner said when asking for another round or a call. Separate
+  /// from `adminNote`, which is the pharmacy's side of the same conversation.
+  partnerNote String?
+
   partner          Partner           @relation(fields: [partnerId], references: [id], onDelete: Cascade)
   priceListVersion PriceListVersion? @relation(fields: [priceListVersionId], references: [id], onDelete: SetNull)
   msaEnvelope      MsaEnvelope?      @relation(fields: [msaEnvelopeId], references: [id], onDelete: SetNull)
   items            AmendmentItem[]
+  meetings         Meeting[]
 
   @@unique([partnerId, number])
   @@index([partnerId, status])

@@ -6,6 +6,8 @@
 *.pem
 npm-debug.log*
 .env*.local
+# Container secrets. Same rule as .env — injected at run time, never committed.
+.env.docker
 .vercel
 next-env.d.ts
 .env

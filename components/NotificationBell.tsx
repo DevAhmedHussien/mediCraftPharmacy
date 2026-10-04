@@ -111,7 +111,7 @@ export function NotificationBell({
         aria-haspopup="menu"
         aria-label={unread > 0 ? `Notifications, ${unread} unread` : "Notifications"}
         className={cn(
-          "relative grid size-9 place-items-center rounded-[0.5rem] transition-colors",
+          "relative grid size-9 place-items-center rounded-lg transition-colors",
           tone === "dark"
             ? "text-white/70 hover:bg-white/10 hover:text-white"
             : "text-ink-soft hover:bg-sand hover:text-ink"

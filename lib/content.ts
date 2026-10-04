@@ -23,7 +23,7 @@ import type { IconName } from "@/components/icons/set";
 --------------------------------------------------------------------------- */
 
 export const hero = {
-  badge: "10+ Years Executive Experience · Palm Harbor, FL · PCAB In Progress",
+  badge: "10+ Years Executive Experience · Tampa, FL · PCAB In Progress",
   /**
    * The emphasised word is set apart so the hero can colour it.
    *
@@ -34,7 +34,7 @@ export const hero = {
    * "Manufactured." Keeping the comma attached makes that break impossible.
    */
   headline: { before: "Wellness Is ", accent: "Crafted,", after: "Not Manufactured." },
-  lead: "MediCraft Pharmacy delivers precision compounding solutions tailored to every patient's unique biology. Based in Palm Harbor, Florida, we partner with providers nationwide to move medicine beyond the mass-manufactured standard model.",
+  lead: "MediCraft Pharmacy delivers precision compounding solutions tailored to every patient's unique biology. Based in Tampa, Florida, we partner with providers nationwide to move medicine beyond the mass-manufactured standard model.",
   actions: {
     primary: { label: "Open a Provider Account", href: "/providers" },
     secondary: { label: "Learn About Compounding", href: "/compounding" },
@@ -71,7 +71,7 @@ export const hero = {
    */
   spec: {
     docLabel: "Quality specification",
-    docMeta: "MediCraft · Palm Harbor, FL",
+    docMeta: "MediCraft · Tampa, FL",
     fields: [
       {
         field: "Quality engineering",
@@ -118,7 +118,7 @@ export const about = {
     eyebrow: "Who We Are",
     title: "Precision Compounding, Built Around the Patient",
     body: [
-      "MediCraft Pharmacy was established as an LLC in 2025 and opened its doors to patients and providers in 2026 — built from the ground up on a simple but powerful belief: every patient deserves medication that works for their body, not around it. We are a 503A compounding pharmacy serving patients and providers across the country with clinically rigorous, individually tailored formulations.",
+      " built from the ground up on a simple but powerful belief: every patient deserves medication that works for their body, not around it. We are a 503A compounding pharmacy serving patients and providers across the country with clinically rigorous, individually tailored formulations.",
       "Where traditional pharmacies dispense — we craft. Every compound we produce is designed in collaboration with the prescribing provider, formulated in our state-of-the-art cleanrooms, and tested to exceed federal quality standards before it reaches your patient.",
     ],
     checks: [
@@ -131,7 +131,7 @@ export const about = {
   },
 
   panel: {
-    badge: "10+ Years Executive Experience · Palm Harbor, FL",
+    badge: "10+ Years Executive Experience · Tampa, FL",
     title: "More Than a Pharmacy. A Clinical Partner.",
     body: "Our team of pharmacists, chemists, and compounding specialists work alongside your practice to deliver formulations you can trust and patients can feel.",
     metrics: [
@@ -149,13 +149,13 @@ export const about = {
     timeline: [
       {
         year: "2025",
-        title: "MediCraft LLC Established — Palm Harbor, FL",
+        title: "MediCraft LLC Established — Tampa, FL",
         body: "MediCraft is incorporated with a clear mission: precision-compounded medications built on a quality engineering foundation spanning 503A, 503B, and cGMP environments. Quality systems, SOPs, and facility infrastructure are built and validated before the pharmacy opens its doors.",
       },
       {
         year: "2026",
         title: "Pharmacy Opens — Built Right from Day One",
-        body: "MediCraft officially opens as a licensed 503A compounding pharmacy in Palm Harbor, FL — operating from a facility previously home to one of the largest oncology infusion pharmacies in the nation, with USP 795/797/800 compliant processes, a full quality leadership team, and a proven infrastructure already in place.",
+        body: "MediCraft officially opens as a licensed 503A compounding pharmacy in Tampa, FL — operating from a facility previously home to one of the largest oncology infusion pharmacies in the nation, with USP 795/797/800 compliant processes, a full quality leadership team, and a proven infrastructure already in place.",
       },
       {
         year: "2026",
@@ -278,17 +278,17 @@ export const quality = {
       },
       {
         mark: "LS",
-        title: "LegitScript Certification — In Progress",
+        title: "LegitScript Certification",
         body: "Pursuing recognized e-commerce compliance certification",
       },
     ],
   },
 
-  facilityCallout: {
-    icon: "building" as IconName,
-    title: "Infrastructure Built for Oncology-Grade Sterile Compounding",
-    body: "MediCraft operates from a facility that previously supported one of the largest oncology infusion pharmacies in the nation — an operation recognized as one of the nation's largest oncology infusion pharmacies. The physical infrastructure — cleanrooms, HVAC, environmental controls, cold storage — was engineered for the most demanding form of sterile pharmaceutical compounding that exists. That is the foundation MediCraft is built on.",
-  },
+  // facilityCallout: {
+  //   icon: "building" as IconName,
+  //   title: "Infrastructure Built for Oncology-Grade Sterile Compounding",
+  //   body: "MediCraft operates from a facility that previously supported one of the largest oncology infusion pharmacies in the nation — an operation recognized as one of the nation's largest oncology infusion pharmacies. The physical infrastructure — cleanrooms, HVAC, environmental controls, cold storage — was engineered for the most demanding form of sterile pharmaceutical compounding that exists. That is the foundation MediCraft is built on.",
+  // },
 
   leadership: {
     eyebrow: "The People Behind the Quality",
@@ -716,13 +716,13 @@ export const providers = {
         body: "GLP-1 receptor agonists, lipotropic injectables, and metabolic support compounds for evidence-based weight loss programs.",
         href: "/products/weight-management",
       },
-      {
-        icon: "dna" as IconName,
-        tone: "cyan" as const,
-        title: "Hormone Therapy",
-        body: "Bioidentical hormone replacement for men and women, including testosterone, estradiol, progesterone, and thyroid formulations.",
-        href: "/products/hormone-therapy",
-      },
+      // {
+      //   icon: "dna" as IconName,
+      //   tone: "cyan" as const,
+      //   title: "Hormone Therapy",
+      //   body: "Bioidentical hormone replacement for men and women, including testosterone, estradiol, progesterone, and thyroid formulations.",
+      //   href: "/products/hormone-therapy",
+      // },
       {
         icon: "vial" as IconName,
         tone: "blue" as const,

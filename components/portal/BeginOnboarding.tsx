@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 
-import { beginOnboarding } from "@/app/(site)/portal/onboarding/actions";
+import { beginOnboarding } from "@/app/portal/onboarding/actions";
 
 /**
  * Moves PRICING_PARTNER_ACCEPTED → ONBOARDING_IN_PROGRESS when the applicant

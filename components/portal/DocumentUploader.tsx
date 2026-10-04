@@ -2,6 +2,13 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+
+import {
+  DOCUMENT_ACCEPT,
+  DOCUMENT_RULE,
+  checkDocument,
+  readableSize,
+} from "@/lib/uploads";
 import {
   AlertCircle,
   CheckCircle2,
@@ -19,7 +26,7 @@ import {
   documentDownloadUrl,
   removeDocument,
   requestUpload,
-} from "@/app/(site)/portal/documents/actions";
+} from "@/app/portal/documents/actions";
 import { DocumentDialog, type ViewableDocument } from "@/components/DocumentDialog";
 import type { DocumentSpec } from "@/lib/partner/documents";
 
@@ -44,13 +51,6 @@ export type UploadedDocument = {
   uploadedAt: string;
 };
 
-const ACCEPT = "application/pdf,image/jpeg,image/png,image/webp";
-
-function readableSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
-  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
-}
 
 export function DocumentRow({
   spec,
@@ -74,6 +74,18 @@ export function DocumentRow({
 
   async function upload(file: File) {
     setError(null);
+
+    /* Checked here before anything is sent. The server checks again and is the
+       real gate, but a partner who picked a 40 MB scan should be told so
+       immediately rather than after a round trip — and `accept` on the input
+       is only a filter, which most desktop pickers let you override. */
+    const problem = checkDocument(file);
+    if (problem) {
+      setError(problem);
+      if (inputRef.current) inputRef.current.value = "";
+      return;
+    }
+
     setBusy(true);
 
     try {
@@ -145,6 +157,8 @@ export function DocumentRow({
             )}
           </h3>
           <p className="mt-1 max-w-prose text-caption text-ink-muted">{spec.blurb}</p>
+          {/* The constraint, stated before it can be broken. */}
+          <p className="mt-1.5 text-caption text-ink-muted">{DOCUMENT_RULE}</p>
         </div>
 
         {!locked && (
@@ -152,7 +166,7 @@ export function DocumentRow({
             <input
               ref={inputRef}
               type="file"
-              accept={ACCEPT}
+              accept={DOCUMENT_ACCEPT}
               className="sr-only"
               id={`upload-${spec.type}`}
               onChange={(event) => {
@@ -176,7 +190,10 @@ export function DocumentRow({
       </div>
 
       {error && (
-        <p role="alert" className="mt-3 flex items-start gap-2 text-caption font-medium text-red-700">
+        <p
+          role="alert"
+          className="mt-3 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-caption font-medium text-red-800"
+        >
           <AlertCircle className="mt-0.5 size-3.5 shrink-0" strokeWidth={2.2} aria-hidden />
           {error}
         </p>

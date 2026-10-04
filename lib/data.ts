@@ -868,69 +868,69 @@ export type Job = {
   blurb: string;
 };
 
-/** Open roles. All positions are at the Palm Harbor facility. */
+/** Open roles. All positions are at the Tampa facility. */
 export const careers: Job[] = [
   {
     title: "Compounding Pharmacist",
     dept: "Pharmacy",
     shift: "Third Shift",
-    location: "Palm Harbor, FL",
+    location: "Tampa, FL",
     blurb: "Lead sterile and non-sterile compounding with a meticulous, patient-first team.",
   },
   {
     title: "Pharmacy Technician",
     dept: "Pharmacy",
     shift: "Third Shift",
-    location: "Palm Harbor, FL",
+    location: "Tampa, FL",
     blurb: "Support formulation, packaging, and quality checks in a fast-moving lab.",
   },
   {
     title: "Customer Service Representative",
     dept: "Customer Service",
     shift: "Second Shift",
-    location: "Palm Harbor, FL",
+    location: "Tampa, FL",
     blurb: "Be the friendly, knowledgeable first point of contact for patients and providers.",
   },
   {
     title: "Forklift Operator",
     dept: "Logistics",
     shift: "Second Shift",
-    location: "Palm Harbor, FL",
+    location: "Tampa, FL",
     blurb: "Keep our fulfillment and inventory moving safely and on schedule.",
   },
   {
     title: "Marketing Director",
     dept: "Marketing",
     shift: "First Shift",
-    location: "Palm Harbor, FL",
+    location: "Tampa, FL",
     blurb: "Own brand, growth, and provider marketing across every channel.",
   },
   {
     title: "Packaging & Labeling Inspector",
     dept: "Lab",
     shift: "Second Shift",
-    location: "Palm Harbor, FL",
+    location: "Tampa, FL",
     blurb: "Verify every label and package meets our exacting quality standards.",
   },
   {
     title: "Pharmacy Technician – Fulfillment",
     dept: "Pharmacy",
     shift: "First Shift",
-    location: "Palm Harbor, FL",
+    location: "Tampa, FL",
     blurb: "Pick, pack, and dispatch prescriptions with speed and accuracy.",
   },
   {
     title: "Pharmacy Technician – Data Entry",
     dept: "Pharmacy",
     shift: "Second Shift",
-    location: "Palm Harbor, FL",
+    location: "Tampa, FL",
     blurb: "Enter and verify prescription data with a sharp eye for detail.",
   },
   {
     title: "Pharmacy Technician – Sterile Compounding",
     dept: "Lab",
     shift: "Third Shift",
-    location: "Palm Harbor, FL",
+    location: "Tampa, FL",
     blurb: "Compound sterile preparations under USP 797 cleanroom conditions.",
   },
 ];

@@ -97,22 +97,15 @@ const base = z.object({
   SIGNEASY_WEBHOOK_SECRET: z.string().optional(),
   SIGNEASY_API_BASE: z.string().default("https://api.signeasy.com/v1"),
 
-  /* --- Calendar and video ----------------------------------------------
-     `manual` books the call without touching anyone's diary and uses the link
-     an admin types. `google` reads free/busy and mints a Meet link, which
-     needs a service account AND — because Google will not issue conference
-     data to a robot — a Workspace user for it to impersonate through
-     domain-wide delegation. Without the subject the driver still creates
-     events, it just returns no Meet link. */
-  CALENDAR_DRIVER: z.enum(["manual", "google"]).default("manual"),
-  GOOGLE_SERVICE_ACCOUNT_EMAIL: z.string().optional(),
-  /** The service account's PEM. Literal `\n` from the .env is unescaped at use. */
-  GOOGLE_SERVICE_ACCOUNT_KEY: z.string().optional(),
-  /** Which calendar the call lands on. `primary` is the impersonated user's own. */
-  GOOGLE_CALENDAR_ID: z.string().default("primary"),
-  /** Workspace user to impersonate. Required for a Meet link, optional otherwise. */
-  GOOGLE_CALENDAR_SUBJECT: z.string().optional(),
-  /** IANA zone the offered times are expressed in. */
+  /* --- Meeting times ----------------------------------------------------
+     There is no calendar integration: the Google driver and its service
+     account settings were removed at the owner's direction. Bookings live in
+     the database and nothing is written to anybody's diary.
+
+     The timezone stays, and matters. The admin's time boxes are
+     `datetime-local` inputs, which a browser interprets in its OWN zone — so
+     without a fixed pharmacy zone an admin in another state would offer a slot
+     that means a different instant to the applicant reading it. */
   CALENDAR_TIMEZONE: z.string().default("America/New_York"),
 
   /* --- GoHighLevel ------------------------------------------------------
@@ -173,17 +166,6 @@ const schema = base.superRefine((v, ctx) => {
       path: ["RESEND_API_KEY"],
       message: 'RESEND_API_KEY is required when EMAIL_DRIVER is "resend".',
     });
-  }
-  if (v.CALENDAR_DRIVER === "google") {
-    for (const key of ["GOOGLE_SERVICE_ACCOUNT_EMAIL", "GOOGLE_SERVICE_ACCOUNT_KEY"] as const) {
-      if (!v[key]) {
-        ctx.addIssue({
-          code: "custom",
-          path: [key],
-          message: `${key} is required when CALENDAR_DRIVER is "google".`,
-        });
-      }
-    }
   }
   if (v.SIGNATURE_DRIVER === "signeasy") {
     for (const key of ["SIGNEASY_API_KEY", "SIGNEASY_CLIENT_ID"] as const) {

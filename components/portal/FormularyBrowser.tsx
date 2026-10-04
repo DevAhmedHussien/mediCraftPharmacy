@@ -8,7 +8,7 @@ import {
   clearAllSelected,
   selectAllMatching,
   toggleProductSelection,
-} from "@/app/(site)/portal/pricing/actions";
+} from "@/app/portal/pricing/actions";
 import type { FormularyRow } from "@/lib/services/formulary";
 import { cn } from "@/lib/utils";
 

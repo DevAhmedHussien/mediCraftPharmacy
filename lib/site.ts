@@ -43,8 +43,17 @@ function resolveOrigin(): string {
      the topbar, 8:00–6:00 in the contact block. The contact block wins here
      because it is the one that enumerates all seven days, but confirm it.
    ========================================================================= */
-/** What `phone` falls back to while SITE_PHONE is unset. Never dialled. */
+/**
+ * The pharmacy's published line.
+ *
+ * Was a `(727) 000-0000` stand-in guarded by `hasRealPhone`, which made every
+ * caller render a link to the contact page instead of a `tel:` that dials
+ * nothing. The real number is now known, so the guard passes and the number
+ * is dialled — the guard itself stays, because it is what stops a future
+ * placeholder reaching production looking finished.
+ */
 const PLACEHOLDER_PHONE = "(727) 000-0000";
+const PUBLISHED_PHONE = "(727) 309-6666";
 
 export const site = {
   name: "MediCraft Pharmacy",
@@ -53,7 +62,7 @@ export const site = {
   /** The owner's positioning line, used as the hero headline. */
   headline: "Wellness Is Crafted, Not Manufactured.",
   description:
-    "MediCraft Pharmacy — 503A sterile and non-sterile precision compounding in Palm Harbor, Florida. Provider-focused, quality-engineered, patient-specific formulations.",
+    "MediCraft Pharmacy — 503A sterile and non-sterile precision compounding in Tampa, Florida. Provider-focused, quality-engineered, patient-specific formulations.",
   url: resolveOrigin(),
 
   // --- Primary NAP (name / address / phone) ---
@@ -67,20 +76,30 @@ export const site = {
    * the kind of placeholder that survives to launch precisely because it looks
    * finished.
    */
-  phone: process.env.SITE_PHONE?.trim() || PLACEHOLDER_PHONE,
+  phone: process.env.SITE_PHONE?.trim() || PUBLISHED_PHONE,
   email: "info@medicraftpharmacy.com",
   providerEmail: "providers@medicraftpharmacy.com",
   privacyEmail: "privacy@medicraftpharmacy.com",
   legalEmail: "legal@medicraftpharmacy.com",
 
-  address: "Palm Harbor, Florida",
+  /** One line, for a footer or an email signature. */
+  address: "12320 Race Track Rd, Tampa, FL 33626-3115",
+  /** The same address short, where a street line would crowd the layout. */
+  addressShort: "Tampa, Florida",
   addressParts: {
-    city: "Palm Harbor",
+    street: "12320 Race Track Rd",
+    city: "Tampa",
     state: "FL",
+    postalCode: "33626-3115",
     country: "US",
   },
-  /** Palm Harbor, Pinellas County. */
-  geo: { lat: 28.078, lng: -82.7637 },
+  /**
+   * APPROXIMATE — the 33626 centroid, not a surveyed point for the unit.
+   * Used only for the `LocalBusiness` schema. Worth replacing with the real
+   * pin from Google Business Profile before launch, because this is the
+   * coordinate a map app will route a courier to.
+   */
+  geo: { lat: 28.0725, lng: -82.6062 },
 
   hoursShort: "Mon–Fri 8 AM–6 PM ET  ·  Sat 9 AM–1 PM ET",
   hours: [
@@ -111,7 +130,7 @@ export const site = {
 
 /** The utility strip above the header. */
 export const topbar = {
-  location: "Palm Harbor, Florida",
+  location: "Tampa, Florida",
   hours: "Mon–Fri 8 AM–6 PM  ·  Sat 9 AM–1 PM",
 };
 

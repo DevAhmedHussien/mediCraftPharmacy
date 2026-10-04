@@ -19,7 +19,7 @@ import { media } from "@/lib/media";
 export const metadata: Metadata = pageMetadata({
   title: "About MediCraft",
   description:
-    "MediCraft Pharmacy is a 503A compounding pharmacy in Palm Harbor, Florida — established 2025, opened 2026, built on a decade of quality engineering across 503A, 503B and cGMP environments.",
+    "MediCraft Pharmacy is a 503A compounding pharmacy in Tampa, Florida — established 2025, opened 2026, built on a decade of quality engineering across 503A, 503B and cGMP environments.",
   path: "/about",
 });
 
@@ -46,7 +46,7 @@ export default function AboutPage() {
             </Reveal>
 
             <Reveal delay={0.1}>
-              <NavyPanel badge={about.panel.badge} title={about.panel.title}>
+              <NavyPanel title={about.panel.title}>
                 <p className="mt-4 text-meta text-white/70 text-pretty">
                   {about.panel.body}
                 </p>

@@ -567,3 +567,121 @@ which they sign, and that the party has read and agrees to this Agreement and
 its exhibits. Client signs first; MediCraft countersigns. The Effective Date is
 the date of the last signature.`;
 }
+
+/* ===========================================================================
+   Exhibit B — the Change Order.
+
+   MSA §16.3: "New products, services, or pricing are added using the Change
+   Order form in Exhibit B. No pricing change takes effect without a signed
+   change order or amendment."
+
+   So a partner adding preparations signs THIS, not the MSA again. Re-signing
+   the body would be the wrong document twice over: it says nothing about the
+   preparations being added, and its hash would be identical to the one they
+   signed on day one — which makes "they signed this" unprovable for the only
+   part that is new.
+
+   The preparations and their Provider Cost are written INTO the text rather
+   than referenced, for the opposite reason the body references Exhibit A: a
+   change order is a snapshot by nature. It records what was agreed on the day
+   it was signed, and a later price change must not restate it.
+   ========================================================================= */
+
+export type ChangeOrderLine = {
+  name: string;
+  strength: string | null;
+  form: string | null;
+  packageSize: string | null;
+  unit: string | null;
+  /** Decimal strings, exactly as stored — never floats. */
+  listPrice: string;
+  discountPercent: string;
+  finalPrice: string;
+};
+
+const usd = (value: string) =>
+  `$${Number(value).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+/**
+ * The Change Order text, hashed and signed exactly as rendered.
+ *
+ * Built from the amendment's accepted price list, so the same inputs always
+ * produce the same bytes — the property `hashAgreement` depends on. Both the
+ * issuing side and the signing side call this; neither paraphrases it.
+ */
+export function changeOrderText(input: {
+  companyName: string;
+  number: number;
+  requestedAt: Date;
+  lines: ChangeOrderLine[];
+}): string {
+  const { companyName, number, requestedAt, lines } = input;
+
+  const items = lines
+    .map((line, index) => {
+      const descriptors = [line.strength, line.form, line.packageSize]
+        .filter(Boolean)
+        .join(" · ");
+      const discount = Number(line.discountPercent);
+
+      return `  ${String(index + 1).padStart(2, " ")}. ${line.name}
+      ${descriptors || "—"}
+      Provider Cost: ${usd(line.finalPrice)}${line.unit ? ` per ${line.unit}` : ""}
+      List price ${usd(line.listPrice)}${discount > 0 ? `, less ${line.discountPercent}%` : " (no discount applied)"}`;
+    })
+    .join("\n\n");
+
+  return `CHANGE ORDER No. ${number}
+Exhibit B to the Master Service Agreement, MSA v2026.1
+
+  Pharmacy ("MediCraft," "we," "us"):  ${PHARMACY}
+  Client ("Client," "you"):            ${companyName}
+
+  Requested: ${requestedAt.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  })}
+
+This Change Order is executed under Section 16.3 of the Master Service
+Agreement between the parties (the "Agreement"). It adds the preparations
+listed below to the Partner Formulary maintained for the Client and sets the
+Provider Cost for each. It takes effect on the date the Client signs it, as
+recorded on the electronic signature certificate.
+
+────────────────────────────────────────────────────────────────────────────
+1. PREPARATIONS ADDED
+
+${items}
+
+${lines.length} ${lines.length === 1 ? "preparation is" : "preparations are"} added by this Change Order.
+
+────────────────────────────────────────────────────────────────────────────
+2. PRICING
+
+Provider Cost above is per the stated unit, excludes shipping and applicable
+taxes, and is held for the remainder of the current price-hold period under
+Section 4.1 of the Agreement. Each preparation is compounded to a valid
+patient-specific prescription and is subject to the same ordering, dating,
+storage, and return terms as every other item on the Client's schedule.
+
+Nothing on the Client's existing schedule is changed, repriced, or removed by
+this Change Order. Preparations already priced for the Client continue at
+their existing Provider Cost.
+
+────────────────────────────────────────────────────────────────────────────
+3. THE AGREEMENT IS OTHERWISE UNCHANGED
+
+All other terms of the Agreement, including its exhibits, remain in full
+force. Capitalised terms used and not defined here have the meaning given to
+them in the Agreement. Under Section 16.9, a signed change order controls over
+Exhibit A and over the body of the Agreement, and is itself controlled by any
+signed amendment.
+
+────────────────────────────────────────────────────────────────────────────
+EXECUTION
+
+The person signing represents that they are authorized to bind the Client, and
+that the Client has read and agrees to this Change Order and to the Agreement
+it is executed under. The effective date is the date of signature.`;
+}

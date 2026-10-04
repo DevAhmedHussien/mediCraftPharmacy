@@ -77,7 +77,7 @@ export default function CompoundingPage() {
             <SectionHead
               eyebrow={compounding.delivery.eyebrow}
               title={compounding.delivery.title}
-              lead="Six dosage forms, each chosen for how a given compound is best absorbed and how a given patient will actually take it."
+              lead="test"
             />
           </Reveal>
           <Stagger className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

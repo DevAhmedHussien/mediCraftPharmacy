@@ -3,50 +3,18 @@ import { media } from "@/lib/media";
 import { breadcrumbJsonLd, jsonLdProps, pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import { PageHero, SectionHead } from "@/components/blocks";
-import type { IconName } from "@/components/icons/set";
 import { ContactForm } from "@/components/forms/ContactForm";
+import { ContactChannels } from "@/components/sections/ContactChannels";
 import { Reveal } from "@/components/ui/Reveal";
 import { contact } from "@/lib/content";
-import { site, telHref, hasRealPhone } from "@/lib/site";
+import { site } from "@/lib/site";
 
 export const metadata: Metadata = pageMetadata({
   title: "Contact",
   description:
-    "Reach the MediCraft Pharmacy team in Palm Harbor, Florida — provider accounts, patient questions, and partnership enquiries.",
+    "Reach the MediCraft Pharmacy team in Tampa, Florida — provider accounts, patient questions, and partnership enquiries.",
   path: "/contact",
 });
-
-/** The four ways to reach the pharmacy, as listed in the owner's document. */
-const CHANNELS = [
-  {
-    icon: "phone" as IconName,
-    label: "Phone",
-    value: hasRealPhone ? site.phone : "Use the form or email us",
-    note: "Mon–Fri 8 AM–6 PM ET",
-    href: telHref() ?? "/contact",
-  },
-  {
-    icon: "mail" as IconName,
-    label: "Email",
-    value: site.email,
-    note: "Response within 1 business day",
-    href: `mailto:${site.email}`,
-  },
-  {
-    icon: "pin" as IconName,
-    label: "Location",
-    value: site.address,
-    note: "Serving patients nationwide",
-  },
-  {
-    icon: "link" as IconName,
-    label: "Provider Accounts",
-    value: site.providerEmail,
-    note: "Dedicated provider support line",
-    href: `mailto:${site.providerEmail}`,
-    accent: true,
-  },
-];
 
 export default function ContactPage() {
   return (
@@ -60,33 +28,13 @@ export default function ContactPage() {
         media={media.contactCover}
       />
 
-      {/* ---- Channels ---- */}
+      {/* ---- Channels ----
+          The same component the site layout puts above every footer, with
+          real headings here because on this page it *is* the content. */}
       <section className="section-tight">
         <div className="container-x">
           <Reveal>
-            <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              {CHANNELS.map((c) => (
-                <li
-                  key={c.label}
-                  className={`card border-t-[3px] ${
-                    c.accent ? "border-t-cyan-400" : "border-t-brand-500"
-                  }`}
-                >
-                  <h2 className="card-title">{c.label}</h2>
-                  {c.href ? (
-                    <a
-                      href={c.href}
-                      className="break-words text-meta font-medium text-brand-600 hover:underline"
-                    >
-                      {c.value}
-                    </a>
-                  ) : (
-                    <p className="text-meta font-medium text-ink">{c.value}</p>
-                  )}
-                  <p className="mt-1.5 text-caption text-ink-muted">{c.note}</p>
-                </li>
-              ))}
-            </ul>
+            <ContactChannels headingLevel="h2" />
           </Reveal>
         </div>
       </section>

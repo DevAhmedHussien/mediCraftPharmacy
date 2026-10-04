@@ -7,6 +7,7 @@ import { env } from "@/lib/env";
 import { PARTNER_STATUS } from "@/lib/partner/status";
 import { signature, SignatureError } from "@/lib/services/signature";
 import { applyTransition } from "@/lib/services/transition";
+import { activateAmendment, amendmentForEnvelope } from "@/lib/services/amendments";
 
 /* ===========================================================================
    SignEasy completion.
@@ -127,12 +128,23 @@ export async function POST(request: Request) {
     });
 
     if (moved) {
-      await applyTransition({
-        partnerId: envelope.partnerId,
-        to: PARTNER_STATUS.MSA_SIGNED,
-        actor: "SYSTEM",
-        note: "Signed through SignEasy.",
-      });
+      /* A change order is an envelope on the same partner, so completion
+         arrives down this same pipe — and moving a VERIFIED partner to
+         MSA_SIGNED would be an illegal transition that throws, which makes
+         SignEasy retry a delivery that can never succeed. A change order
+         moves its own lifecycle and writes its own prices instead. */
+      const amendment = await amendmentForEnvelope(envelopeId);
+
+      if (amendment) {
+        await activateAmendment(amendment.id);
+      } else {
+        await applyTransition({
+          partnerId: envelope.partnerId,
+          to: PARTNER_STATUS.MSA_SIGNED,
+          actor: "SYSTEM",
+          note: "Signed through SignEasy.",
+        });
+      }
     }
 
     await db.webhookEvent.update({

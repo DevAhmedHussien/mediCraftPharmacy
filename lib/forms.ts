@@ -17,6 +17,17 @@ export type FormState = {
   ok: boolean;
   message?: string;
   errors?: Record<string, string>;
+  /**
+   * Values the form should render on the next pass.
+   *
+   * For a multi-step form, the SERVER is the authority on what step it is on
+   * and what it has already been told. Keeping that in client state means a
+   * value the server never saw — a browser autofill that fires no React
+   * change event leaves the state empty while the visible field is full, and
+   * the next submit posts the blank. Round-tripping it through here makes the
+   * rendered form a function of what the server actually received.
+   */
+  data?: Record<string, string>;
 };
 
 export const initialFormState: FormState = { ok: false };

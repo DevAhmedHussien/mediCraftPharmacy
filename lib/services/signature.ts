@@ -70,9 +70,25 @@ export type SignatureDriverApi = {
  * Says plainly what is and is not being captured. A signature flow that
  * overstates itself is worse than one that is modest about it.
  */
-export const INTERNAL_DISCLOSURE = `By typing your full legal name below and selecting "Sign agreement", you are signing this Master Service Agreement electronically. You agree that your electronic signature is the legal equivalent of your manual signature.
+export function internalDisclosure(
+  documentLabel = "Master Service Agreement",
+  buttonLabel = "Sign agreement"
+): string {
+  return `By typing your full legal name below and selecting "${buttonLabel}", you are signing this ${documentLabel} electronically. You agree that your electronic signature is the legal equivalent of your manual signature.
 
-${site.name} records your name, the date and time, your IP address, and a cryptographic fingerprint of the exact agreement text shown above. You may request a copy at any time.`;
+${site.name} records your name, the date and time, your IP address, and a cryptographic fingerprint of the exact text shown above. You may request a copy at any time.`;
+}
+
+/**
+ * The MSA's disclosure.
+ *
+ * A change order passes its own label through `internalDisclosure` instead:
+ * telling a verified partner they are "signing this Master Service Agreement"
+ * when the screen above says Change Order 2 is the kind of mismatch that makes
+ * a signature arguable, which is the one thing this paragraph exists to
+ * prevent.
+ */
+export const INTERNAL_DISCLOSURE = internalDisclosure();
 
 /* --- Internal ------------------------------------------------------------- */
 

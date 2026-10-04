@@ -7,13 +7,16 @@ import { renderMarkdown } from "@/lib/markdown";
 import { breadcrumbJsonLd, jsonLdProps, pageMetadata } from "@/lib/seo";
 import { getPublishedPost, publishedPostSlugs } from "@/lib/services/blog";
 import { site } from "@/lib/site";
+import { prerenderFromDb } from "@/lib/static-params";
 
 export const revalidate = 3600;
 
 /** Prerender every published post; new ones are rendered on first request. */
 export async function generateStaticParams() {
-  const posts = await publishedPostSlugs();
-  return posts.map((p) => ({ slug: p.slug }));
+  return prerenderFromDb("/blog/[slug]", async () => {
+    const posts = await publishedPostSlugs();
+    return posts.map((p) => ({ slug: p.slug }));
+  });
 }
 
 export async function generateMetadata({

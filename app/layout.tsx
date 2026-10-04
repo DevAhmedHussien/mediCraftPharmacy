@@ -36,6 +36,36 @@ const mono = IBM_Plex_Mono({
   display: "swap",
 });
 
+/**
+ * Lato — the identity's second family, from the guideline's own files.
+ *
+ * The branding folder packages exactly two typefaces: Satoshi (Regular and
+ * Black) and Lato (Bold and Black). Both are now self-hosted from those files
+ * — converted to woff2, which is the same outlines at a third of the bytes —
+ * so the site renders the fonts the identity was drawn in rather than a
+ * lookalike fetched from somewhere else.
+ *
+ * ONLY BOLD AND BLACK, DELIBERATELY
+ * ---------------------------------
+ * The folder has no Lato Regular, so Lato cannot carry body copy. It does not
+ * need to: Satoshi Regular is in the same folder and is the face the identity
+ * sets running text in. So Lato takes the headings, where Bold and Black are
+ * exactly the weights wanted, and Satoshi takes everything else. Between them
+ * every file the designer supplied is used and nothing else is loaded.
+ *
+ * Dubai Medium is the third file and is not loaded: it is an Arabic-first
+ * family, and nothing on an English-language Florida pharmacy site sets type
+ * in it.
+ */
+const ui = localFont({
+  src: [
+    { path: "../public/fonts/Lato-700.woff2", weight: "700", style: "normal" },
+    { path: "../public/fonts/Lato-900.woff2", weight: "900", style: "normal" },
+  ],
+  variable: "--font-ui",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
@@ -44,16 +74,16 @@ export const metadata: Metadata = {
   },
   description: site.description,
   /**
-   * Location terms name Palm Harbor and its county — the previous list said
+   * Location terms name Tampa and its county — the previous list said
    * "Tampa compounding pharmacy", which is the wrong city and would have
    * pulled the site against queries it cannot serve from.
    */
   keywords: [
     "compounding pharmacy",
     "503A compounding pharmacy",
-    "Palm Harbor compounding pharmacy",
+    "Tampa compounding pharmacy",
     "Florida compounding pharmacy",
-    "Pinellas County pharmacy",
+    "Hillsborough County pharmacy",
     "custom medications",
     "sterile compounding",
     "semaglutide",
@@ -104,7 +134,7 @@ export default function RootLayout({
 }) {
 
   return (
-    <html lang="en" className={`${satoshi.variable} ${mono.variable}`}>
+    <html lang="en" className={`${satoshi.variable} ${mono.variable} ${ui.variable}`}>
       <body>
         {/*
          * Scroll-reveal animations render with inline `opacity:0` on the

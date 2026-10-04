@@ -16,7 +16,7 @@ import {
 } from "@/components/blocks";
 import { Stagger, StaggerItem } from "@/components/motion/Motion";
 import { ScrollProgress } from "@/components/motion/ScrollProgress";
-import { StickyStack } from "@/components/motion/StickyStack";
+import { CardsBesideFigure } from "@/components/sections/CardsBesideFigure";
 import { ProcessSequence } from "@/components/media/ProcessSequence";
 import { Reveal } from "@/components/ui/Reveal";
 import { closingCta, quality } from "@/lib/content";
@@ -178,12 +178,15 @@ export default function QualityPage() {
               </p>
             </Reveal>
 
-            <div className="mt-10">
-              <StickyStack
-                steps={quality.custody.recorded.steps}
-                eyebrow="On every order"
-              />
-            </div>
+            {/* The pack station with the overhead camera in frame. The whole
+                claim of this section is "we filmed it", so the shot that shows
+                the camera is the one that belongs beside it. */}
+            <CardsBesideFigure
+              className="mt-10"
+              items={quality.custody.recorded.steps}
+              image={media.custody}
+              eyebrow="On every order"
+            />
           </div>
 
           <div className="mt-16 grid gap-10 lg:grid-cols-[1fr_1.1fr] lg:gap-14">
@@ -217,14 +220,20 @@ export default function QualityPage() {
             />
           </Reveal>
 
-          {/* Four gates, each of which must pass before the next — so they
-              pin and stack in order too. */}
-          <div className="mt-12">
-            <StickyStack
-              steps={quality.sourcing.steps}
-              eyebrow="Before it enters the cleanroom"
-            />
-          </div>
+          {/* Four gates, each of which must pass before the next. The slide
+              reader beside them: vetting an ingredient is testing it, not
+              trusting the label on the drum it arrived in.
+
+              The picture is on the right here and on the left in the section
+              above, so two consecutive card-and-figure sections do not read as
+              the same block repeated. */}
+          <CardsBesideFigure
+            className="mt-12"
+            items={quality.sourcing.steps}
+            image={media.microscope}
+            eyebrow="Before it enters the cleanroom"
+            imageSide="right"
+          />
 
           <Reveal className="mt-16">
             <div className="rounded-panel border border-line bg-white p-7 md:p-10">

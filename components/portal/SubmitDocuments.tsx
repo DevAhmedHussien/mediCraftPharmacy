@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 
-import { submitDocuments } from "@/app/(site)/portal/documents/actions";
+import { submitDocuments } from "@/app/portal/documents/actions";
 
 /**
  * The button that closes the applicant's half of the pipeline.

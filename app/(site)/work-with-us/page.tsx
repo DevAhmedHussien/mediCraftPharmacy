@@ -33,7 +33,7 @@ export default function WorkWithUsPage() {
 
       <section className="section">
         <div className="mx-auto w-full max-w-[52rem] px-5 sm:px-8">
-          <h2 className="text-display-sm font-black text-ink">Step one</h2>
+          <h2 className="text-display-sm font-bold text-ink">Step one</h2>
           <p className="mt-3 max-w-prose text-intro text-ink-soft text-pretty">
             Your details and how your practice operates. We will come back within
             one business day.

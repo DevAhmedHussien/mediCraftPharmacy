@@ -3,6 +3,23 @@ const nextConfig = {
   reactStrictMode: true,
 
   /*
+   * Self-contained server build, for the container image.
+   *
+   * `next build` normally leaves the server depending on the whole of
+   * node_modules, which makes a production image roughly a gigabyte of which
+   * almost nothing is used at runtime. `standalone` traces the modules the
+   * server actually reaches and copies just those into .next/standalone, so
+   * the runner stage can start from a clean base with no install step at all.
+   *
+   * `next dev` ignores this, so local development is unaffected.
+   *
+   * Two things it does NOT trace, because nothing imports them — they are read
+   * from disk by path at runtime — and which the Dockerfile therefore copies
+   * by hand: assets/msa (the agreement template) and public/.
+   */
+  output: "standalone",
+
+  /*
    * Build output directory, overridable per-invocation.
    *
    * `next dev` and `next build` both write to `.next` by default, so running a

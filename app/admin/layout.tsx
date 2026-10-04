@@ -3,6 +3,8 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { AdminNav } from "@/components/admin/AdminNav";
+import { AdminUserMenu } from "@/components/admin/AdminUserMenu";
+import { visibleAdminLinks } from "@/lib/admin/nav";
 import { NotificationBell } from "@/components/NotificationBell";
 import { Logo } from "@/components/brand/Logo";
 import { db } from "@/lib/db";
@@ -50,17 +52,25 @@ export default async function AdminLayout({ children }: { children: ReactNode })
 
   return (
     <div className="admin flex min-h-dvh">
+      {/* The first tab stop on every admin screen.
+          The rail carries a dozen links before the table a keyboard
+          user actually came for; without this they tab through all of
+          them on every page. Visually hidden until focused. */}
+      <a href="#admin-main" className="skip-link">
+        Skip to the console
+      </a>
+
       {/* Fixed and independently scrollable, so queue counts stay in view
           while working a long table. */}
       <aside
-        className="hidden w-56 shrink-0 flex-col overflow-y-auto p-3 lg:flex"
-        style={{ background: "var(--admin-rail)" }}
+        className="hidden w-56 shrink-0 flex-col overflow-y-auto border-r p-3 lg:flex"
+        style={{ background: "var(--admin-rail)", borderColor: "var(--admin-border)" }}
       >
         <div className="flex items-center gap-2 px-2 pb-5 pt-1">
           <Link href="/admin" aria-label="MediCraft admin">
-            <Logo className="h-6 w-auto" tone="invert" animate="none" />
+            <Logo className="h-6 w-auto" animate="none" />
           </Link>
-          <span className="rounded-[4px] bg-white/15 px-1.5 py-px text-[0.625rem] font-semibold uppercase tracking-wider text-white/75">
+          <span className="rounded bg-[#e8eefe] px-1.5 py-px text-[0.625rem] font-semibold uppercase tracking-wider text-[color:var(--admin-accent)]">
             Admin
           </span>
         </div>
@@ -71,44 +81,29 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           permissions={session.user.permissions}
         />
 
-        <div className="mt-auto border-t border-white/10 pt-3">
-          <div className="flex items-center gap-2.5 px-2 pb-2">
-            <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-white/15 text-[0.6875rem] font-semibold text-white">
-              {initials}
-            </span>
-            <span className="min-w-0">
-              <span className="block truncate text-[0.8125rem] text-white">{name}</span>
-              <span className="block text-[0.6875rem] text-white/45">
-                {session.user.role === "SUPER_ADMIN" ? "Super admin" : "Administrator"}
-              </span>
-            </span>
-          </div>
-          <Link
-            href="/api/auth/signout"
-            className="block rounded-[5px] px-2 py-1.5 text-[0.8125rem] text-white/55 transition-colors hover:bg-white/[0.06] hover:text-white"
-          >
-            Sign out
-          </Link>
-        </div>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header
-          className="flex h-12 shrink-0 items-center gap-4 px-4"
-          style={{ background: "var(--admin-rail)" }}
+          className="flex h-12 shrink-0 items-center gap-4 border-b px-4"
+          style={{ background: "var(--admin-rail)", borderColor: "var(--admin-border)" }}
         >
           <Link href="/admin" className="lg:hidden" aria-label="MediCraft admin">
-            <Logo className="h-5 w-auto" tone="invert" animate="none" />
+            <Logo className="h-5 w-auto" animate="none" />
           </Link>
           <div className="ml-auto flex items-center gap-2">
-            <NotificationBell items={notifications.items} unread={notifications.unread} tone="dark" />
+            <NotificationBell items={notifications.items} unread={notifications.unread} />
+            {/* Name, role and sign out. In the bar rather than the foot of the
+                rail, so it is present on a phone too — the rail is not. */}
+            <AdminUserMenu
+              name={name}
+              email={session.user.email ?? ""}
+              initials={initials}
+              roleLabel={
+                session.user.role === "SUPER_ADMIN" ? "Super admin" : "Administrator"
+              }
+            />
           </div>
-          <Link
-            href="/"
-            className="shrink-0 text-[0.8125rem] text-white/55 transition-colors hover:text-white"
-          >
-            View site
-          </Link>
         </header>
 
         {/* The rail is desktop-only; on a tablet the sections sit here. */}
@@ -117,24 +112,20 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           style={{ borderColor: "var(--admin-border)" }}
         >
           <div className="no-scrollbar -mx-1 flex gap-1 overflow-x-auto">
-            {[
-              ["/admin", "Overview"],
-              ["/admin/partners", "Partners"],
-              ["/admin/products", "Products"],
-              ["/admin/blog", "Blog"],
-            ].map(([href, label]) => (
+            {visibleAdminLinks(session.user.role, session.user.permissions).map((item) => (
               <Link
-                key={href}
-                href={href}
-                className="shrink-0 rounded-[5px] px-2.5 py-1.5 text-[0.8125rem] text-[color:var(--admin-ink-70)] transition-colors hover:bg-black/[0.04]"
+                key={item.href}
+                href={item.href}
+                className="flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[0.8125rem] text-[color:var(--admin-ink-70)] transition-colors hover:bg-black/[0.04]"
               >
-                {label}
+                <item.icon className="size-3.5" strokeWidth={1.75} aria-hidden />
+                {item.label}
               </Link>
             ))}
           </div>
         </div>
 
-        <main id="admin-main" className="min-w-0 flex-1 p-4 md:p-6">
+        <main id="admin-main" tabIndex={-1} className="min-w-0 flex-1 p-4 md:p-6">
           <div className="mx-auto w-full max-w-[86rem]">{children}</div>
         </main>
       </div>

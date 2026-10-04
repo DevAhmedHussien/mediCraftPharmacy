@@ -115,7 +115,7 @@ export function InfoCard({
     <>
       {media && (
         <div
-          className="relative -mx-7 -mt-7 mb-6 overflow-hidden bg-navy"
+          className="relative -mx-7 -mt-7 mb-6 overflow-hidden bg-sand"
           style={{ aspectRatio: `${media.width} / ${media.height}` }}
         >
           <Image
@@ -409,10 +409,13 @@ export function Timeline({
 }
 
 /* --- Sequences ----------------------------------------------------------
-   `Steps` and `ProcessGrid` used to live here. Every ordered sequence on the
-   site now renders through `components/motion/StickyStack`, which pins each
-   step as you scroll — the stack itself carries the order, which a static grid
-   never did. Nothing is left behind for a future page to reach for by mistake.
+   `Steps`, `ProcessGrid` and `StickyStack` all used to serve this. Ordered
+   sequences now render as plain cards — `NumberedSteps` where the numbering
+   carries meaning, `CardsBesideFigure` where a picture belongs alongside.
+
+   The pinned stack is gone on purpose: it spent a screenful of scroll per card
+   and made a four-step process impossible to take in at once. Nothing is left
+   behind for a future page to reach for by mistake.
    --------------------------------------------------------------------- */
 
 /* --- Callout ------------------------------------------------------------- */
@@ -509,18 +512,21 @@ export function ClosingCta({
   secondary?: { label: string; href: string };
 }) {
   return (
-    <section className="hero section">
+    <section className="border-t border-line bg-sand section">
       <div className="container-x text-center">
-        <h2 className="mx-auto max-w-3xl text-display-md font-black text-white text-balance md:text-display-lg">
+        <h2 className="mx-auto max-w-3xl text-display-md font-bold tracking-tight text-ink text-balance md:text-display-lg">
           {title}
         </h2>
-        <p className="mx-auto mt-5 max-w-xl text-intro text-white/70 text-pretty">{body}</p>
+        <p className="mx-auto mt-5 max-w-xl text-intro text-ink-soft text-pretty">{body}</p>
         <div className="mt-9 flex flex-wrap justify-center gap-3">
-          <Link href={primary.href} className="btn-accent btn-lg">
-            {primary.label} <span aria-hidden>→</span>
+          {/* No appended arrow. "Open a Provider Account →" is the glyph
+              doing nothing the verb has not already done, and it is on every
+              generated page on the internet. The button is a button. */}
+          <Link href={primary.href} className="btn-primary btn-lg">
+            {primary.label}
           </Link>
           {secondary && (
-            <Link href={secondary.href} className="btn-outline-invert btn-lg">
+            <Link href={secondary.href} className="btn-outline btn-lg">
               {secondary.label}
             </Link>
           )}
@@ -549,51 +555,53 @@ export function PageHero({
   eyebrow?: string;
   title: string;
   lead?: string;
-  /** Optional background rendering, laid under a left-weighted navy scrim. */
+  /** Optional photograph, shown beside the copy rather than behind it. */
   media?: Media;
   children?: ReactNode;
 }) {
   return (
-    <section className="hero page-masthead pb-14 pt-12 md:pb-20 md:pt-16">
-      {media && (
-        <>
-          {/* Layers stay at z-auto so they paint above the section's own
-              gradient; `.hero > *:not([data-layer])` lifts the copy above
-              them. The rendering is masked away under the heading rather than
-              dimmed under it — see `.page-cover` in globals.css for why. */}
-          <div data-layer aria-hidden className="page-cover">
-            <Image
-              src={media.src}
-              alt=""
-              fill
-              priority
-              sizes="100vw"
-              /* Centred. The covers are now ordinary 16:9 photographs whose
-                 subject is already in the middle of the frame, so the old 55%
-                 bias — written for renders that sat low in frame — was
-                 pushing them off-centre and cropping the subject out. */
-              className="object-cover object-center"
-            />
-          </div>
-          <div data-layer aria-hidden className="page-cover-scrim" />
-          <div data-layer aria-hidden className="page-cover-foot" />
-        </>
-      )}
-
+    <section className="border-b border-line bg-white">
       <div className="container-x">
-        {/* Narrower once there is a rendering behind it, so the heading stays
-            on the masked-out side of the frame and the subject keeps the
-            right. Without one the band is plain navy and the full measure is
-            fine. */}
-        <div className={cn(media ? "max-w-3xl md:max-w-[34rem] lg:max-w-[38rem]" : "max-w-3xl")}>
-          {eyebrow && <p className="eyebrow eyebrow-invert">{eyebrow}</p>}
-          <h1 className="mt-4 text-display-md font-black text-white text-balance md:text-display-lg">
-            {title}
-          </h1>
-          {lead && (
-            <p className="mt-5 text-intro text-white/70 text-pretty">{lead}</p>
+        <div
+          className={cn(
+            "grid items-center gap-10 py-12 md:py-16 lg:py-20",
+            media && "lg:grid-cols-12 lg:gap-12"
           )}
-          {children}
+        >
+          <div className={cn(media ? "lg:col-span-7" : "max-w-3xl")}>
+            {eyebrow && <p className="eyebrow">{eyebrow}</p>}
+            <h1 className="mt-4 text-display-md font-black tracking-tight text-ink text-balance md:text-display-lg">
+              {title}
+            </h1>
+            {lead && (
+              <p className="mt-5 max-w-2xl text-intro leading-relaxed text-ink-soft text-pretty">
+                {lead}
+              </p>
+            )}
+            {children}
+          </div>
+
+          {media && (
+            <div className="lg:col-span-5">
+              {/* Framed, always.
+               *
+               * These covers are 16:9 photographs of rooms and benches — none
+               * of them sits on a clean sweep — so on a white page they need
+               * an edge to read as a photograph rather than a stray panel.
+               * BrandFigure's own rule, applied here for the same reason. */}
+              <figure className="overflow-hidden rounded-tile border border-line">
+                <Image
+                  src={media.src}
+                  alt={media.alt}
+                  width={media.width}
+                  height={media.height}
+                  priority
+                  sizes="(min-width: 1024px) 34rem, 92vw"
+                  className="h-auto w-full"
+                />
+              </figure>
+            </div>
+          )}
         </div>
       </div>
     </section>

@@ -1,6 +1,8 @@
 import "server-only";
 
 import { createHash, randomUUID } from "node:crypto";
+
+import { DOCUMENT_MIME_TYPES, MAX_DOCUMENT_BYTES } from "@/lib/uploads";
 import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 
@@ -51,15 +53,13 @@ export const IMAGE_MIME_TYPES = [
   "image/gif",
 ] as const;
 
-export const DOCUMENT_MIME_TYPES = [
-  "application/pdf",
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-] as const;
-
 export const MAX_IMAGE_BYTES = 10 * 1024 * 1024; // 10 MB
-export const MAX_DOCUMENT_BYTES = 25 * 1024 * 1024; // 25 MB
+
+/* Document rules come from lib/uploads, which the browser can import too. They
+   must be one set of numbers: a form that allows what the server refuses is a
+   round trip spent to display an error. Re-exported so existing importers of
+   this module keep working. */
+export { DOCUMENT_MIME_TYPES, MAX_DOCUMENT_BYTES } from "@/lib/uploads";
 
 /** Presigned URLs expire in five minutes, per the security requirements. */
 const SIGNED_URL_TTL_SECONDS = 300;

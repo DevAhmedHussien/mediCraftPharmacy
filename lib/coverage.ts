@@ -22,98 +22,89 @@
 export type LicenceStatus = "licensed" | "pursuing" | "none";
 
 export type StateCell = {
-  /** USPS abbreviation — also the SVG label. */
+  /** USPS abbreviation. Joins this row to its outline in lib/us-map-shapes.ts. */
   code: string;
   name: string;
-  /** Position in the tile cartogram: row (north→south), col (west→east). */
-  row: number;
-  col: number;
   status: LicenceStatus;
 };
 
 /**
- * A tile cartogram rather than true geography: every state is an equal square
- * laid out in roughly its national position.
+ * Every state MediCraft tracks, with its licensure status.
  *
- * Chosen deliberately over an outline map. At the sizes this renders — a panel
- * beside body copy — Rhode Island and Delaware are a few pixels on a real
- * outline map and their labels do not fit, which is exactly the information a
- * licensure map exists to convey. Equal tiles make every state equally legible
- * and equally labelled, and the grid stays readable down to a phone.
+ * This list is the source of truth for the map. The geometry lives separately
+ * in lib/us-map-shapes.ts (generated from US Census outlines) and is joined to
+ * this by `code`, so adding a state here without geometry — or vice versa —
+ * simply does not draw, rather than drawing something wrong.
  *
- * Grid is 12 columns x 8 rows. Alaska and Hawaii sit at the left edge, as is
- * conventional; DC is included as its own tile because it licenses separately.
+ * DC is included because it licenses separately from Maryland and Virginia.
  */
 export const stateGrid: StateCell[] = [
   // Florida is the one state MediCraft can serve today.
-  { code: "FL", name: "Florida", row: 7, col: 9, status: "licensed" },
+  { code: "FL", name: "Florida", status: "licensed" },
 
   // The 49 remaining states — licensure actively in progress, per the owner's
   // copy ("actively pursuing licensure across all 49 eligible states").
-  { code: "AK", name: "Alaska", row: 0, col: 0, status: "pursuing" },
-  { code: "ME", name: "Maine", row: 0, col: 11, status: "pursuing" },
+  { code: "AK", name: "Alaska", status: "pursuing" },
+  { code: "ME", name: "Maine", status: "pursuing" },
 
-  { code: "VT", name: "Vermont", row: 1, col: 9, status: "pursuing" },
-  { code: "NH", name: "New Hampshire", row: 1, col: 10, status: "pursuing" },
+  { code: "VT", name: "Vermont", status: "pursuing" },
+  { code: "NH", name: "New Hampshire", status: "pursuing" },
 
-  { code: "WA", name: "Washington", row: 2, col: 1, status: "pursuing" },
-  { code: "ID", name: "Idaho", row: 2, col: 2, status: "pursuing" },
-  { code: "MT", name: "Montana", row: 2, col: 3, status: "pursuing" },
-  { code: "ND", name: "North Dakota", row: 2, col: 4, status: "pursuing" },
-  { code: "MN", name: "Minnesota", row: 2, col: 5, status: "pursuing" },
-  { code: "WI", name: "Wisconsin", row: 2, col: 6, status: "pursuing" },
-  { code: "MI", name: "Michigan", row: 2, col: 7, status: "pursuing" },
-  { code: "NY", name: "New York", row: 2, col: 9, status: "pursuing" },
-  { code: "MA", name: "Massachusetts", row: 2, col: 10, status: "pursuing" },
-  { code: "RI", name: "Rhode Island", row: 2, col: 11, status: "pursuing" },
+  { code: "WA", name: "Washington", status: "pursuing" },
+  { code: "ID", name: "Idaho", status: "pursuing" },
+  { code: "MT", name: "Montana", status: "pursuing" },
+  { code: "ND", name: "North Dakota", status: "pursuing" },
+  { code: "MN", name: "Minnesota", status: "pursuing" },
+  { code: "WI", name: "Wisconsin", status: "pursuing" },
+  { code: "MI", name: "Michigan", status: "pursuing" },
+  { code: "NY", name: "New York", status: "pursuing" },
+  { code: "MA", name: "Massachusetts", status: "pursuing" },
+  { code: "RI", name: "Rhode Island", status: "pursuing" },
 
-  { code: "OR", name: "Oregon", row: 3, col: 1, status: "pursuing" },
-  { code: "NV", name: "Nevada", row: 3, col: 2, status: "pursuing" },
-  { code: "WY", name: "Wyoming", row: 3, col: 3, status: "pursuing" },
-  { code: "SD", name: "South Dakota", row: 3, col: 4, status: "pursuing" },
-  { code: "IA", name: "Iowa", row: 3, col: 5, status: "pursuing" },
-  { code: "IL", name: "Illinois", row: 3, col: 6, status: "pursuing" },
-  { code: "IN", name: "Indiana", row: 3, col: 7, status: "pursuing" },
-  { code: "OH", name: "Ohio", row: 3, col: 8, status: "pursuing" },
-  { code: "PA", name: "Pennsylvania", row: 3, col: 9, status: "pursuing" },
-  { code: "NJ", name: "New Jersey", row: 3, col: 10, status: "pursuing" },
-  { code: "CT", name: "Connecticut", row: 3, col: 11, status: "pursuing" },
+  { code: "OR", name: "Oregon", status: "pursuing" },
+  { code: "NV", name: "Nevada", status: "pursuing" },
+  { code: "WY", name: "Wyoming", status: "pursuing" },
+  { code: "SD", name: "South Dakota", status: "pursuing" },
+  { code: "IA", name: "Iowa", status: "pursuing" },
+  { code: "IL", name: "Illinois", status: "pursuing" },
+  { code: "IN", name: "Indiana", status: "pursuing" },
+  { code: "OH", name: "Ohio", status: "pursuing" },
+  { code: "PA", name: "Pennsylvania", status: "pursuing" },
+  { code: "NJ", name: "New Jersey", status: "pursuing" },
+  { code: "CT", name: "Connecticut", status: "pursuing" },
 
-  { code: "CA", name: "California", row: 4, col: 1, status: "pursuing" },
-  { code: "UT", name: "Utah", row: 4, col: 2, status: "pursuing" },
-  { code: "CO", name: "Colorado", row: 4, col: 3, status: "pursuing" },
-  { code: "NE", name: "Nebraska", row: 4, col: 4, status: "pursuing" },
-  { code: "MO", name: "Missouri", row: 4, col: 5, status: "pursuing" },
-  { code: "KY", name: "Kentucky", row: 4, col: 6, status: "pursuing" },
-  { code: "WV", name: "West Virginia", row: 4, col: 7, status: "pursuing" },
-  { code: "VA", name: "Virginia", row: 4, col: 8, status: "pursuing" },
-  { code: "MD", name: "Maryland", row: 4, col: 9, status: "pursuing" },
-  { code: "DE", name: "Delaware", row: 4, col: 10, status: "pursuing" },
+  { code: "CA", name: "California", status: "pursuing" },
+  { code: "UT", name: "Utah", status: "pursuing" },
+  { code: "CO", name: "Colorado", status: "pursuing" },
+  { code: "NE", name: "Nebraska", status: "pursuing" },
+  { code: "MO", name: "Missouri", status: "pursuing" },
+  { code: "KY", name: "Kentucky", status: "pursuing" },
+  { code: "WV", name: "West Virginia", status: "pursuing" },
+  { code: "VA", name: "Virginia", status: "pursuing" },
+  { code: "MD", name: "Maryland", status: "pursuing" },
+  { code: "DE", name: "Delaware", status: "pursuing" },
 
-  { code: "AZ", name: "Arizona", row: 5, col: 2, status: "pursuing" },
-  { code: "NM", name: "New Mexico", row: 5, col: 3, status: "pursuing" },
-  { code: "KS", name: "Kansas", row: 5, col: 4, status: "pursuing" },
-  { code: "AR", name: "Arkansas", row: 5, col: 5, status: "pursuing" },
-  { code: "TN", name: "Tennessee", row: 5, col: 6, status: "pursuing" },
-  { code: "NC", name: "North Carolina", row: 5, col: 7, status: "pursuing" },
-  { code: "SC", name: "South Carolina", row: 5, col: 8, status: "pursuing" },
+  { code: "AZ", name: "Arizona", status: "pursuing" },
+  { code: "NM", name: "New Mexico", status: "pursuing" },
+  { code: "KS", name: "Kansas", status: "pursuing" },
+  { code: "AR", name: "Arkansas", status: "pursuing" },
+  { code: "TN", name: "Tennessee", status: "pursuing" },
+  { code: "NC", name: "North Carolina", status: "pursuing" },
+  { code: "SC", name: "South Carolina", status: "pursuing" },
 
-  { code: "HI", name: "Hawaii", row: 6, col: 0, status: "pursuing" },
-  { code: "OK", name: "Oklahoma", row: 6, col: 4, status: "pursuing" },
-  { code: "LA", name: "Louisiana", row: 6, col: 5, status: "pursuing" },
-  { code: "MS", name: "Mississippi", row: 6, col: 6, status: "pursuing" },
-  { code: "AL", name: "Alabama", row: 6, col: 7, status: "pursuing" },
-  { code: "GA", name: "Georgia", row: 6, col: 8, status: "pursuing" },
+  { code: "HI", name: "Hawaii", status: "pursuing" },
+  { code: "OK", name: "Oklahoma", status: "pursuing" },
+  { code: "LA", name: "Louisiana", status: "pursuing" },
+  { code: "MS", name: "Mississippi", status: "pursuing" },
+  { code: "AL", name: "Alabama", status: "pursuing" },
+  { code: "GA", name: "Georgia", status: "pursuing" },
 
-  { code: "TX", name: "Texas", row: 7, col: 4, status: "pursuing" },
+  { code: "TX", name: "Texas", status: "pursuing" },
 
   // The District licenses separately from the states and is not part of the
   // 49-state programme, so it is not claimed as in progress.
-  { code: "DC", name: "District of Columbia", row: 5, col: 9, status: "none" },
+  { code: "DC", name: "District of Columbia", status: "none" },
 ];
-
-export const GRID_COLS = 12;
-export const GRID_ROWS = 8;
 
 /** Counts for the legend and the page copy, derived rather than hand-maintained. */
 export function coverageCounts() {

@@ -10,13 +10,16 @@ import { closingCta, formulary } from "@/lib/content";
 import { site } from "@/lib/site";
 import { getProduct, getProducts, getRelatedProducts } from "@/lib/catalogue";
 import { productSpecs } from "@/lib/data";
+import { prerenderFromDb } from "@/lib/static-params";
 
 type Params = { params: { slug: string } };
 
 /** Every product is prerendered at build time — fully static, no runtime fetching. */
 export async function generateStaticParams() {
-  const products = await getProducts();
-  return products.map((p) => ({ slug: p.slug }));
+  return prerenderFromDb("/product/[slug]", async () => {
+    const products = await getProducts();
+    return products.map((p) => ({ slug: p.slug }));
+  });
 }
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
@@ -152,7 +155,7 @@ export default async function ProductPage({ params }: Params) {
              * tall packshot, so cropping it to a landscape frame would clip the
              * vial. `priority` because this is the page's hero image.
              */}
-            <div className="relative aspect-square overflow-hidden rounded-panel border border-line bg-white">
+            <div className="relative aspect-square overflow-hidden rounded-tile border border-line bg-white">
               <Image
                 src={product.image}
                 alt={`${product.name} — ${product.form}, ${product.doses}, ${product.detail.size} ${product.detail.packaging.toLowerCase()}`}

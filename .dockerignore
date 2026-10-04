@@ -1,0 +1,47 @@
+# Everything the image does not need, kept out of the build context.
+#
+# This matters for more than image size: the context is uploaded to the Docker
+# daemon before the first instruction runs, so a stray .next or node_modules
+# adds minutes to every build. It is also a security boundary — .env and
+# .uploads must never be baked into a layer, because layers are readable by
+# anyone who can pull the image.
+
+# Dependencies and build output — reinstalled and rebuilt inside the image.
+node_modules
+.next
+.next-build
+out
+
+# Secrets. Config is injected at run time, never copied in.
+.env
+.env.*
+!.env.example
+
+# Partner uploads. A mounted volume at run time, never image content —
+# a licence or photo ID baked into a layer would ship with the image.
+.uploads
+
+# Local-only state.
+.mail
+*.log
+.DS_Store
+.git
+.gitignore
+
+# Tooling that has no role at runtime.
+.vscode
+.idea
+coverage
+docs
+*.md
+!README.md
+
+# Test suites run in CI against a running app, not inside the image.
+tests
+playwright-report
+test-results
+
+# Docker's own files.
+Dockerfile*
+docker-compose*.yml
+.dockerignore

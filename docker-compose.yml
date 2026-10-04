@@ -1,0 +1,119 @@
+# MediCraft Pharmacy — the whole stack, locally.
+#
+#   docker compose up --build
+#
+# Three services, in the order they have to happen: Postgres comes up and
+# answers pg_isready; `migrate` runs once against it and exits; only then does
+# the app start. Without that ordering the app boots against a schema that is
+# not there yet and fails its first query.
+
+name: medicraft
+
+services:
+  db:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-medicraft}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-medicraft}
+      POSTGRES_DB: ${POSTGRES_DB:-medicraft}
+    # Exposed so you can point psql or a GUI at it.
+    #
+    # Bound to localhost — `5432:5432` would publish the database on every
+    # interface of the host. Defaulted to 5433 because the machines that run
+    # this already run Postgres for `npm run dev`, and binding 5432 fails with
+    # "address already in use" before anything else has a chance to start.
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      # /var/lib/postgresql, NOT /var/lib/postgresql/data.
+      #
+      # Postgres 18 moved the data directory a level down and refuses to start
+      # on a volume mounted at the old path — the image's own error points at
+      # this. Mounting the parent is also what makes a future `pg_upgrade
+      # --link` possible, since both versions then sit inside one mount.
+      - db-data:/var/lib/postgresql
+    healthcheck:
+      # `pg_isready` alone returns true while the init scripts are still
+      # running on first boot, so it names the database and user it must be
+      # able to reach.
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-medicraft} -d ${POSTGRES_DB:-medicraft}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+  # Runs to completion and stops. Not a long-lived service — the app must not
+  # start until this has exited 0, which is what `service_completed_successfully`
+  # below waits for.
+  migrate:
+    build:
+      context: .
+      target: migrator
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-medicraft}:${POSTGRES_PASSWORD:-medicraft}@db:5432/${POSTGRES_DB:-medicraft}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  # Demo data. Opt-in only:
+  #
+  #     docker compose --profile seed run --rm seed
+  #
+  # A profile rather than a service, so a plain `docker compose up` can never
+  # reach it — seeding a deployment that already has partners on it would
+  # overwrite them.
+  seed:
+    profiles: ["seed"]
+    build:
+      context: .
+      target: migrator
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-medicraft}:${POSTGRES_PASSWORD:-medicraft}@db:5432/${POSTGRES_DB:-medicraft}
+    env_file:
+      - path: .env.docker
+        required: false
+    command: ["npx", "tsx", "prisma/seed.ts"]
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  app:
+    build:
+      context: .
+      target: runner
+      args:
+        # Baked into the client bundle at build time, so it cannot be changed
+        # by an environment variable later.
+        NEXT_PUBLIC_APP_URL: ${APP_URL:-http://localhost:3000}
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-medicraft}:${POSTGRES_PASSWORD:-medicraft}@db:5432/${POSTGRES_DB:-medicraft}
+      APP_URL: ${APP_URL:-http://localhost:3000}
+      AUTH_URL: ${APP_URL:-http://localhost:3000}
+      NODE_ENV: production
+    # Secrets come from a file that is never in the image and never in git.
+    # Anything set above wins over the file, which is what makes the compose
+    # defaults usable without one.
+    env_file:
+      - path: .env.docker
+        required: false
+    volumes:
+      # Partner licences and photo IDs, when STORAGE_DRIVER=local. A named
+      # volume rather than a bind mount: the container runs as uid 1000 and a
+      # host bind would arrive owned by root, leaving the first upload to fail
+      # on permissions.
+      - uploads:/app/.uploads
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+volumes:
+  db-data:
+  uploads:

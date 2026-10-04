@@ -9,7 +9,7 @@ import {
   acceptNegotiatedAction,
   requestAnotherRoundAction,
   requestMeetingAction,
-} from "@/app/(site)/portal/actions";
+} from "@/app/portal/actions";
 import { FormAlert } from "@/components/ui/form/submit";
 import { initialFormState } from "@/lib/forms";
 import { PARTNER_STATUS, type PartnerStatus } from "@/lib/partner/status";

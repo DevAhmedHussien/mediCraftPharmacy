@@ -152,6 +152,79 @@ export type SignatureFields = {
 const templatePath = () =>
   path.resolve(process.cwd(), "assets/msa/msa-2026-template.pdf");
 
+/* ---------------------------------------------------------------------------
+   Making arbitrary text safe for a standard PDF font.
+
+   pdf-lib's built-in Helvetica is WinAnsi-encoded — Latin-1 and nothing else.
+   Any character outside that set makes `drawText` throw, which took down the
+   whole agreement: a partner whose city was "Тюмень" got a 500 from
+   /api/agreement and no document at all, and so would anyone with a Greek,
+   Arabic or CJK character, or even a smart quote pasted out of Word.
+
+   So the text is folded into WinAnsi before it is drawn. Accents are stripped
+   to their base letter (é → e) rather than dropped, typographic punctuation is
+   mapped to its ASCII equivalent, and anything with no reasonable Latin form
+   is transliterated to "?" so the position of the lost character is still
+   visible.
+
+   THIS IS A FALLBACK, NOT THE ANSWER. A legal agreement should carry a
+   partner's legal name in the script it is written in, and the real fix is to
+   embed a Unicode TrueType font with @pdf-lib/fontkit. That is a ~300KB asset
+   and a dependency; this keeps the document generating in the meantime, and
+   says out loud in the log when it has had to change a character.
+   ------------------------------------------------------------------------ */
+
+/** Typographic characters Word and Pages insert that WinAnsi does not hold. */
+const PUNCTUATION: Record<string, string> = {
+  "\u2018": "'", "\u2019": "'", "\u201A": "'", "\u201B": "'",
+  "\u201C": '"', "\u201D": '"', "\u201E": '"',
+  "\u2013": "-", "\u2014": "-", "\u2212": "-",
+  "\u2026": "...", "\u00A0": " ", "\u202F": " ", "\u2009": " ",
+};
+
+/** WinAnsi covers Latin-1 plus a handful of extras in 0x80–0x9F. */
+function encodableInWinAnsi(ch: string): boolean {
+  const code = ch.codePointAt(0) ?? 0;
+  if (code >= 0x20 && code <= 0x7e) return true;
+  if (code >= 0xa0 && code <= 0xff) return true;
+  return "\u20AC\u201A\u0192\u201E\u2026\u2020\u2021\u02C6\u2030\u0160\u2039\u0152\u017D\u2018\u2019\u201C\u201D\u2022\u2013\u2014\u02DC\u2122\u0161\u203A\u0153\u017E\u0178".includes(ch);
+}
+
+export function toWinAnsi(input: string, field?: string): string {
+  let changed = false;
+
+  const out = Array.from(input)
+    .map((ch) => {
+      if (encodableInWinAnsi(ch)) return ch;
+
+      const mapped = PUNCTUATION[ch];
+      if (mapped !== undefined) {
+        changed = true;
+        return mapped;
+      }
+
+      // é → e, ü → u: decompose and drop the combining marks.
+      const stripped = ch.normalize("NFKD").replace(/\p{M}/gu, "");
+      if (stripped && Array.from(stripped).every(encodableInWinAnsi)) {
+        changed = true;
+        return stripped;
+      }
+
+      changed = true;
+      return "?";
+    })
+    .join("");
+
+  if (changed && field) {
+    console.warn(
+      `[msa] ${field} contains characters the agreement font cannot render; ` +
+        `they were transliterated. Embed a Unicode font to carry them verbatim.`
+    );
+  }
+
+  return out;
+}
+
 function draw(
   pages: (PDFPage | null)[],
   name: string,
@@ -176,7 +249,13 @@ function draw(
     );
   }
 
-  page.drawText(text, { x: anchor.x, y: anchor.y + offsetY, size, font, color });
+  page.drawText(toWinAnsi(text, name), {
+    x: anchor.x,
+    y: anchor.y + offsetY,
+    size,
+    font,
+    color,
+  });
 }
 
 /**
@@ -405,7 +484,50 @@ export type BuildOptions = {
  * whether this is a download, an upload to storage, or a payload for a
  * signing platform.
  */
-export async function buildMsaPdf(options: BuildOptions): Promise<Uint8Array> {
+export async function buildMsaPdf(raw: BuildOptions): Promise<Uint8Array> {
+  /* Fold everything the Client supplied into WinAnsi once, here, rather than
+     at each of the twenty draw calls downstream.
+     
+     It has to happen before anything measures the text as well as before
+     anything draws it: `clip()` calls widthOfTextAtSize, which throws on an
+     unencodable character exactly as drawText does, so sanitising only at the
+     point of drawing would still crash while laying the schedule out. */
+  const options: BuildOptions = {
+    ...raw,
+    companyName: toWinAnsi(raw.companyName, "companyName"),
+    fields: Object.fromEntries(
+      Object.entries(raw.fields).map(([k, v]) => [
+        k,
+        typeof v === "string" ? toWinAnsi(v, k) : v,
+      ])
+    ) as MsaFields,
+    lines: raw.lines.map((line) => ({
+      ...line,
+      name: toWinAnsi(line.name, "product name"),
+      strength: line.strength ? toWinAnsi(line.strength) : line.strength,
+      form: line.form ? toWinAnsi(line.form) : line.form,
+      packageSize: line.packageSize ? toWinAnsi(line.packageSize) : line.packageSize,
+      unit: line.unit ? toWinAnsi(line.unit) : line.unit,
+    })),
+    profile: raw.profile
+      ? (Object.fromEntries(
+          Object.entries(raw.profile).map(([k, v]) => [
+            k,
+            typeof v === "string" ? toWinAnsi(v, k) : v,
+          ])
+        ) as ClientProfile)
+      : raw.profile,
+    signature: raw.signature
+      ? {
+          ...raw.signature,
+          signedName: toWinAnsi(raw.signature.signedName, "signed name"),
+          signedTitle: raw.signature.signedTitle
+            ? toWinAnsi(raw.signature.signedTitle, "signed title")
+            : raw.signature.signedTitle,
+        }
+      : raw.signature,
+  };
+
   const template = await PDFDocument.load(await readFile(templatePath()));
   const pdf = await PDFDocument.create();
 

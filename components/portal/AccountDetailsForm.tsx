@@ -23,7 +23,7 @@ import {
 import {
   saveAccountDetailsDraft,
   submitAccountDetails,
-} from "@/app/(site)/portal/onboarding/actions";
+} from "@/app/portal/onboarding/actions";
 
 /* ===========================================================================
    The full account details, inside the portal.

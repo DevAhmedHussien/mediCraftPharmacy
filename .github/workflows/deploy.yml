@@ -1,0 +1,179 @@
+# =============================================================================
+# Deploy — staging from `staging`, production from `main`.
+#
+# NO AWS KEYS EXIST ANYWHERE IN THIS REPOSITORY.
+# ----------------------------------------------
+# Authentication is OIDC. GitHub mints a short-lived token describing this
+# workflow run; AWS trusts GitHub's identity provider and exchanges it for
+# credentials that expire in an hour, scoped to one role, and usable only by
+# the branch named in the role's trust policy. There is no access key to
+# store, leak, or rotate — which is the entire point, and the reason the
+# first instinct of pasting credentials somewhere is one worth resisting.
+#
+# WHY THE ENVIRONMENT IS DERIVED, NOT AN INPUT
+# --------------------------------------------
+# The branch decides. A workflow_dispatch with an environment dropdown is how
+# somebody deploys the staging branch to production at 6pm on a Friday; here
+# the only way to reach production is to merge to main, which is reviewable
+# and revertable.
+# =============================================================================
+name: Deploy
+
+on:
+  push:
+    branches: [main, staging]
+
+concurrency:
+  # Serialise per environment. Two deploys to production at once is two
+  # images racing to be the one App Runner settles on.
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  id-token: write # required to mint the OIDC token
+  contents: read
+
+jobs:
+  # The same gate every branch gets. Deploy does not re-implement it.
+  verify:
+    uses: ./.github/workflows/ci.yml
+
+  deploy:
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    # Maps the branch to a GitHub Environment, so production can carry a
+    # required-reviewer rule and its own secrets without a second workflow.
+    environment: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
+
+    env:
+      AWS_REGION: us-east-1
+      ENV_NAME: ${{ github.ref_name == 'main' && 'production' || 'staging' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Assume the deploy role
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          # Set once per environment in GitHub → Settings → Environments.
+          # It is an ARN, not a credential: useless without a token minted by
+          # a run on the branch its trust policy names.
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Log in to ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push the image
+        id: image
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+          REPOSITORY: medicraft
+        run: |
+          set -euo pipefail
+          # Tagged by commit, never by `latest`. A rollback is then naming a
+          # tag that still exists, rather than hoping the previous image was
+          # not overwritten.
+          TAG="${ENV_NAME}-${GITHUB_SHA::12}"
+          IMAGE="${REGISTRY}/${REPOSITORY}:${TAG}"
+
+          MIGRATE="${REGISTRY}/${REPOSITORY}:${TAG}-migrate"
+
+          # Two images from one Dockerfile. The migrator is its own stage and
+          # carries the Prisma CLI the runtime image deliberately omits.
+          docker build -t "$IMAGE" .
+          docker build -t "$MIGRATE" --target migrator .
+          docker push "$IMAGE"
+          docker push "$MIGRATE"
+
+          echo "uri=$IMAGE" >> "$GITHUB_OUTPUT"
+          echo "migrate_uri=$MIGRATE" >> "$GITHUB_OUTPUT"
+          echo "Pushed $IMAGE and $MIGRATE"
+
+      - name: Run database migrations
+        env:
+          MIGRATE_URI: ${{ steps.image.outputs.migrate_uri }}
+        run: |
+          set -euo pipefail
+          CLUSTER="medicraft-${ENV_NAME}-migrate"
+          FAMILY="medicraft-${ENV_NAME}-migrate"
+
+          # Subnets and security group come from the service itself rather
+          # than being pasted in, so a VPC change does not silently leave
+          # this pointing at a deleted subnet.
+          SUBNETS=$(aws ecs describe-task-definition --task-definition "$FAMILY" >/dev/null &&             aws ec2 describe-subnets               --filters "Name=tag:Name,Values=medicraft-${ENV_NAME}-private-*"               --query 'Subnets[].SubnetId' --output text | tr '\t' ',')
+          SG=$(aws ec2 describe-security-groups             --filters "Name=group-name,Values=medicraft-${ENV_NAME}-apprunner"             --query 'SecurityGroups[0].GroupId' --output text)
+
+          TASK_ARN=$(aws ecs run-task \
+            --cluster "$CLUSTER" \
+            --task-definition "$FAMILY" \
+            --launch-type FARGATE \
+            --network-configuration "awsvpcConfiguration={subnets=[${SUBNETS}],securityGroups=[${SG}],assignPublicIp=DISABLED}" \
+            --overrides "{\"containerOverrides\":[{\"name\":\"migrate\",\"image\":\"${MIGRATE_URI}\"}]}" \
+            --query 'tasks[0].taskArn' --output text)
+
+          echo "Migration task: $TASK_ARN"
+          aws ecs wait tasks-stopped --cluster "$CLUSTER" --tasks "$TASK_ARN"
+
+          CODE=$(aws ecs describe-tasks --cluster "$CLUSTER" --tasks "$TASK_ARN" \
+            --query 'tasks[0].containers[0].exitCode' --output text)
+          echo "Migration exit code: $CODE"
+
+          if [ "$CODE" != "0" ]; then
+            echo "::error::Migrations failed. The previous version is still serving; nothing was deployed."
+            echo "Logs: /ecs/medicraft-${ENV_NAME}-migrate"
+            exit 1
+          fi
+
+      - name: Deploy to App Runner
+        env:
+          IMAGE_URI: ${{ steps.image.outputs.uri }}
+        run: |
+          set -euo pipefail
+          SERVICE_ARN=$(aws apprunner list-services \
+            --query "ServiceSummaryList[?ServiceName=='medicraft-${ENV_NAME}'].ServiceArn" \
+            --output text)
+
+          if [ -z "$SERVICE_ARN" ]; then
+            echo "::error::No App Runner service named medicraft-${ENV_NAME}. Run terraform apply first."
+            exit 1
+          fi
+
+          aws apprunner update-service \
+            --service-arn "$SERVICE_ARN" \
+            --source-configuration "ImageRepository={ImageIdentifier=${IMAGE_URI},ImageRepositoryType=ECR,ImageConfiguration={Port=3000}}" \
+            --query 'OperationId' --output text
+
+          echo "Waiting for the deployment to settle…"
+          # App Runner has no `wait` subcommand for this, so poll the status.
+          for _ in $(seq 1 60); do
+            STATUS=$(aws apprunner describe-service --service-arn "$SERVICE_ARN" \
+              --query 'Service.Status' --output text)
+            echo "  status: $STATUS"
+            case "$STATUS" in
+              RUNNING) echo "Deployed."; exit 0 ;;
+              CREATE_FAILED|DELETE_FAILED) echo "::error::Service is $STATUS"; exit 1 ;;
+            esac
+            sleep 20
+          done
+          echo "::error::Timed out waiting for the service to reach RUNNING."
+          exit 1
+
+      - name: Smoke-test the deployed service
+        run: |
+          set -euo pipefail
+          URL=$(aws apprunner list-services \
+            --query "ServiceSummaryList[?ServiceName=='medicraft-${ENV_NAME}'].ServiceUrl" \
+            --output text)
+          # The health route checks the database, so a 200 here means the
+          # instance can actually serve a page — not merely that it booted.
+          for i in $(seq 1 10); do
+            CODE=$(curl -s -o /dev/null -w '%{http_code}' "https://${URL}/api/health" || true)
+            [ "$CODE" = "200" ] && { echo "https://${URL}/api/health → 200"; exit 0; }
+            echo "  attempt $i: $CODE"; sleep 10
+          done
+          echo "::error::Health check never returned 200 after deploy."
+          exit 1

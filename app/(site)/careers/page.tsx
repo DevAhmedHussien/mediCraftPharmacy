@@ -12,7 +12,7 @@ import { site } from "@/lib/site";
 
 export const metadata: Metadata = pageMetadata({
   title: "Careers",
-  description: `Join the ${site.name} team in Palm Harbor, Florida — open roles in compounding, fulfillment, lab and support.`,
+  description: `Join the ${site.name} team in Tampa, Florida — open roles in compounding, fulfillment, lab and support.`,
   path: "/careers",
 });
 
@@ -88,7 +88,7 @@ export default function CareersPage() {
             <SectionHead
               eyebrow="Open Positions"
               title="Find your role"
-              lead={`${careers.length} roles open at our Palm Harbor facility.`}
+              lead={`${careers.length} roles open at our Tampa facility.`}
             />
           </Reveal>
 

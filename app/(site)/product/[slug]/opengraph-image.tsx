@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 import { getProduct, getProducts } from "@/lib/catalogue";
+import { prerenderFromDb } from "@/lib/static-params";
 import {
   OG_COLORS,
   OG_CONTENT_TYPE,
@@ -20,8 +21,10 @@ export const size = OG_SIZE;
 export const contentType = OG_CONTENT_TYPE;
 
 export async function generateStaticParams() {
-  const products = await getProducts();
-  return products.map((p) => ({ slug: p.slug }));
+  return prerenderFromDb("/product/[slug] og-image", async () => {
+    const products = await getProducts();
+    return products.map((p) => ({ slug: p.slug }));
+  });
 }
 
 export async function generateImageMetadata({

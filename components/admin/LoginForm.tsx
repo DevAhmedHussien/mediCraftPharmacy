@@ -1,28 +1,106 @@
 "use client";
 
-import { useFormState } from "react-dom";
+import { useState } from "react";
+import { useFormState, useFormStatus } from "react-dom";
+import { KeyRound, Mail } from "lucide-react";
 
-import { login } from "@/app/login/actions";
+import { login, signInWithCode } from "@/app/login/actions";
 import { FormAlert, ActionSubmitButton, TextField } from "@/components/ui/form/native";
 import { initialFormState } from "@/lib/forms";
+import { cn } from "@/lib/utils";
 
 /**
- * The login form.
+ * Two ways in: a password, or a six-digit code emailed to you.
  *
- * Built from the same `Fields` set as every other form on this site rather
- * than from hand-rolled inputs, so it inherits the label/error wiring, the
- * `useId` pairing and the disabled-JS behaviour for free — and so a change to
- * the input styling reaches this page too.
+ * WHY THE SECOND ONE EXISTS
+ * -------------------------
+ * A practice manager signs in a handful of times a year. They do not have the
+ * password saved and they do not remember it, so the honest description of
+ * today's flow is "forgot password, every time" — a reset link, a new
+ * password, and a second credential nobody will remember either. A code sent
+ * to the address on the account does that in one step and leaves nothing
+ * behind to forget.
  *
- * `autoComplete` is `username` / `current-password` because those are the
- * exact tokens a password manager looks for; anything else and saved
- * credentials silently stop being offered.
+ * PASSWORD IS STILL THE DEFAULT. Staff sign in daily with a manager filling
+ * the fields, and making them click past a code form every morning to reach
+ * the thing their browser already knows would be a worse trade than the one
+ * it fixes.
  */
 export function LoginForm({ next }: { next?: string }) {
+  const [method, setMethod] = useState<"password" | "code">("password");
+
+  return (
+    <div className="mt-7">
+      {/* A segmented control, not two pages. The address is typed into
+          whichever panel is showing, so switching costs a field, not a page
+          load. */}
+      <div
+        role="tablist"
+        aria-label="How to sign in"
+        className="grid grid-cols-2 gap-1 rounded-xl border border-line bg-sand p-1"
+      >
+        <MethodTab
+          id="password"
+          current={method}
+          onSelect={setMethod}
+          icon={<KeyRound className="size-4" strokeWidth={1.9} aria-hidden />}
+        >
+          Password
+        </MethodTab>
+        <MethodTab
+          id="code"
+          current={method}
+          onSelect={setMethod}
+          icon={<Mail className="size-4" strokeWidth={1.9} aria-hidden />}
+        >
+          Email a code
+        </MethodTab>
+      </div>
+
+      {method === "password" ? <PasswordForm next={next} /> : <CodeForm next={next} />}
+    </div>
+  );
+}
+
+function MethodTab({
+  id,
+  current,
+  onSelect,
+  icon,
+  children,
+}: {
+  id: "password" | "code";
+  current: "password" | "code";
+  onSelect: (value: "password" | "code") => void;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  const active = current === id;
+
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={active}
+      aria-controls={`signin-${id}`}
+      onClick={() => onSelect(id)}
+      className={cn(
+        "inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-meta font-bold transition-colors",
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1",
+        active ? "bg-white text-ink shadow-card" : "text-ink-muted hover:text-ink"
+      )}
+    >
+      {icon}
+      {children}
+    </button>
+  );
+}
+
+function PasswordForm({ next }: { next?: string }) {
   const [state, action] = useFormState(login, initialFormState);
 
   return (
-    <form action={action} className="mt-7 space-y-4">
+    <form id="signin-password" role="tabpanel" action={action} className="mt-6 space-y-4">
       {next && <input type="hidden" name="next" value={next} />}
 
       {state.message && <FormAlert ok={state.ok} message={state.message} />}
@@ -42,9 +120,97 @@ export function LoginForm({ next }: { next?: string }) {
         error={state.errors?.password}
       />
 
-      <div className="pt-2">
+      <div className="pt-1">
         <ActionSubmitButton>Sign in</ActionSubmitButton>
       </div>
     </form>
+  );
+}
+
+/**
+ * Ask for a code, then type it in — in one form.
+ *
+ * ONE FORM, NOT TWO. The first version was a request form and a separate
+ * verify form, with the address carried between them in a hidden input fed
+ * from React state. A browser autofilling the email does not reliably fire
+ * React's change event, so the state stayed empty while the field looked
+ * full and the verify step posted a blank address — which came back as "that
+ * code is not valid" about a code that was perfectly good.
+ *
+ * Here the email field is the same field throughout, the server says which
+ * step we are on (`state.data.sent`), and the submit button carries the
+ * intent. Nothing is held in client state, so nothing can disagree with what
+ * is on screen.
+ */
+function CodeForm({ next }: { next?: string }) {
+  const [state, action] = useFormState(signInWithCode, initialFormState);
+
+  const sent = state.data?.sent === "1";
+
+  return (
+    <form id="signin-code" role="tabpanel" action={action} className="mt-6 space-y-4">
+      {next && <input type="hidden" name="next" value={next} />}
+
+      {state.message && <FormAlert ok={state.ok} message={state.message} />}
+
+      <TextField
+        name="email"
+        label="Email address"
+        type="email"
+        autoComplete="username"
+        // Echoed back from the server, so the address on screen is the one it
+        // actually used.
+        defaultValue={state.data?.email}
+        error={state.errors?.email}
+      />
+
+      {!sent ? (
+        <div className="pt-1">
+          <ActionSubmitButton name="intent" value="send">
+            Email me a code
+          </ActionSubmitButton>
+        </div>
+      ) : (
+        <>
+          <TextField
+            name="code"
+            label="Six-digit code"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            maxLength={6}
+            placeholder="000000"
+            hint="Check your inbox. The code expires ten minutes after it is sent."
+            error={state.errors?.code}
+            className="text-center font-mono text-[1.375rem] tracking-[0.4em]"
+          />
+
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-3 pt-1">
+            <ActionSubmitButton name="intent" value="verify" block={false}>
+              Sign in
+            </ActionSubmitButton>
+
+            {/* A quiet second submit, not a button competing with the first.
+                Same form, same email field, different intent. */}
+            <ResendButton />
+          </div>
+        </>
+      )}
+    </form>
+  );
+}
+
+function ResendButton() {
+  const { pending } = useFormStatus();
+
+  return (
+    <button
+      type="submit"
+      name="intent"
+      value="send"
+      disabled={pending}
+      className="text-meta font-medium text-ink-muted underline underline-offset-4 transition-colors hover:text-ink disabled:opacity-50"
+    >
+      Send a new code
+    </button>
   );
 }

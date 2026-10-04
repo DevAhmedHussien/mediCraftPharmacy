@@ -264,3 +264,87 @@ export async function buildAgreementFor(
     signed: Boolean(executed),
   };
 }
+
+/* ===========================================================================
+   A change order's own PDF.
+
+   `buildAgreementFor` renders the Master Service Agreement. A change order
+   asked for by envelope id used to come back from that same function — the
+   MSA body, stamped with the change order's signature and the change order's
+   hash. The hash would not verify against the text printed above it, which is
+   exactly the property a stored hash exists to provide.
+
+   So a change-order envelope gets the change order. Same route, same
+   ownership check, different document — see app/api/agreement/[partnerId].
+   ========================================================================= */
+
+export async function buildChangeOrderFor(
+  partnerId: string,
+  envelopeId: string
+): Promise<{ bytes: Uint8Array; filename: string; signed: boolean } | null> {
+  const amendment = await db.formularyAmendment.findFirst({
+    where: { partnerId, msaEnvelope: { id: envelopeId } },
+    select: {
+      id: true,
+      number: true,
+      partner: {
+        select: {
+          companyName: true,
+          contactName: true,
+          application: { select: { practiceName: true, requesterTitle: true } },
+          onboarding: { select: { signerTitle: true } },
+        },
+      },
+      msaEnvelope: {
+        select: {
+          status: true,
+          signedName: true,
+          completedAt: true,
+          agreementHash: true,
+          signedIp: true,
+        },
+      },
+    },
+  });
+
+  if (!amendment?.msaEnvelope) return null;
+
+  /* Rebuilt from the amendment, exactly as the signing page and the issuing
+     action build it. Three callers, one function — a fourth rendering would
+     be a fourth chance for the printed text and the signed text to differ. */
+  const { buildChangeOrderText } = await import("@/lib/services/amendments");
+  const text = await buildChangeOrderText(amendment.id);
+  if (!text) return null;
+
+  const envelope = amendment.msaEnvelope;
+  const executed = envelope.status === "COMPLETED" && envelope.completedAt;
+  const partner = amendment.partner;
+
+  const { buildChangeOrderPdf } = await import("@/lib/services/change-order-pdf");
+  const bytes = await buildChangeOrderPdf({
+    text,
+    number: amendment.number,
+    companyName: partner.application?.practiceName ?? partner.companyName,
+    signature: executed
+      ? {
+          signedName: envelope.signedName ?? partner.contactName,
+          signedTitle:
+            partner.onboarding?.signerTitle ?? partner.application?.requesterTitle ?? null,
+          signedAt: envelope.completedAt!,
+          agreementHash: envelope.agreementHash ?? "",
+          ip: envelope.signedIp,
+        }
+      : null,
+  });
+
+  const slug = (partner.application?.practiceName ?? partner.companyName)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+
+  return {
+    bytes,
+    filename: `medicraft-change-order-${amendment.number}-${slug}${executed ? "-signed" : ""}.pdf`,
+    signed: Boolean(executed),
+  };
+}

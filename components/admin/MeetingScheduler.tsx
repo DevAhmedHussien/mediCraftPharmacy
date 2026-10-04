@@ -23,28 +23,38 @@ import { initialFormState } from "@/lib/forms";
  * in this system reads. Three offers cost the admin nothing and settle the
  * call in one round trip. Two of the three may be left blank.
  *
- * `suggestions` come from the calendar driver. With Google configured they
- * are real gaps in the diary; with the manual driver they are the next few
- * business mornings and afternoons. Either way they are a starting point the
- * admin can overwrite, never a commitment — nothing is offered until Save.
+ * WHAT CHANGED, AND WHY
+ * ---------------------
+ * THE RED BANNER WAS NOT AN ERROR. "Three times are already offered. Saving
+ * replaces them" is a standing fact, not a failure, and it was rendered in
+ * the failure red with `role="alert"`. It is a notice now.
+ *
+ * IT WAS ALSO SAID TWICE. After a successful save the panel showed both the
+ * result ("3 times offered. The applicant has been emailed to pick one.") and
+ * the standing notice, which say the same thing. The notice is suppressed
+ * while a result is on screen.
+ *
+ * THE BOXES HAD NO LABELS. Only the first carried "Times to offer"; the other
+ * two were given an empty string, which rendered an empty <label> with a
+ * stray "(optional)" floating under the input and left a screen reader to
+ * announce two of the three fields as nothing at all. They are a fieldset
+ * with a legend and one real label each.
+ *
+ * NO CALENDAR INTEGRATION. The suggestion chips and the "free in your
+ * calendar" affordance are gone along with the Google driver. The admin types
+ * the times they want.
  */
 export function MeetingScheduler({
   partnerId,
   meetingId,
   requestNotes,
   requestedAt,
-  suggestions = [],
-  knowsAvailability = false,
   alreadyOffered = [],
 }: {
   partnerId: string;
   meetingId: string;
   requestNotes: string;
   requestedAt: string;
-  /** ISO strings, in the format a datetime-local input takes. */
-  suggestions?: string[];
-  /** Whether those suggestions actually consulted a diary. */
-  knowsAvailability?: boolean;
   /** Times already on the table, if this is a re-offer. */
   alreadyOffered?: string[];
 }) {
@@ -53,19 +63,16 @@ export function MeetingScheduler({
     initialFormState
   );
 
-  const initial = alreadyOffered.length > 0 ? alreadyOffered : [];
   const [slots, setSlots] = useState<string[]>([
-    initial[0] ?? suggestions[0] ?? "",
-    initial[1] ?? suggestions[1] ?? "",
-    initial[2] ?? suggestions[2] ?? "",
+    alreadyOffered[0] ?? "",
+    alreadyOffered[1] ?? "",
+    alreadyOffered[2] ?? "",
   ]);
 
   const setSlot = (index: number, value: string) =>
     setSlots((current) => current.map((s, i) => (i === index ? value : s)));
 
-  /* Suggestions not already sitting in a box. Offering to fill a box with a
-     time that is already in another one is a click that does nothing. */
-  const spare = suggestions.filter((s) => !slots.includes(s)).slice(0, 6);
+  const offered = alreadyOffered.length;
 
   return (
     <Panel
@@ -76,79 +83,52 @@ export function MeetingScheduler({
       })}`}
     >
       <blockquote
-        className="mb-4 rounded-[5px] border-l-2 py-2 pl-3 text-[0.8125rem] leading-relaxed text-[color:var(--admin-ink-70)]"
+        className="mb-4 rounded-lg border-l-2 py-2 pl-3 text-[0.8125rem] leading-relaxed text-[color:var(--admin-ink-70)]"
         style={{ borderColor: "var(--admin-accent)", background: "#f4f7ff" }}
       >
         {requestNotes}
       </blockquote>
 
-      {alreadyOffered.length > 0 && (
-        <AdminAlert ok={false}>
-          {alreadyOffered.length} {alreadyOffered.length === 1 ? "time is" : "times are"} already
-          offered and waiting on the applicant. Saving replaces them.
-        </AdminAlert>
+      {/* The result of the last save wins. Showing both it and the standing
+          notice repeats the same fact in two colours. */}
+      {state.message ? (
+        <AdminAlert ok={state.ok}>{state.message}</AdminAlert>
+      ) : (
+        offered > 0 && (
+          <AdminAlert tone="info">
+            {offered === 1
+              ? "One time is already offered and waiting on the applicant."
+              : `${offered} times are already offered and waiting on the applicant.`}{" "}
+            Saving replaces them.
+          </AdminAlert>
+        )
       )}
 
-      <form action={action} className="space-y-4">
-        {state.message && <AdminAlert ok={state.ok}>{state.message}</AdminAlert>}
+      <form action={action} className="space-y-5">
+        <fieldset>
+          <legend className="admin-label mb-1 block">Times to offer</legend>
+          <p className="mb-2.5 text-[0.75rem] text-[color:var(--admin-ink-50)]">
+            The applicant picks one and it books itself. Leave the second and
+            third blank to offer fewer.
+          </p>
 
-        <div className="space-y-3">
-          {slots.map((value, index) => (
-            <AdminField
-              key={index}
-              name="slots"
-              label={index === 0 ? "Times to offer" : ""}
-              type="datetime-local"
-              optional={index > 0}
-              value={value}
-              onChange={(e) => setSlot(index, e.currentTarget.value)}
-              error={index === 0 ? state.errors?.slots : undefined}
-              hint={
-                index === slots.length - 1
-                  ? "The applicant picks one and it books itself. Leave boxes blank to offer fewer."
-                  : undefined
-              }
-            />
-          ))}
-        </div>
-
-        {spare.length > 0 && (
-          <div>
-            <p className="mb-2 text-[0.75rem] font-semibold uppercase tracking-wide text-[color:var(--admin-ink-50)]">
-              {knowsAvailability ? "Free in your calendar" : "Suggested times"}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {spare.map((iso) => (
-                <button
-                  key={iso}
-                  type="button"
-                  onClick={() => {
-                    // Fill the first empty box, or replace the last one, so a
-                    // second click is never silently ignored.
-                    const empty = slots.findIndex((s) => !s);
-                    setSlot(empty === -1 ? slots.length - 1 : empty, iso);
-                  }}
-                  className="rounded-full border px-3 py-1 text-[0.8125rem] transition hover:bg-[#f4f7ff]"
-                  style={{ borderColor: "var(--admin-line)" }}
-                >
-                  {new Date(iso).toLocaleString("en-US", {
-                    weekday: "short",
-                    month: "short",
-                    day: "numeric",
-                    hour: "numeric",
-                    minute: "2-digit",
-                  })}
-                </button>
-              ))}
-            </div>
-            {!knowsAvailability && (
-              <p className="mt-2 text-[0.75rem] text-[color:var(--admin-ink-50)]">
-                Business hours only — nobody&rsquo;s calendar has been checked. Set
-                CALENDAR_DRIVER=google to offer real gaps and attach a Meet link.
-              </p>
-            )}
+          <div className="space-y-3">
+            {slots.map((value, index) => (
+              <AdminField
+                key={index}
+                name="slots"
+                label={ORDINALS[index]}
+                type="datetime-local"
+                /* Only the first is required: the point of the other two is
+                   that they may be left empty. */
+                optional={index > 0}
+                value={value}
+                onChange={(e) => setSlot(index, e.currentTarget.value)}
+                error={index === 0 ? state.errors?.slots : undefined}
+              />
+            ))}
           </div>
-        )}
+        </fieldset>
 
         <div className="grid gap-4 sm:grid-cols-3">
           <AdminField
@@ -162,8 +142,8 @@ export function MeetingScheduler({
             name="location"
             label="Where"
             optional
-            placeholder="Left blank, a Meet link is attached"
-            hint="Only needed for a dial-in or an address."
+            placeholder="Phone, video link or address"
+            hint="Sent to the applicant with the confirmation."
             className="sm:col-span-2"
           />
         </div>
@@ -176,8 +156,11 @@ export function MeetingScheduler({
           hint="Not shown to the applicant."
         />
 
-        <AdminSubmit>Offer these times</AdminSubmit>
+        <AdminSubmit>{offered > 0 ? "Replace these times" : "Offer these times"}</AdminSubmit>
       </form>
     </Panel>
   );
 }
+
+/** Each box says which choice it is, so no field is announced as nothing. */
+const ORDINALS = ["First choice", "Second choice", "Third choice"] as const;

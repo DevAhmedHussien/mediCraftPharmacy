@@ -1,62 +1,26 @@
 import Link from "next/link";
 
-import { BreakdownList } from "@/components/admin/BreakdownList";
+import { BarChart3 } from "lucide-react";
+
 import { PipelineFunnel } from "@/components/admin/PipelineFunnel";
-import { RangeTabs } from "@/components/admin/RangeTabs";
-import { TrafficChart } from "@/components/admin/TrafficChart";
-import { Cell, DataTable, PageHeader, Panel, Pill, Row, StatStrip, relativeDays } from "@/components/admin/ui";
+import { PageHeader, StatStrip, Zone } from "@/components/admin/ui";
+import {
+  Worklist,
+  amendmentWorkItem,
+  partnerWorkItem,
+} from "@/components/admin/Worklist";
 import { db } from "@/lib/db";
 import { ADMIN_ACTIONABLE_STATUSES } from "@/lib/partner/status";
 import { countByStatus } from "@/lib/services/partners";
-import {
-  getContentCounts,
-  getDeviceSplit,
-  getOverview,
-  getTopPages,
-  getTopReferrers,
-  getTrend,
-  type Range,
-} from "@/lib/services/analytics";
+import { getContentCounts } from "@/lib/services/analytics";
 
 export const metadata = { title: "Overview" };
 
-function parseRange(value: string | undefined): Range {
-  const n = Number(value);
-  return n === 7 || n === 90 ? n : 30;
-}
-
-function duration(seconds: number): string {
-  const minutes = Math.floor(seconds / 60);
-  return minutes > 0 ? `${minutes}m ${seconds % 60}s` : `${seconds}s`;
-}
-
-export default async function AdminOverviewPage({
-  searchParams,
-}: {
-  searchParams: { range?: string };
-}) {
-  const range = parseRange(searchParams.range);
-
+export default async function AdminOverviewPage() {
   // Independent aggregates. Sequential awaits would make the page as slow as
   // their sum; they share one pool and Postgres runs them concurrently.
-  const [
-    overview,
-    trend,
-    pages,
-    referrers,
-    devices,
-    content,
-    changeOrders,
-    queue,
-    verifiedThisWeek,
-    statusCounts,
-    documentsWaiting,
-  ] = await Promise.all([
-      getOverview(range),
-      getTrend(range),
-      getTopPages(range),
-      getTopReferrers(range),
-      getDeviceSplit(range),
+  const [content, changeOrders, queue, verifiedThisWeek, statusCounts, documentsWaiting] =
+    await Promise.all([
       getContentCounts(),
       /* Open change orders.
        *
@@ -68,7 +32,7 @@ export default async function AdminOverviewPage({
       db.formularyAmendment.findMany({
         where: { status: { in: ["REQUESTED", "UNDER_REVIEW", "CHANGES_REQUESTED", "ACCEPTED"] } },
         orderBy: { requestedAt: "asc" },
-        take: 8,
+        take: 25,
         select: {
           id: true,
           number: true,
@@ -82,7 +46,7 @@ export default async function AdminOverviewPage({
       db.partner.findMany({
         where: { status: { in: ADMIN_ACTIONABLE_STATUSES as never } },
         orderBy: { statusChangedAt: "asc" },
-        take: 8,
+        take: 25,
         select: {
           id: true,
           companyName: true,
@@ -98,186 +62,83 @@ export default async function AdminOverviewPage({
       db.partnerDocument.count({ where: { status: "PENDING_REVIEW" } }),
     ]);
 
-  const delta = (value: number | null) =>
-    value === null ? "No prior period" : `${value > 0 ? "+" : ""}${value}% vs previous`;
+  /* One queue out of two sources — see components/admin/Worklist.tsx. */
+  const work = [...queue.map(partnerWorkItem), ...changeOrders.map(amendmentWorkItem)];
+
+  /* The page's answer to its own question, in a sentence, above every number.
+     An operator opening this screen is asking "is anything waiting on me",
+     and a row of figures makes them do the arithmetic to find out. */
+  const lede =
+    work.length === 0
+      ? "Nothing is waiting on a reply."
+      : `${work.length} ${work.length === 1 ? "thing needs" : "things need"} an answer` +
+        (documentsWaiting > 0
+          ? `, and ${documentsWaiting} ${documentsWaiting === 1 ? "document is" : "documents are"} up for review.`
+          : ".");
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-8">
       <PageHeader
         title="Overview"
-        description={`Last ${range} days. Traffic is first-party and cookieless.`}
-        actions={<RangeTabs current={range} />}
-      />
-
-      {/* Queues first — these are the numbers with a person waiting at the
-          other end. Volume is below, where it belongs. */}
-      <StatStrip
-        stats={[
-          {
-            label: "Partners waiting on us",
-            value: queue.length,
-            detail: "Oldest first",
-            href: "/admin/partners",
-            urgent: true,
-          },
-          {
-            label: "Verified this week",
-            value: verifiedThisWeek,
-            href: "/admin/partners?status=VERIFIED",
-          },
-          {
-            label: "Documents to review",
-            value: documentsWaiting,
-            detail: documentsWaiting === 0 ? "All clear" : "Licences and photo ID",
-            href: "/admin/partners?status=ONBOARDING_SUBMITTED",
-            urgent: documentsWaiting > 0,
-          },
-          {
-            label: "Active products",
-            value: content.activeProducts,
-            detail: `${content.products - content.activeProducts} hidden`,
-            href: "/admin/products",
-          },
-        ]}
-      />
-
-      {/* The pipeline reads first: this is a partner operations screen that
-          also happens to carry traffic, not an analytics screen with partners
-          bolted on. */}
-      <div className="grid gap-4 lg:grid-cols-[1fr_1.4fr]">
-        <PipelineFunnel counts={statusCounts} />
-
-        <Panel title="Waiting on us" description="Longest first.">
-          {queue.length === 0 ? (
-            <p className="text-[0.8125rem] text-[color:var(--admin-ink-50)]">
-              Nothing in the queue.
-            </p>
-          ) : (
-            <ul className="-my-1 divide-y" style={{ borderColor: "var(--admin-border)" }}>
-              {queue.map((partner) => (
-                <li key={partner.id} className="py-2">
-                  <Link href={`/admin/partners/${partner.id}`} className="group block">
-                    <p className="truncate text-[0.8125rem] font-medium transition-colors group-hover:text-[color:var(--admin-accent)]">
-                      {partner.application?.practiceName ?? partner.companyName}
-                    </p>
-                    <p className="mt-0.5 flex items-center gap-2 text-[0.75rem] text-[color:var(--admin-ink-50)]">
-                      <span className="truncate">
-                        {partner.status.replace(/_/g, " ").toLowerCase()}
-                      </span>
-                      <span aria-hidden>·</span>
-                      <span className="shrink-0 tabular-nums">
-                        {relativeDays(partner.statusChangedAt)}
-                      </span>
-                    </p>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Panel>
-      </div>
-
-      {/* Only when there is something to act on — an empty panel on every
-          dashboard teaches people to stop reading that corner of the page. */}
-      {changeOrders.length > 0 && (
-        <Panel
-          title="Formulary change orders"
-          description="Verified partners asking to add medications. They keep ordering meanwhile."
-        >
-          <DataTable head={["Partner", "Change order", "Items", "Status", "Waiting"]}>
-            {changeOrders.map((order) => (
-              <Row key={order.id}>
-                <Cell>
-                  <Link
-                    href={`/admin/partners/${order.partnerId}`}
-                    className="font-medium transition-colors hover:text-[color:var(--admin-accent)]"
-                  >
-                    {order.partner.companyName}
-                  </Link>
-                </Cell>
-                <Cell className="tabular-nums">#{order.number}</Cell>
-                <Cell numeric>{order._count.items}</Cell>
-                <Cell>
-                  <Pill tone={order.status === "REQUESTED" ? "warn" : "neutral"}>
-                    {order.status.replace(/_/g, " ").toLowerCase()}
-                  </Pill>
-                </Cell>
-                <Cell className="tabular-nums">{relativeDays(order.requestedAt)}</Cell>
-              </Row>
-            ))}
-          </DataTable>
-        </Panel>
-      )}
-
-      <Panel title="Traffic" description="Page views and unique visitors per day.">
-        <TrafficChart points={trend} />
-      </Panel>
-
-      <div className="grid gap-4 lg:grid-cols-4">
-        <Panel title="Audience" className="lg:col-span-1">
-          <DataTable head={["Metric", "Value"]}>
-            {[
-              ["Page views", overview.current.views.toLocaleString(), overview.change.views],
-              ["Unique visitors", overview.current.uniques.toLocaleString(), overview.change.uniques],
-              [
-                "Avg. time on page",
-                duration(overview.current.avgDurationSeconds),
-                overview.change.avgDurationSeconds,
-              ],
-              [
-                "Bounce rate",
-                `${Math.round(overview.current.bounceRate * 100)}%`,
-                overview.change.bounceRate,
-              ],
-            ].map(([label, value, change]) => (
-              <Row key={String(label)}>
-                <Cell>
-                  <span className="block">{label as string}</span>
-                  <span className="mt-0.5 block text-[0.75rem] text-[color:var(--admin-ink-50)]">
-                    {delta(change as number | null)}
-                  </span>
-                </Cell>
-                <Cell numeric className="font-semibold">
-                  {value as string}
-                </Cell>
-              </Row>
-            ))}
-          </DataTable>
-        </Panel>
-
-        <BreakdownList title="Top pages" rows={pages} metric="views" />
-        <BreakdownList title="Referrers" rows={referrers} metric="views" />
-        <BreakdownList title="Devices" rows={devices} metric="views" />
-      </div>
-
-      <Panel
-        title="Content"
+        description={lede}
         actions={
-          <>
-            <Link href="/admin/products" className="admin-btn admin-btn-secondary">
-              Products
-            </Link>
-            <Link href="/admin/blog" className="admin-btn admin-btn-secondary">
-              Articles
-            </Link>
-          </>
+          <Link href="/admin/traffic" className="admin-btn admin-btn-secondary">
+            <BarChart3 className="size-3.5" strokeWidth={2} aria-hidden />
+            Website traffic
+          </Link>
         }
+      />
+
+      {/* ---------------------------------------------------------------
+          ZONE 1 — the work. Everything with a person waiting at the other
+          end, in one list, oldest first. It is first on the page and it is
+          the only zone that is ever about today.
+          --------------------------------------------------------------- */}
+      <Zone
+        title="Needs you"
+        description={work.length === 0 ? "The queue is clear." : "Oldest first."}
       >
-        <div className="flex flex-wrap gap-x-8 gap-y-2 text-[0.8125rem]">
-          <span className="flex items-center gap-2">
-            <Pill tone="good">{content.activeProducts}</Pill> products live
-          </span>
-          <span className="flex items-center gap-2">
-            <Pill>{content.products - content.activeProducts}</Pill> hidden
-          </span>
-          <span className="flex items-center gap-2">
-            <Pill tone="good">{content.published}</Pill> articles published
-          </span>
-          <span className="flex items-center gap-2">
-            <Pill tone="warn">{content.drafts}</Pill> in draft
-          </span>
-        </div>
-      </Panel>
+        <Worklist items={work} />
+      </Zone>
+
+      {/* ---------------------------------------------------------------
+          ZONE 2 — the shape of the book. Not urgent, but the thing a manager
+          opens this page for once a week.
+          --------------------------------------------------------------- */}
+      <Zone title="Pipeline" description={`${verifiedThisWeek} verified in the last 7 days`}>
+        <StatStrip
+          stats={[
+            {
+              label: "Waiting on us",
+              value: work.length,
+              detail: work.length === 0 ? "All answered" : "Applications and change orders",
+              href: "/admin/partners",
+              urgent: true,
+            },
+            {
+              label: "Documents to review",
+              value: documentsWaiting,
+              detail: documentsWaiting === 0 ? "All clear" : "Licences and photo ID",
+              href: "/admin/partners?status=ONBOARDING_SUBMITTED",
+              urgent: documentsWaiting > 0,
+            },
+            {
+              label: "Verified this week",
+              value: verifiedThisWeek,
+              detail: "Live accounts",
+              href: "/admin/partners?status=VERIFIED",
+            },
+            {
+              label: "Active products",
+              value: content.activeProducts,
+              detail: `${content.products - content.activeProducts} hidden`,
+              href: "/admin/products",
+            },
+          ]}
+        />
+
+        <PipelineFunnel counts={statusCounts} />
+      </Zone>
     </div>
   );
 }
