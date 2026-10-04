@@ -24,5 +24,10 @@ locals {
     "FIELD_ENCRYPTION_KEY",
     "RESEND_API_KEY",
     "CRON_SECRET",
+    # Not obviously a secret, and that is the trap. visitorHash HMACs
+    # `ip|userAgent` with it, so a salt anyone can read from the repository
+    # makes every stored analytics hash reversible by trying IP addresses —
+    # which turns "cookieless, no IP retained" into a claim that is not true.
+    "ANALYTICS_SALT",
   ]
 }

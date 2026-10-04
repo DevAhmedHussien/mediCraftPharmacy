@@ -50,6 +50,30 @@ services:
       # fixed by this file, so keeping a whole URL in Secrets Manager would
       # be the same password written down twice.
       DATABASE_URL: postgresql://medicraft:${POSTGRES_PASSWORD}@postgres:5432/medicraft?sslmode=disable
+
+      # --- Non-secret configuration -------------------------------------
+      # These were runtime_environment_variables on App Runner and were lost
+      # in the move to compose. Every one of them has a default in
+      # lib/env.ts, which is why nothing crashed — and why the failure was
+      # silent and total:
+      #
+      #   EMAIL_DRIVER   defaults to "console", so every message was written
+      #                  to a file inside the container and logged as SENT.
+      #   APP_URL        defaults to localhost, so every link in every email
+      #                  pointed at the recipient's own machine.
+      #   STORAGE_DRIVER defaults to "local", so uploaded licences went to
+      #                  container disk and vanished on the next deploy.
+      #
+      # A default that is right for development and wrong for production is
+      # the most expensive kind. They are set explicitly here.
+      NODE_ENV: production
+      APP_URL: ${APP_URL:?APP_URL is required}
+      NEXT_PUBLIC_SITE_URL: ${APP_URL}
+      EMAIL_DRIVER: resend
+      STORAGE_DRIVER: s3
+      S3_REGION: ${AWS_REGION:-us-east-1}
+      S3_BUCKET: ${S3_BUCKET:?S3_BUCKET is required}
+      NEXT_TELEMETRY_DISABLED: "1"
     expose:
       - "3000"
     healthcheck:

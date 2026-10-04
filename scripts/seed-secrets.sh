@@ -46,6 +46,10 @@ echo "Populating secrets for ${ENV_NAME} in ${REGION}…"
 put AUTH_SECRET          "$(openssl rand -base64 32)"
 put FIELD_ENCRYPTION_KEY "$(openssl rand -base64 32)"
 put CRON_SECRET          "$(openssl rand -hex 32)"
+# Salts the per-visitor analytics hash. Its default in lib/env.ts is a
+# literal committed to the repository, which would make every stored hash
+# reversible by anyone who can read the source.
+put ANALYTICS_SALT        "$(openssl rand -hex 32)"
 
 # --- The database password -------------------------------------------------
 # Postgres runs in a container beside the app. This password is the whole of
