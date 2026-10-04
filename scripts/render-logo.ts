@@ -28,6 +28,11 @@ async function main() {
   // 876 wide: rendered at 292 CSS px in email, so it stays sharp at 3x.
   await sharp(Buffer.from(svg)).resize({ width: 876 }).png({ compressionLevel: 9 })
     .toFile("public/images/brand/medicraft-logo.png");
+  // The versioned copy the emails point at — see the note in email.ts about
+  // Gmail caching by URL. Bump the suffix in both places when the mark
+  // changes; leaving them equal is what makes the old logo stick.
+  await sharp(Buffer.from(svg)).resize({ width: 876 }).png({ compressionLevel: 9 })
+    .toFile("public/images/brand/medicraft-logo-2026.png");
   const meta = await sharp("public/images/brand/medicraft-logo.png").metadata();
   console.log(`wrote ${meta.width}x${meta.height} png, ${meta.channels} channels, alpha=${meta.hasAlpha}`);
 }

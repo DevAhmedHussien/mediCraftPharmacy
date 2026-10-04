@@ -54,6 +54,16 @@ type Rendered = {
    * a paragraph is a code somebody has to pick out of a paragraph.
    */
   code?: string;
+  /**
+   * A numbered sequence, rendered as cards in the HTML part.
+   *
+   * Carried as data rather than baked into `body` so the two parts can each
+   * do what they are good at: the HTML draws a card per step with the one
+   * that needs the reader picked out in brand blue, and the plain-text part
+   * renders the same steps as a numbered list. Writing the cards into the
+   * prose would mean the text version arrived full of box-drawing.
+   */
+  steps?: { title: string; who: string; detail: string }[];
 };
 
 const portal = (path: string) => ({ label: "Open your account", path });
@@ -85,33 +95,43 @@ const TEMPLATES: Record<EmailTemplate, (props: EmailProps) => Rendered> = {
 
 Thank you for your enquiry. Your account is open and you are signed in.
 
-Here is the whole process, so nothing comes as a surprise:
-
-1. CONFIRM WHO YOU ARE — you, about a minute
-   Upload a photo of a government-issued ID for whoever will sign the
-   agreement. Our Provider Cost is confidential to each practice, so it does
-   not go out to an address that filled in a form.
-
-2. WE CHECK IT — us, usually the same business day
-   We match the ID against your practice and release the formulary.
-
-3. CHOOSE YOUR MEDICATIONS AND REVIEW PRICING — you
-   Pick what your practice dispenses. We price those, not the whole
-   catalogue. Accept the rates, ask for another round, or ask for a call —
-   whichever suits.
-
-4. ACCOUNT DETAILS — you, about ten minutes
-   Prescribers and their DEA and NPI numbers, plus shipping and billing
-   contacts. It saves as you type.
-
-5. SIGN THE AGREEMENT — you
-   The Master Service Agreement, with your agreed prices bound in as
-   Exhibit A-1.
-
-Then you are live and can start sending prescriptions.
-
-We will not email you at every step — only when something needs you. You can
-check where things stand in your account at any time.`,
+Here is the whole process, so nothing comes as a surprise. Only the first one
+needs you right now.`,
+    /* Rendered as cards: the first in brand blue because it is the only one
+       that needs them today, the rest white because they are context. Each
+       says WHO is waiting, which is the question a practice manager actually
+       has when a process stalls. */
+    steps: [
+      {
+        title: "Confirm who you are",
+        who: "You · about a minute",
+        detail:
+          "Upload a photo of a government-issued ID for whoever will sign the agreement. Our Provider Cost is confidential to each practice, so it does not go out to an address that filled in a form.",
+      },
+      {
+        title: "We check it",
+        who: "Us · usually the same business day",
+        detail: "We match the ID against your practice and release the formulary to you.",
+      },
+      {
+        title: "Choose your medications and review pricing",
+        who: "You",
+        detail:
+          "Pick what your practice dispenses — we price those, not the whole catalogue. Accept the rates, ask for another round, or ask for a call.",
+      },
+      {
+        title: "Account details",
+        who: "You · about ten minutes",
+        detail:
+          "Prescribers with their DEA and NPI numbers, plus your shipping and billing contacts. It saves as you type.",
+      },
+      {
+        title: "Sign the agreement",
+        who: "You",
+        detail:
+          "The Master Service Agreement, with the prices you agreed bound in as Exhibit A-1. Then you are live.",
+      },
+    ],
     cta: portal("/portal/identity"),
   }),
 
@@ -642,9 +662,18 @@ export function renderTemplate(template: EmailTemplate, props: EmailProps): Rend
 function renderText(rendered: Rendered): string {
   const url = (p: string) => `${env.APP_URL}${p}`;
 
+  const steps = rendered.steps?.length
+    ? "\n" +
+      rendered.steps
+        .map((s, i) => `  ${i + 1}. ${s.title.toUpperCase()} — ${s.who}\n     ${s.detail}`)
+        .join("\n\n") +
+      "\n"
+    : "";
+
   return [
     rendered.code ? `    ${rendered.code}\n` : "",
     rendered.body,
+    steps,
     rendered.cta ? `\n${rendered.cta.label}: ${url(rendered.cta.path)}` : "",
     `\n—\n${site.name} · ${site.address}\n${site.providerEmail} · ${site.phone}`,
   ]
@@ -688,7 +717,20 @@ const MAIL = {
  * the style and needs the attribute to reserve the space.
  */
 function logoImage(): string {
-  const src = `${site.url}/images/brand/medicraft-logo.png`;
+  /* VERSIONED FILENAME, AND IT HAS TO STAY THAT WAY.
+   *
+   * Gmail does not fetch an image from your server — it fetches it once
+   * through googleusercontent.com and serves every reader a cached copy,
+   * keyed on the URL. Replacing the bytes behind an unchanged URL therefore
+   * changes nothing for anyone who has already been sent that mail, and the
+   * old logo keeps arriving for weeks. The first correct logo went out under
+   * the old name and Gmail kept showing the wrong one.
+   *
+   * So the file carries a version. Replace the mark, bump the suffix, and
+   * every client treats it as a new image. A query string (`?v=2`) works in
+   * some clients and is stripped by others; a distinct path works
+   * everywhere. */
+  const src = `${site.url}/images/brand/medicraft-logo-2026.png`;
 
   /* 150x51 is the lockup's own 2.92:1, not a guess. The asset is rendered at
      876px wide from the SVG the site itself uses — see scripts/render-logo.ts
@@ -742,6 +784,74 @@ function codePlate(code: string): string {
         </td>
       </tr>
     </table>`;
+}
+
+/**
+ * The steps, as cards.
+ *
+ * THE FIRST ONE IS THE ONLY ONE THAT MATTERS TODAY, so it is the only one
+ * that looks like it: brand blue, white type, and the number reversed out.
+ * The rest are white with a hairline — present, legible, clearly not the
+ * thing being asked for. A reader who takes one glance should come away
+ * knowing what to do, and a reader who reads all five should come away
+ * knowing the whole process.
+ *
+ * EVERY CARD IS ITS OWN TABLE. Not one table of five rows: Outlook collapses
+ * cell spacing in long tables unpredictably, and a margin between separate
+ * tables is the one vertical gap that renders the same everywhere.
+ *
+ * The number sits in a fixed-width cell beside the text rather than floated
+ * or absolutely positioned — neither works in Outlook — so a two-line title
+ * wraps beside the circle instead of under it.
+ */
+function stepCards(steps: NonNullable<Rendered["steps"]>): string {
+  return steps
+    .map((step, index) => {
+      const first = index === 0;
+
+      const bg = first ? MAIL.brand : MAIL.surface;
+      const border = first ? MAIL.brand : MAIL.line;
+      const title = first ? "#ffffff" : MAIL.ink;
+      const who = first ? "rgba(255,255,255,0.78)" : MAIL.brand;
+      const detail = first ? "rgba(255,255,255,0.88)" : MAIL.inkSoft;
+      const chipBg = first ? "#ffffff" : MAIL.brandTint;
+      const chipInk = first ? MAIL.brand : MAIL.brand;
+
+      return `
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 10px;">
+        <tr>
+          <td style="background:${bg};border:1px solid ${border};border-radius:10px;padding:16px 18px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+              <tr>
+                <td width="34" valign="top" style="width:34px;padding:0 12px 0 0;">
+                  <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                      <td align="center" valign="middle"
+                          style="width:26px;height:26px;background:${chipBg};border-radius:13px;
+                                 font-family:${MAIL.font};font-size:12px;font-weight:700;color:${chipInk};">
+                        ${index + 1}
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+                <td valign="top">
+                  <div style="font-family:${MAIL.font};font-size:14px;font-weight:700;line-height:1.35;color:${title};">
+                    ${escapeHtml(step.title)}
+                  </div>
+                  <div style="font-family:${MAIL.font};font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:${who};padding-top:3px;">
+                    ${escapeHtml(step.who)}
+                  </div>
+                  <div style="font-family:${MAIL.font};font-size:13px;line-height:1.6;color:${detail};padding-top:7px;">
+                    ${escapeHtml(step.detail)}
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>`;
+    })
+    .join("");
 }
 
 function ctaButton(label: string, href: string): string {
@@ -806,6 +916,7 @@ function renderHtml(rendered: Rendered): string {
             <div style="font-family:${MAIL.font};">
               ${rendered.code ? codePlate(rendered.code) : ""}
               ${paragraphs(rendered.body)}
+              ${rendered.steps?.length ? stepCards(rendered.steps) : ""}
               ${rendered.cta ? ctaButton(rendered.cta.label, url(rendered.cta.path)) : ""}
             </div>
 
