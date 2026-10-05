@@ -35,6 +35,7 @@ export function AgreementViewer({
   companyName,
   label,
   signed,
+  variant = "link",
   className,
 }: {
   partnerId: string;
@@ -42,6 +43,15 @@ export function AgreementViewer({
   /** Link text. The call to action differs before and after signing. */
   label: string;
   signed: boolean;
+  /**
+   * How the trigger looks.
+   *
+   * `link` is the quiet inline version used beside other prose. `button` is
+   * the real call to action for the page whose entire job is "read this
+   * agreement" — where a 12px underlined link was asking someone to find the
+   * document they came for.
+   */
+  variant?: "link" | "button";
   className?: string;
 }) {
   const [open, setOpen] = useState(false);
@@ -95,9 +105,18 @@ export function AgreementViewer({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className={cn("link-arrow inline-flex text-caption", className)}
+        className={cn(
+          variant === "button"
+            ? "btn-primary btn-lg w-full justify-center sm:w-auto"
+            : "link-arrow inline-flex text-caption",
+          className
+        )}
       >
-        <FileText className="size-3.5" strokeWidth={2.2} aria-hidden />
+        <FileText
+          className={variant === "button" ? "size-[1.125rem]" : "size-3.5"}
+          strokeWidth={2.2}
+          aria-hidden
+        />
         {label}
       </button>
 

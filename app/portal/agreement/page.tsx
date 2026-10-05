@@ -11,7 +11,7 @@ import { requirePartnerPage } from "@/lib/guard";
 import { canAccess, currentStepHref } from "@/lib/partner/steps";
 import { PARTNER_STATUS, type PartnerStatus } from "@/lib/partner/status";
 import { getSignableChangeOrder } from "@/lib/services/amendments";
-import { agreementText, INTERNAL_DISCLOSURE, signature } from "@/lib/services/signature";
+import { INTERNAL_DISCLOSURE, signature } from "@/lib/services/signature";
 
 export const metadata: Metadata = { title: "Agreement", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
@@ -43,7 +43,6 @@ export default async function PortalAgreementPage() {
   if (!canAccess(status, "agreement")) redirect(currentStepHref(status));
 
   const envelope = partner.msaEnvelopes[0];
-  const text = agreementText(partner.companyName);
   const signed = envelope?.status === "COMPLETED";
 
   /* A change order waiting on them. It is signed on its own page — this one
@@ -92,8 +91,9 @@ export default async function PortalAgreementPage() {
             partnerId={partner.id}
             companyName={partner.companyName}
             signed
+            variant="button"
             label="View your signed agreement (PDF)"
-            className="mt-2"
+            className="mt-4"
           />
         </div>
       ) : (
@@ -101,14 +101,29 @@ export default async function PortalAgreementPage() {
           <p className="text-intro text-ink-soft text-pretty">
             This is the last step. Read the agreement, then sign it below.
           </p>
-          <p className="mt-3">
+
+          {/* The agreement used to be rendered inline as plain text in a
+              28rem scroll box — about forty screens of contract squeezed into
+              a letterbox, in a typeface and measure nothing else in the
+              document uses. Nobody reads a contract that way, and the PDF
+              (the thing that actually gets signed and filed) was a 12px
+              underlined link underneath it.
+
+              So the text is gone and the PDF is the button. One document, in
+              the form it is executed in, opened at a size you can read. */}
+          <div className="mt-6">
             <AgreementViewer
               partnerId={partner.id}
               companyName={partner.companyName}
               signed={false}
-              label="Open the full agreement as a PDF — your agreed prices are Exhibit A-1"
+              variant="button"
+              label="Read the agreement (PDF)"
             />
-          </p>
+            <p className="mt-2.5 text-caption text-ink-muted">
+              Opens here, with your agreed prices bound in as Exhibit A-1. Downloadable from
+              the same window.
+            </p>
+          </div>
           <p className="mt-4 rounded-tile border border-line bg-sand px-4 py-3 text-caption text-ink-soft">
             Section 4.1 refers to <strong className="font-semibold">Exhibit A</strong> and the
             Partner Formulary. Exhibit A is the price list you accepted earlier — you can{" "}
@@ -119,17 +134,6 @@ export default async function PortalAgreementPage() {
           </p>
         </>
       )}
-
-      {/* The agreement itself. `whitespace-pre-wrap` because the text is
-          authored as plain prose with meaningful line breaks — running it
-          through a Markdown renderer would reflow clauses. */}
-      <article
-        className="mt-8 max-h-[28rem] overflow-y-auto rounded-tile border border-line bg-sand p-6 text-meta leading-relaxed text-ink-soft"
-        tabIndex={0}
-        aria-label="Agreement text"
-      >
-        <pre className="whitespace-pre-wrap font-sans">{text}</pre>
-      </article>
 
       <div className="mt-8">
         {signed ? (

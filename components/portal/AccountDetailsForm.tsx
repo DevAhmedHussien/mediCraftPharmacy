@@ -128,11 +128,13 @@ export function AccountDetailsForm({
               name="howDidYouHearAboutUs"
               label="How did you hear about us?"
               optional
+              hint="Optional. A conference, a colleague, a search — whatever you remember."
             />
             <TextField<AccountDetailsValues>
               name="medicraftPharmacyRep"
               label="MediCraft representative"
               optional
+              hint="Optional. Leave blank if nobody from MediCraft introduced you."
             />
           </div>
         </Section>
@@ -165,6 +167,7 @@ export function AccountDetailsForm({
                     name={`prescribers.${index}.name`}
                     label="Prescriber name"
                     autoComplete="off"
+                    hint="Required. As it appears on their state licence."
                   />
                   <TextField<AccountDetailsValues>
                     name={`prescribers.${index}.signature`}
@@ -186,6 +189,7 @@ export function AccountDetailsForm({
                     label="DEA expiration"
                     mask="date"
                     optional
+                    hint="MM-DD-YYYY. Leave blank if there is no DEA number above."
                   />
                 </div>
 
@@ -195,11 +199,13 @@ export function AccountDetailsForm({
                     label="NPI #"
                     mask="npi"
                     optional
+                    hint="Ten digits. We verify the check digit, so a transposed one is caught here."
                   />
                   <TextField<AccountDetailsValues>
                     name={`prescribers.${index}.stateLicenseNumber`}
                     label="State license #"
                     optional
+                    hint="Optional. Encrypted at rest and shown back as the last four only."
                   />
                 </div>
 
@@ -219,30 +225,33 @@ export function AccountDetailsForm({
         </Section>
 
         <Section title="Practice">
-          <TextField<AccountDetailsValues> name="practice.name" label="Practice or clinic name" />
+          <TextField<AccountDetailsValues> name="practice.name" label="Practice or clinic name" hint="Required. The name patients see, if it differs from the legal entity below." />
           <CheckboxField<AccountDetailsValues>
             name="practice.isPrimaryLocation"
             label="This is our primary location"
+            hint="Leave ticked unless this practice is a satellite of another site."
           />
           <TextField<AccountDetailsValues>
             name="practice.address"
             label="Street address"
             optional
             autoComplete="street-address"
+            hint="Optional here — the address we ship to is set further down."
           />
           <div className="grid gap-4 sm:grid-cols-[2fr_1fr_1fr]">
-            <TextField<AccountDetailsValues> name="practice.city" label="City" optional autoComplete="address-level2" />
+            <TextField<AccountDetailsValues> name="practice.city" label="City" optional autoComplete="address-level2" hint="Optional." />
             <SelectField<AccountDetailsValues>
               name="practice.state"
               label="State"
               optional
               options={US_STATES.map((s) => ({ value: s, label: s }))}
+              hint="Optional."
             />
-            <MaskedField<AccountDetailsValues> name="practice.zip" label="ZIP" mask="zip" optional />
+            <MaskedField<AccountDetailsValues> name="practice.zip" label="ZIP" mask="zip" optional hint="Five digits, or ZIP+4. Optional." />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <MaskedField<AccountDetailsValues> name="practice.phone" label="Practice phone" mask="phone" optional autoComplete="tel" />
-            <MaskedField<AccountDetailsValues> name="practice.fax" label="Practice fax" mask="phone" optional />
+            <MaskedField<AccountDetailsValues> name="practice.phone" label="Practice phone" mask="phone" optional autoComplete="tel" hint="Ten digits, US numbers only. Optional." />
+            <MaskedField<AccountDetailsValues> name="practice.fax" label="Practice fax" mask="phone" optional hint="Ten digits, US numbers only. Optional." />
           </div>
 
           <fieldset className="rounded-[0.6rem] border border-line p-5">
@@ -250,9 +259,9 @@ export function AccountDetailsForm({
               Office contact
             </legend>
             <div className="grid gap-4 sm:grid-cols-3">
-              <TextField<AccountDetailsValues> name="practice.officeContact.name" label="Name" optional />
-              <MaskedField<AccountDetailsValues> name="practice.officeContact.phone" label="Phone" mask="phone" optional />
-              <TextField<AccountDetailsValues> name="practice.officeContact.email" label="Email" type="email" optional />
+              <TextField<AccountDetailsValues> name="practice.officeContact.name" label="Name" optional hint="Optional. Who we call about a prescription, if not the prescriber." />
+              <MaskedField<AccountDetailsValues> name="practice.officeContact.phone" label="Phone" mask="phone" optional hint="Ten digits, US numbers only. Optional." />
+              <TextField<AccountDetailsValues> name="practice.officeContact.email" label="Email" type="email" optional hint="Optional. Must be a working address if given." />
             </div>
           </fieldset>
         </Section>
@@ -270,7 +279,7 @@ export function AccountDetailsForm({
           title="The legal entity"
           blurb="As it appears on your W-9 — this is what goes on the agreement and your invoices."
         >
-          <TextField<AccountDetailsValues> name="legalBusinessName" label="Legal business name" />
+          <TextField<AccountDetailsValues> name="legalBusinessName" label="Legal business name" hint="Required. Exactly as it appears on your W-9 — this goes on the agreement." />
           <TextField<AccountDetailsValues>
             name="dba"
             label="Trading as (DBA)"
@@ -280,16 +289,17 @@ export function AccountDetailsForm({
         </Section>
 
         <Section title="Business address" blurb="Where the entity is registered, and where invoices go.">
-          <TextField<AccountDetailsValues> name="businessStreet" label="Street address" autoComplete="street-address" />
-          <TextField<AccountDetailsValues> name="businessSuite" label="Suite or unit" optional />
+          <TextField<AccountDetailsValues> name="businessStreet" label="Street address" autoComplete="street-address" hint="Required. The registered address of the entity above." />
+          <TextField<AccountDetailsValues> name="businessSuite" label="Suite or unit" optional hint="Optional." />
           <div className="grid gap-4 sm:grid-cols-[2fr_1fr_1fr]">
-            <TextField<AccountDetailsValues> name="businessCity" label="City" autoComplete="address-level2" />
+            <TextField<AccountDetailsValues> name="businessCity" label="City" autoComplete="address-level2" hint="Required." />
             <SelectField<AccountDetailsValues>
               name="businessState"
               label="State"
               options={US_STATES.map((s) => ({ value: s, label: s }))}
+              hint="Required."
             />
-            <MaskedField<AccountDetailsValues> name="businessZip" label="ZIP" mask="zip" />
+            <MaskedField<AccountDetailsValues> name="businessZip" label="ZIP" mask="zip" hint="Required. Five digits, or ZIP+4." />
           </div>
 
           <CheckboxField<AccountDetailsValues>
@@ -304,17 +314,18 @@ export function AccountDetailsForm({
                 Billing address
               </legend>
               <div className="space-y-4">
-                <TextField<AccountDetailsValues> name="billingStreet" label="Street address" optional />
-                <TextField<AccountDetailsValues> name="billingSuite" label="Suite or unit" optional />
+                <TextField<AccountDetailsValues> name="billingStreet" label="Street address" optional hint="Required unless billing matches the business address." />
+                <TextField<AccountDetailsValues> name="billingSuite" label="Suite or unit" optional hint="Optional." />
                 <div className="grid gap-4 sm:grid-cols-[2fr_1fr_1fr]">
-                  <TextField<AccountDetailsValues> name="billingCity" label="City" optional />
+                  <TextField<AccountDetailsValues> name="billingCity" label="City" optional hint="Required unless billing matches the business address." />
                   <SelectField<AccountDetailsValues>
                     name="billingState"
                     label="State"
                     optional
                     options={US_STATES.map((s) => ({ value: s, label: s }))}
+                    hint="Required unless billing matches the business address."
                   />
-                  <MaskedField<AccountDetailsValues> name="billingZip" label="ZIP" mask="zip" optional />
+                  <MaskedField<AccountDetailsValues> name="billingZip" label="ZIP" mask="zip" optional hint="Required unless billing matches the business address." />
                 </div>
               </div>
             </fieldset>
@@ -333,12 +344,12 @@ export function AccountDetailsForm({
           blurb="Whoever can sign the Master Service Agreement for the practice. They receive it at the address below."
         >
           <div className="grid gap-4 sm:grid-cols-2">
-            <TextField<AccountDetailsValues> name="signerName" label="Full name" />
-            <TextField<AccountDetailsValues> name="signerTitle" label="Title" placeholder="Practice Owner" />
+            <TextField<AccountDetailsValues> name="signerName" label="Full name" hint="Required. The person authorised to sign for the entity." />
+            <TextField<AccountDetailsValues> name="signerTitle" label="Title" placeholder="Practice Owner" hint="Required. Their role — Owner, Medical Director, Practice Manager." />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <TextField<AccountDetailsValues> name="signerEmail" label="Email" type="email" />
-            <MaskedField<AccountDetailsValues> name="signerPhone" label="Phone" mask="phone" optional />
+            <TextField<AccountDetailsValues> name="signerEmail" label="Email" type="email" hint="Required. The agreement is sent here to be signed." />
+            <MaskedField<AccountDetailsValues> name="signerPhone" label="Phone" mask="phone" optional hint="Ten digits, US numbers only. Optional." />
           </div>
         </Section>
 
@@ -350,12 +361,14 @@ export function AccountDetailsForm({
             name="cardholderName"
             label="Name on card"
             autoComplete="cc-name"
+            hint="Required. As printed on the card."
           />
           <MaskedField<AccountDetailsValues>
             name="cardNumber"
             label="Card number"
             mask="card"
             autoComplete="cc-number"
+            hint="Required. 13 to 19 digits. We check it before you submit."
           />
           <div className="grid gap-4 sm:grid-cols-2">
             <MaskedField<AccountDetailsValues>
@@ -363,6 +376,7 @@ export function AccountDetailsForm({
               label="Expires"
               mask="expiry"
               autoComplete="cc-exp"
+              hint="Required. MM / YY, and it must not already have passed."
             />
             {/* Not a MaskedField: there is nothing to format, and a controlled
                 rewrite on every keystroke would fight the browser's own
@@ -453,12 +467,14 @@ function ContactPair({
         label={`${topic} — email`}
         type="email"
         optional
+        hint="Optional. Leave blank to use the office contact above."
       />
       <MaskedField<AccountDetailsValues>
         name={`communicationsPreference.${base}.${second}` as never}
         label={secondLabel}
         mask="phone"
         optional
+        hint="Ten digits, US numbers only. Optional."
       />
     </div>
   );

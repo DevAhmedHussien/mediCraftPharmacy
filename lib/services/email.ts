@@ -874,7 +874,13 @@ function noteCard(note: NonNullable<Rendered["note"]>): string {
 function stepCards(steps: NonNullable<Rendered["steps"]>): string {
   return steps
     .map((step, index) => {
-      const first = index === 0;
+      /* The first TWO cards are brand blue.
+         One blue card marked "the step that needs you today". Two marks the
+         part of the process that is live: you send the ID, we check it. Both
+         happen now, usually inside a day, and neither has anything to do with
+         the three that follow — those are weeks away and are context, not
+         instructions. */
+      const first = index < 2;
 
       const bg = first ? MAIL.brand : MAIL.surface;
       const border = first ? MAIL.brand : MAIL.line;
