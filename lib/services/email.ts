@@ -110,50 +110,56 @@ const TEMPLATES: Record<EmailTemplate, (props: EmailProps) => Rendered> = {
      "you" or "us" — because the commonest question a partner asks is which
      of the two it is. */
   "partner/application-received": (p) => ({
-    subject: `Welcome to ${site.name} — here is what happens next`,
-    preheader: "Your account is open. One step from you, then pricing.",
+    /* Subject and heading are the same sentence, so `heading` is not set and
+       the shell falls back to the subject. Someone who opened this from a
+       notification should see the line they tapped. */
+    subject: "Welcome to MediCraft. Let\u2019s get your practice set up.",
+    preheader: "Five short steps. Most practices are ready in less than 24 hours.",
     body: `Hi ${who(p)},
 
-Thank you for your enquiry. Your account is open and you are signed in.
-
-Here is the whole process, so nothing comes as a surprise. Only the first one
-needs you right now.`,
-    /* Rendered as cards: the first in brand blue because it is the only one
-       that needs them today, the rest white because they are context. Each
-       says WHO is waiting, which is the question a practice manager actually
-       has when a process stalls. */
+Five short steps, and we\u2019ll be with you throughout. Most practices are ready
+in less than 24 hours.`,
     steps: [
       {
-        title: "Confirm who you are",
-        who: "You · about a minute",
+        title: "A quick introduction",
+        who: "About a minute",
         detail:
-          "Upload a photo of a government-issued ID for whoever will sign the agreement. Our Provider Cost is confidential to each practice, so it does not go out to an address that filled in a form.",
+          "To keep your pricing private, we confirm the identity of the person signing for your practice. A photo of a government-issued ID is all we need. It\u2019s used only for this check, and your pricing is never sent to an unverified email address.",
       },
       {
-        title: "We check it",
-        who: "Us · usually the same business day",
-        detail: "We match the ID against your practice and release the formulary to you.",
+        title: "We\u2019ll confirm your details",
+        who: "Usually the same business day",
+        detail:
+          "We match your ID to your practice and unlock your formulary. Nothing for you to do here.",
       },
       {
-        title: "Choose your medications and review pricing",
-        who: "You",
+        title: "Choose your medications",
+        who: "Whenever you\u2019re ready",
         detail:
-          "Pick what your practice dispenses — we price those, not the whole catalogue. Accept the rates, ask for another round, or ask for a call.",
+          "Tell us what your practice dispenses and we\u2019ll price just those items. Happy with the rates? Great. Want to adjust? We can do another round, or set up a call.",
       },
       {
-        title: "Account details",
-        who: "You · about ten minutes",
+        title: "Set up your account",
+        who: "About ten minutes",
         detail:
-          "Prescribers with their DEA and NPI numbers, plus your shipping and billing contacts. It saves as you type.",
+          "Add your prescribers\u2019 DEA (optional) and NPI numbers, and your shipping and billing contacts. Your progress saves as you go, so you can finish later.",
       },
       {
-        title: "Sign the agreement",
-        who: "You",
+        title: "Sign and start ordering",
+        who: "A few minutes",
         detail:
-          "The Master Service Agreement, with the prices you agreed bound in as Exhibit A-1. Then you are live.",
+          "Review and sign our Master Service Agreement, with your agreed pricing attached as Exhibit A-1. Then your account is live.",
       },
     ],
-    cta: portal("/portal/identity"),
+    cta: { label: "Get started", path: "/portal/identity" },
+    /* The sign-off goes in the note card rather than as a last paragraph: it
+       is not part of the instructions, it is the way out of them. The number
+       is `site.phone`, never a literal, so it cannot drift from the one on
+       the website or the one in the address block below it. */
+    note: {
+      title: "Questions at any point?",
+      body: `Reply to this email or call us at ${site.phone}. A real person will help.`,
+    },
   }),
 
   "partner/identity-received": (p) => ({
@@ -898,7 +904,11 @@ function stepCards(steps: NonNullable<Rendered["steps"]>): string {
                   <div style="font-family:${MAIL.font};font-size:14px;font-weight:700;line-height:1.35;color:${title};">
                     ${escapeHtml(step.title)}
                   </div>
-                  <div style="font-family:${MAIL.font};font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:${who};padding-top:3px;">
+                  <!-- Sentence case, not the small-caps this used to be.
+                       The timings are now phrases — "Usually the same
+                       business day" — and all-caps costs a long phrase more
+                       legibility than the emphasis is worth. -->
+                  <div style="font-family:${MAIL.font};font-size:12px;font-weight:700;color:${who};padding-top:4px;">
                     ${escapeHtml(step.who)}
                   </div>
                   <div style="font-family:${MAIL.font};font-size:13px;line-height:1.6;color:${detail};padding-top:7px;">
