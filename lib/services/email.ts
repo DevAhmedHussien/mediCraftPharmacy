@@ -1177,12 +1177,64 @@ async function sendViaResend(to: string, rendered: Rendered): Promise<SendResult
  * `fromOutbox` stops the worker queueing its own retries — it owns the row it
  * is draining and records the failure against it itself.
  */
+/* ===========================================================================
+   WHAT ACTUALLY GETS SENT.
+
+   Four templates. Everything else is built, logged and dropped.
+
+   The pipeline used to email on nearly every edge: seventeen admin templates
+   and fifteen partner ones, so a single application produced a dozen
+   messages to staff who were already looking at the console and half a dozen
+   to a partner who was already in the portal. The owner asked for two
+   partner emails — one when they register, one when they are verified — and
+   nothing to staff.
+
+   WHY THE GATE IS HERE AND NOT AT THE CALL SITES. There are seven places
+   that send: the transition engine, four server actions, the inquiry
+   notifier and the outbox drain. All seven end up in this function —
+   including the outbox, because the drain calls `sendEmail` for each row it
+   claims. One allowlist here cannot be bypassed by a new call site; seven
+   guards could be, and would be, the first time someone adds an eighth.
+
+   THE TWO THAT ARE NOT NOTIFICATIONS, and must never be removed from this
+   list by someone tidying it:
+
+     · `auth/login-code` is the one-time sign-in code. It is authentication,
+       not a notification — delete it and email sign-in stops working.
+     · `admin/site-inquiry` is the public contact, careers and REFILL forms.
+       A patient requesting a refill is not part of the partner pipeline, and
+       a refill nobody is told about is a patient waiting on medication.
+
+   Nothing is deleted to achieve this — all thirty-odd templates, and the
+   transitions that name them, are intact. Turning any of them back on is
+   adding a line here.
+   ========================================================================= */
+const SENDABLE: ReadonlySet<string> = new Set<EmailTemplate>([
+  /* The partner registers. Carries the five steps and the link in. */
+  "partner/application-received",
+  /* The partner is verified. The "you are live" message. */
+  "partner/welcome-verified",
+  /* Authentication, not a notification. */
+  "auth/login-code",
+  /* Public forms — contact, careers, refill. Not the partner pipeline. */
+  "admin/site-inquiry",
+]);
+
 export async function sendEmail(
   template: EmailTemplate,
   to: string,
   props: EmailProps,
   options: { fromOutbox?: boolean } = {}
 ): Promise<void> {
+  if (!SENDABLE.has(template)) {
+    /* Returns cleanly rather than throwing. Every caller treats a send
+       failure as something to retry or surface, and this is neither — the
+       message was never meant to go. The outbox drain marks its row done and
+       moves on, which is what stops suppressed templates accumulating. */
+    console.log(`[email] suppressed ${template} → ${to} (not in SENDABLE)`);
+    return;
+  }
+
   const rendered = renderTemplate(template, props);
 
   try {
