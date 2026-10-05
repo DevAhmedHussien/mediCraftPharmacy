@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
 
 import { sealField } from "@/lib/crypto";
+import { cardBrand, parseCardExpiry } from "@/lib/masks";
 import { db } from "@/lib/db";
 import { requireOwnPartner } from "@/lib/guard";
 import { PARTNER_STATUS } from "@/lib/partner/status";
@@ -92,10 +93,17 @@ export async function submitAccountDetails(
 
   const data = parsed.data;
 
-  // Regulated identifiers are encrypted before they touch a row; only the last
-  // four stay in the clear, for an admin to eyeball against a document without
-  // a decrypt call.
-  const ein = sealField(data.ein);
+  /* Regulated identifiers are encrypted before they touch a row; only the
+     last four stay in the clear, for an admin to eyeball against a document
+     without a decrypt call. The card number is one of these.
+
+     `data.cardCvv` is deliberately read nowhere. It was validated by the
+     schema, which is the whole of its job: card network rules prohibit
+     retaining the security code, so it reaches this function, is not written
+     anywhere, and goes out of scope with the request. If you are here to add
+     it to a column, read the note on PartnerOnboarding first. */
+  const card = sealField(data.cardNumber);
+  const expiry = parseCardExpiry(data.cardExpiry)!;
 
   // Copied on the server, not the client — a tampered payload must not be able
   // to store a billing address the applicant never saw.
@@ -118,8 +126,13 @@ export async function submitAccountDetails(
   const onboardingFields = {
     legalBusinessName: data.legalBusinessName,
     dba: data.dba || null,
-    einCiphertext: ein.ciphertext,
-    einLast4: ein.last4,
+    cardholderName: data.cardholderName,
+    cardBrand: cardBrand(data.cardNumber),
+    cardPanCiphertext: card.ciphertext,
+    cardLast4: card.last4,
+    cardExpMonth: expiry.month,
+    cardExpYear: expiry.year,
+    cardCapturedAt: new Date(),
     businessStreet: data.businessStreet,
     businessSuite: data.businessSuite || null,
     businessCity: data.businessCity,
@@ -197,7 +210,7 @@ export async function submitAccountDetails(
         });
       }
 
-      const onboarding = await tx.partnerOnboarding.upsert({
+      await tx.partnerOnboarding.upsert({
         where: { partnerId },
         update: {
           ...onboardingFields,
@@ -210,26 +223,10 @@ export async function submitAccountDetails(
         create: { partnerId, ...onboardingFields },
       });
 
-      // A licence belongs in its own row so the expiry-reminder job has
-      // something to index, and so the uploaded document can point at it.
-      if (data.pharmacyLicenseNumber) {
-        const sealed = sealField(data.pharmacyLicenseNumber);
-        await tx.partnerLicense.deleteMany({
-          where: { onboardingId: onboarding.id, type: "PHARMACY_LICENSE" },
-        });
-        await tx.partnerLicense.create({
-          data: {
-            onboardingId: onboarding.id,
-            type: "PHARMACY_LICENSE",
-            state: data.pharmacyLicenseState || null,
-            numberCiphertext: sealed.ciphertext,
-            numberLast4: sealed.last4,
-            expiresAt: data.pharmacyLicenseExpires
-              ? new Date(data.pharmacyLicenseExpires)
-              : null,
-          },
-        });
-      }
+      /* The pharmacy-licence row used to be written here from three fields on
+         this form. Those fields are gone — a licence arrives as an uploaded
+         document now. `PartnerLicense` is left in place: existing rows are
+         still read by the expiry-reminder job and still shown in the admin. */
     });
   } catch (error) {
     console.error("[account-details] save failed", error);

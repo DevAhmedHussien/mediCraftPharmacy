@@ -14,8 +14,8 @@ import { submitIdentity } from "@/app/portal/identity/actions";
 /* ===========================================================================
    Confirming who is asking for the price list.
 
-   Four fields and a photo. It sits between the enquiry and the formulary
-   because Provider Cost is confidential under MSA §11, and the public enquiry
+   Four fields and a photo. It sits between the inquiry and the formulary
+   because Provider Cost is confidential under MSA §11, and the public inquiry
    form is fourteen fields anyone can fill in.
 
    The ID upload reuses the same component and the same presigned path as the

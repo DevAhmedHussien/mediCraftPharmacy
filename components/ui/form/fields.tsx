@@ -11,6 +11,8 @@ import {
 import { Input, Select, Textarea } from "@/components/ui/input";
 import { FieldError, Label } from "@/components/ui/label";
 import {
+  formatCardExpiry,
+  formatCardNumber,
   formatDate,
   formatDea,
   formatNpi,
@@ -133,6 +135,8 @@ const MASKS = {
   dea: { format: formatDea, inputMode: "text" as const, placeholder: "AB1234563" },
   npi: { format: formatNpi, inputMode: "numeric" as const, placeholder: "1234567893" },
   zip: { format: formatZip, inputMode: "numeric" as const, placeholder: "34683" },
+  card: { format: formatCardNumber, inputMode: "numeric" as const, placeholder: "4242 4242 4242 4242" },
+  expiry: { format: formatCardExpiry, inputMode: "numeric" as const, placeholder: "MM / YY" },
 };
 
 /**

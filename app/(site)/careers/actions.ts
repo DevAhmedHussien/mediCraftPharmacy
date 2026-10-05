@@ -6,8 +6,8 @@ import { headers } from "next/headers";
 import { RESUME_MAX_BYTES, RESUME_TYPES, type FormState } from "@/lib/forms";
 import { careerSchema, validate } from "@/lib/forms.schema";
 import { clientIp } from "@/lib/rate-limit";
-import { recordEnquiry } from "@/lib/services/enquiries";
-import { notifyStaffOfEnquiry } from "@/lib/services/enquiry-notify";
+import { recordInquiry } from "@/lib/services/inquiries";
+import { notifyStaffOfInquiry } from "@/lib/services/inquiry-notify";
 
 /**
  * Careers application handler.
@@ -62,7 +62,7 @@ export async function submitApplication(
      application up, rather than quietly warehousing files nobody has decided
      how long to keep. */
   try {
-    const enquiry = await recordEnquiry({
+    const inquiry = await recordInquiry({
       kind: "CAREER",
       name: [result.data.firstName, result.data.lastName].filter(Boolean).join(" "),
       email: result.data.email,
@@ -75,7 +75,7 @@ export async function submitApplication(
       ip: clientIp(headers()),
     });
 
-    await notifyStaffOfEnquiry(enquiry.id, "CAREER");
+    await notifyStaffOfInquiry(inquiry.id, "CAREER");
   } catch (error) {
     console.error("[careers] could not record the application", (error as Error)?.message);
     return {

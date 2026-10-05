@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { SiteEnquiryKind } from "@prisma/client";
+import type { SiteInquiryKind } from "@prisma/client";
 
 import { decryptField, encryptField } from "@/lib/crypto";
 import { db } from "@/lib/db";
@@ -22,8 +22,8 @@ import { db } from "@/lib/db";
    inbox, a log, or a subject line.
    ========================================================================= */
 
-export type EnquiryInput = {
-  kind: SiteEnquiryKind;
+export type InquiryInput = {
+  kind: SiteInquiryKind;
   /** Safe to store in the clear — enough to recognise and reply. */
   name?: string;
   email?: string;
@@ -35,12 +35,12 @@ export type EnquiryInput = {
 };
 
 /** A refill names a patient and their medication; the rest do not. */
-const PHI_KINDS: SiteEnquiryKind[] = ["REFILL"];
+const PHI_KINDS: SiteInquiryKind[] = ["REFILL"];
 
-export async function recordEnquiry(input: EnquiryInput) {
+export async function recordInquiry(input: InquiryInput) {
   const isPhi = PHI_KINDS.includes(input.kind);
 
-  return db.siteEnquiry.create({
+  return db.siteInquiry.create({
     data: {
       kind: input.kind,
       /* On a refill even the name is PHI in context — "who asked us for
@@ -58,9 +58,9 @@ export async function recordEnquiry(input: EnquiryInput) {
   });
 }
 
-export type EnquiryRow = {
+export type InquiryRow = {
   id: string;
-  kind: SiteEnquiryKind;
+  kind: SiteInquiryKind;
   name: string | null;
   email: string | null;
   phone: string | null;
@@ -70,8 +70,8 @@ export type EnquiryRow = {
   createdAt: Date;
 };
 
-export async function listEnquiries(params: { kind?: SiteEnquiryKind; status?: string } = {}) {
-  return db.siteEnquiry.findMany({
+export async function listInquiries(params: { kind?: SiteInquiryKind; status?: string } = {}) {
+  return db.siteInquiry.findMany({
     where: {
       ...(params.kind ? { kind: params.kind } : {}),
       ...(params.status && params.status !== "all" ? { status: params.status as never } : {}),
@@ -99,8 +99,8 @@ export async function listEnquiries(params: { kind?: SiteEnquiryKind; status?: s
  * rather than a list view that quietly renders four hundred patients' details
  * to anyone who opens the page.
  */
-export async function openEnquiry(id: string) {
-  const row = await db.siteEnquiry.findUnique({
+export async function openInquiry(id: string) {
+  const row = await db.siteInquiry.findUnique({
     where: { id },
     select: {
       id: true,
@@ -119,8 +119,8 @@ export async function openEnquiry(id: string) {
   };
 }
 
-export async function setEnquiryStatus(id: string, status: "NEW" | "HANDLED" | "SPAM", userId: string) {
-  await db.siteEnquiry.update({
+export async function setInquiryStatus(id: string, status: "NEW" | "HANDLED" | "SPAM", userId: string) {
+  await db.siteInquiry.update({
     where: { id },
     data: {
       status,
@@ -130,6 +130,6 @@ export async function setEnquiryStatus(id: string, status: "NEW" | "HANDLED" | "
   });
 }
 
-export async function countNewEnquiries() {
-  return db.siteEnquiry.count({ where: { status: "NEW" } });
+export async function countNewInquiries() {
+  return db.siteInquiry.count({ where: { status: "NEW" } });
 }

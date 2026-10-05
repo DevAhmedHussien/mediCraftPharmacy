@@ -284,7 +284,7 @@ export async function applyTransition(input: TransitionInput): Promise<Transitio
      *
      * Calling GoHighLevel inline from here put a third-party round trip on the
      * critical path of every transition, including a visitor submitting the
-     * public enquiry form — a slow CRM became a slow submit and then a lost
+     * public inquiry form — a slow CRM became a slow submit and then a lost
      * sync. Writing a row instead makes the mirror atomic with the transition
      * and leaves the worker to deliver it. */
     await tx.crmOutbox.create({

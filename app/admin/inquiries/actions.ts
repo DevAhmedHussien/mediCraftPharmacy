@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { requireAdmin } from "@/lib/guard";
 import { recordAudit } from "@/lib/services/audit";
-import { openEnquiry, setEnquiryStatus } from "@/lib/services/enquiries";
+import { openInquiry, setInquiryStatus } from "@/lib/services/inquiries";
 
 /* Reading and triaging a public-form submission.
 
@@ -12,39 +12,39 @@ import { openEnquiry, setEnquiryStatus } from "@/lib/services/enquiries";
    access log that only records writes answers the wrong question — "who read
    this patient's refill request" is the one that gets asked. */
 
-export async function readEnquiry(id: string) {
+export async function readInquiry(id: string) {
   const session = await requireAdmin();
-  const enquiry = await openEnquiry(id);
-  if (!enquiry) return { ok: false as const, message: "That submission no longer exists." };
+  const inquiry = await openInquiry(id);
+  if (!inquiry) return { ok: false as const, message: "That submission no longer exists." };
 
-  if (enquiry.isPhi) {
+  if (inquiry.isPhi) {
     await recordAudit({
       actorId: session.user.id,
       actorEmail: session.user.email ?? null,
-      action: "enquiry.read",
-      entityType: "SiteEnquiry",
+      action: "inquiry.read",
+      entityType: "SiteInquiry",
       entityId: id,
       // The metadata says a PHI record was opened, not what was in it.
-      metadata: { kind: enquiry.kind, phi: true },
+      metadata: { kind: inquiry.kind, phi: true },
     });
   }
 
-  return { ok: true as const, enquiry };
+  return { ok: true as const, inquiry };
 }
 
-export async function triageEnquiry(id: string, status: "NEW" | "HANDLED" | "SPAM") {
+export async function triageInquiry(id: string, status: "NEW" | "HANDLED" | "SPAM") {
   const session = await requireAdmin();
-  await setEnquiryStatus(id, status, session.user.id);
+  await setInquiryStatus(id, status, session.user.id);
 
   await recordAudit({
     actorId: session.user.id,
     actorEmail: session.user.email ?? null,
-    action: `enquiry.${status.toLowerCase()}`,
-    entityType: "SiteEnquiry",
+    action: `inquiry.${status.toLowerCase()}`,
+    entityType: "SiteInquiry",
     entityId: id,
     metadata: {},
   });
 
-  revalidatePath("/admin/enquiries");
+  revalidatePath("/admin/inquiries");
   return { ok: true as const };
 }

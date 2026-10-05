@@ -12,7 +12,7 @@ import { site } from "@/lib/site";
 export const metadata: Metadata = pageMetadata({
   title: "Contact",
   description:
-    "Reach the MediCraft Pharmacy team in Tampa, Florida — provider accounts, patient questions, and partnership enquiries.",
+    "Reach the MediCraft Pharmacy team in Tampa, Florida — provider accounts, patient questions, and partnership inquiries.",
   path: "/contact",
 });
 

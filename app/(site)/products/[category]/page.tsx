@@ -119,7 +119,7 @@ export default async function CategoryPage({ params }: Params) {
             </>
           ) : (
             /* Nothing published in this specialty yet. The pharmacy still
-               compounds here, so this invites the enquiry instead of reading
+               compounds here, so this invites the inquiry instead of reading
                as an empty shelf. */
             <div className="rounded-tile border-2 border-dashed border-line bg-sand px-6 py-16 text-center">
               <p className="text-[1.0625rem] font-bold text-ink">

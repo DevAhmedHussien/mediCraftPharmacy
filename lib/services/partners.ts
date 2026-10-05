@@ -93,7 +93,11 @@ export async function getPartnerDetail(id: string) {
         select: {
           legalBusinessName: true,
           dba: true,
-          einLast4: true,
+          cardholderName: true,
+          cardBrand: true,
+          cardLast4: true,
+          cardExpMonth: true,
+          cardExpYear: true,
           businessStreet: true,
           businessSuite: true,
           businessCity: true,

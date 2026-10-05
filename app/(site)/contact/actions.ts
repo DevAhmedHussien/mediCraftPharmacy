@@ -6,8 +6,8 @@ import type { FormState } from "@/lib/forms";
 import { contactSchema, validate } from "@/lib/forms.schema";
 import { env } from "@/lib/env";
 import { clientIp, RATE_LIMITS, rateLimit } from "@/lib/rate-limit";
-import { recordEnquiry } from "@/lib/services/enquiries";
-import { notifyStaffOfEnquiry } from "@/lib/services/enquiry-notify";
+import { recordInquiry } from "@/lib/services/inquiries";
+import { notifyStaffOfInquiry } from "@/lib/services/inquiry-notify";
 import { upsertGhlContact } from "@/lib/services/ghl";
 
 /**
@@ -31,20 +31,20 @@ export async function submitContact(
   const payload = result.data as Record<string, unknown>;
 
   try {
-    const enquiry = await recordEnquiry({
+    const inquiry = await recordInquiry({
       kind: "CONTACT",
       name: [payload.firstName, payload.lastName].filter(Boolean).join(" "),
       email: String(payload.email ?? ""),
       phone: String(payload.phone ?? ""),
-      subject: String(payload.subject ?? payload.topic ?? "Website enquiry"),
+      subject: String(payload.subject ?? payload.topic ?? "Website inquiry"),
       payload,
       ip,
     });
 
-    await notifyStaffOfEnquiry(enquiry.id, "CONTACT");
+    await notifyStaffOfInquiry(inquiry.id, "CONTACT");
 
     /* Mirror into the CRM, outside the path that decides what the visitor is
-       told. The enquiry is already stored and staff are already notified, so a
+       told. The inquiry is already stored and staff are already notified, so a
        GoHighLevel outage must not turn into "we could not send that" and a
        duplicate submission. A failure is logged with GHL's own reason and
        nothing of the person's. */
@@ -58,7 +58,7 @@ export async function submitContact(
     });
     if (!crm.ok) console.error("[contact] GHL upsert failed:", crm.reason);
   } catch (error) {
-    console.error("[contact] could not record the enquiry", (error as Error)?.message);
+    console.error("[contact] could not record the inquiry", (error as Error)?.message);
     return { ok: false, message: "We could not send that. Please try again, or call us." };
   }
 

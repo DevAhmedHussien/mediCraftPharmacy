@@ -1,6 +1,15 @@
 import { z } from "zod";
 
-import { isValidDate, isValidDea, isValidNpi, isValidUsPhone, parseDate, parseUsPhone } from "@/lib/masks";
+import {
+  isValidCardExpiry,
+  isValidCardNumber,
+  isValidDate,
+  isValidDea,
+  isValidNpi,
+  isValidUsPhone,
+  parseDate,
+  parseUsPhone,
+} from "@/lib/masks";
 
 /* ===========================================================================
    MediCraft Pharmacy account details — the full application, as a schema.
@@ -14,7 +23,7 @@ import { isValidDate, isValidDea, isValidNpi, isValidUsPhone, parseDate, parseUs
    ----------------------------------------
    It was, and asking a stranger for two prescribers' DEA numbers before
    showing them a single price is why that form was abandoned two screens in.
-   The public enquiry (lib/schemas/lead.ts) is now fourteen fields; this one is
+   The public inquiry (lib/schemas/lead.ts) is now fourteen fields; this one is
    filled in from inside the portal, once pricing is agreed and the applicant
    has a reason to hand over regulated identifiers.
 
@@ -157,18 +166,6 @@ export const accountDetailsSchema = z.object({
   legalBusinessName: required("Legal business name"),
   dba: optionalText,
 
-  /**
-   * EIN, as nine digits.
-   *
-   * Encrypted at rest with only the last four kept legible, so it is asked for
-   * exactly once and never shown back in full — not on screen, not in email.
-   */
-  ein: z
-    .string()
-    .trim()
-    .transform((v) => v.replace(/\D/g, ""))
-    .refine((v) => v.length === 9, "An EIN is nine digits."),
-
   businessStreet: required("Street address"),
   businessSuite: optionalText,
   businessCity: required("City"),
@@ -196,13 +193,35 @@ export const accountDetailsSchema = z.object({
   signerEmail: email,
   signerPhone: optionalPhone,
 
-  /** Pharmacy licence for the practice, where one applies. */
-  pharmacyLicenseNumber: optionalText,
-  pharmacyLicenseState: optionalText,
-  pharmacyLicenseExpires: optionalDate,
+  /* --- Card on file ------------------------------------------------------
+     Validated here so a mistyped number is caught while the person who typed
+     it is still looking at it. None of this proves the card exists or has
+     funds; only a processor can say that.
 
-  accountsPayableEmail: optionalEmail,
-  accountsPayablePhone: optionalPhone,
+     THE CVV IS VALIDATED AND NEVER STORED. Card network rules prohibit
+     retaining it once a payment is authorised, and a processor that finds
+     stored CVVs can close a merchant account over it — so it is checked for
+     shape here, used, and dropped. It has no column. See the note on
+     PartnerOnboarding in the schema.
+     --------------------------------------------------------------------- */
+  cardholderName: required("Name on card"),
+
+  cardNumber: z
+    .string()
+    .trim()
+    .transform((v) => v.replace(/\D/g, ""))
+    .refine(isValidCardNumber, "Check the card number — one of the digits is off."),
+
+  cardExpiry: z
+    .string()
+    .trim()
+    .refine(isValidCardExpiry, "Enter an expiry date in the future, as MM / YY."),
+
+  cardCvv: z
+    .string()
+    .trim()
+    .transform((v) => v.replace(/\D/g, ""))
+    .refine((v) => v.length === 3 || v.length === 4, "The security code is 3 digits, or 4 on an Amex."),
 
   /** Confirmed before submitting. Never restored from a saved draft. */
   attested: z.literal(true, { message: "Please confirm the details are accurate." }),
@@ -246,7 +265,6 @@ export const emptyAccountDetails: AccountDetailsValues = {
   },
   legalBusinessName: "",
   dba: "",
-  ein: "",
   businessStreet: "",
   businessSuite: "",
   businessCity: "",
@@ -263,11 +281,10 @@ export const emptyAccountDetails: AccountDetailsValues = {
   signerTitle: "",
   signerEmail: "",
   signerPhone: "",
-  pharmacyLicenseNumber: "",
-  pharmacyLicenseState: "",
-  pharmacyLicenseExpires: "",
-  accountsPayableEmail: "",
-  accountsPayablePhone: "",
+  cardholderName: "",
+  cardNumber: "",
+  cardExpiry: "",
+  cardCvv: "",
   attested: true as const,
 };
 

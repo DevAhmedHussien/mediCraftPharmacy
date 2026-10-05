@@ -5,6 +5,7 @@ import { useFormState, useFormStatus } from "react-dom";
 
 import { confirmMeetingSlotAction } from "@/app/portal/actions";
 import { FormAlert } from "@/components/ui/form/native";
+import { fieldClass } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { initialFormState } from "@/lib/forms";
 
@@ -90,7 +91,7 @@ export function MeetingSlotPicker({
         </fieldset>
 
         <div>
-          <label htmlFor="partner-note" className="label">
+          <label htmlFor="partner-note" className="mb-1.5 block text-sm font-medium text-ink-soft">
             Anything we should know before the call?{" "}
             <span className="text-ink-muted">(optional)</span>
           </label>
@@ -98,7 +99,7 @@ export function MeetingSlotPicker({
             id="partner-note"
             name="partnerNote"
             rows={2}
-            className="input mt-1.5"
+            className={`${fieldClass} mt-1.5`}
             placeholder="Volumes you are planning, products you want to cover…"
           />
         </div>

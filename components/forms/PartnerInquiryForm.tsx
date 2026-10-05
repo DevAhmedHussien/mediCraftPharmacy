@@ -13,11 +13,11 @@ import {
 import { FormBanner, Honeypot, SubmitButton, useFormAction } from "@/components/ui/form/submit";
 import { ORG_TYPES, PROVIDER_ROLES, REFERRAL_SOURCES, US_STATES } from "@/lib/forms";
 import { emptyLead, leadSchema, type LeadValues } from "@/lib/schemas/lead";
-import { submitEnquiry } from "@/app/(site)/work-with-us/actions";
+import { submitInquiry } from "@/app/(site)/work-with-us/actions";
 import { Logo } from "@/components/brand/Logo";
 
 /* ===========================================================================
-   The public enquiry form.
+   The public inquiry form.
 
    One component, rendered on both /work-with-us and /providers, because two
    pages asking the same practice the same questions through two different
@@ -29,7 +29,7 @@ import { Logo } from "@/components/brand/Logo";
    later, in the portal, once there is a relationship to justify asking.
    ========================================================================= */
 
-export function PartnerEnquiryForm() {
+export function PartnerInquiryForm() {
   const form = useForm<LeadValues>({
     resolver: zodResolver(leadSchema) as never,
     defaultValues: emptyLead,
@@ -39,7 +39,7 @@ export function PartnerEnquiryForm() {
     reValidateMode: "onChange",
   });
 
-  const { banner, onSubmit } = useFormAction(form, submitEnquiry, { resetTo: emptyLead });
+  const { banner, onSubmit } = useFormAction(form, submitInquiry, { resetTo: emptyLead });
   const { isSubmitting } = form.formState;
 
   return (
@@ -48,9 +48,9 @@ export function PartnerEnquiryForm() {
         {/* Letterhead: the lockup heads the form. Its own glyph-id namespace,
             because the navbar already renders a light-tone lockup on the page. */}
         <div className="card flex-row flex-wrap items-center justify-between gap-x-8 gap-y-4 p-6 md:px-8">
-          <Logo animate="none" idPrefix="mc-enquiry" className="h-11 w-auto md:h-14" />
+          <Logo animate="none" idPrefix="mc-inquiry" className="h-11 w-auto md:h-14" />
           <div className="sm:text-right">
-            <p className="eyebrow">Provider enquiry</p>
+            <p className="eyebrow">Provider inquiry</p>
             <p className="mt-1.5 text-caption text-ink-muted">503A compounding pharmacy</p>
           </div>
         </div>
@@ -162,7 +162,7 @@ export function PartnerEnquiryForm() {
 
         <div className="flex flex-wrap items-center gap-4">
           <SubmitButton pending={isSubmitting} pendingLabel="Sending…">
-            Send enquiry
+            Send inquiry
           </SubmitButton>
           <p className="text-caption text-ink-muted">
             We reply within one to two business days. No card details, ever.

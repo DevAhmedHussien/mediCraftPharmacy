@@ -215,3 +215,111 @@ export function formatZip(input: string): string {
   const digits = input.replace(/\D/g, "").slice(0, 9);
   return digits.length > 5 ? `${digits.slice(0, 5)}-${digits.slice(5)}` : digits;
 }
+
+/* --- Payment card ---------------------------------------------------------
+   Formatting and checking only. Nothing here stores, logs or transmits a card
+   number; `cardBrand` and `cardLast4` exist so the rest of the app can talk
+   about a card without ever holding one.
+   ------------------------------------------------------------------------ */
+
+/**
+ * Card number, grouped as the user types.
+ *
+ * Amex really is 4-6-5 rather than 4-4-4-4, and getting that wrong is the
+ * most visible way to tell a prescriber you have never taken their card
+ * before. 19 digits is the cap because Maestro and some UnionPay ranges
+ * genuinely are that long; the old 16-digit assumption silently truncated
+ * them into an invalid number.
+ */
+export function formatCardNumber(input: string): string {
+  const digits = input.replace(/\D/g, "").slice(0, 19);
+  const groups = /^3[47]/.test(digits) ? [4, 6, 5] : [4, 4, 4, 4, 3];
+
+  const parts: string[] = [];
+  let at = 0;
+  for (const size of groups) {
+    if (at >= digits.length) break;
+    parts.push(digits.slice(at, at + size));
+    at += size;
+  }
+  return parts.join(" ");
+}
+
+/** The issuer, from the leading digits. Used for display and CVV length. */
+export function cardBrand(input: string): string | null {
+  const d = input.replace(/\D/g, "");
+  if (!d) return null;
+  if (/^4/.test(d)) return "Visa";
+  if (/^(5[1-5]|2[2-7])/.test(d)) return "Mastercard";
+  if (/^3[47]/.test(d)) return "American Express";
+  if (/^6(?:011|5|4[4-9])/.test(d)) return "Discover";
+  if (/^3(?:0[0-5]|[68])/.test(d)) return "Diners Club";
+  if (/^35/.test(d)) return "JCB";
+  return null;
+}
+
+/**
+ * The Luhn check digit.
+ *
+ * Catches a mistyped or transposed digit before anything downstream tries to
+ * charge it — which is the entire reason to run it client-side. It says
+ * nothing about whether the card exists or has funds; only a processor can
+ * answer that.
+ */
+export function isValidCardNumber(input: string): boolean {
+  const digits = input.replace(/\D/g, "");
+  if (!/^\d{13,19}$/.test(digits)) return false;
+
+  let sum = 0;
+  let double = false;
+  for (let i = digits.length - 1; i >= 0; i--) {
+    let n = Number(digits[i]);
+    if (double) {
+      n *= 2;
+      if (n > 9) n -= 9;
+    }
+    sum += n;
+    double = !double;
+  }
+  return sum % 10 === 0;
+}
+
+/** Expiry, as MM / YY. */
+export function formatCardExpiry(input: string): string {
+  const d = input.replace(/\D/g, "").slice(0, 4);
+  if (d.length <= 2) {
+    /* A lone "2" could still become "02" or "12", so it is left alone; a lone
+       "4" cannot be the start of any month, so it is padded to "04" and the
+       user carries on typing the year. Doing this on every keystroke instead
+       would make "1" jump to "01/" and put December out of reach. */
+    return d.length === 1 && Number(d) > 1 ? `0${d}` : d;
+  }
+  return `${d.slice(0, 2)} / ${d.slice(2)}`;
+}
+
+/** Expiry month and year, or null if it is not a real future month. */
+export function parseCardExpiry(input: string): { month: number; year: number } | null {
+  const d = input.replace(/\D/g, "");
+  if (d.length !== 4) return null;
+
+  const month = Number(d.slice(0, 2));
+  if (month < 1 || month > 12) return null;
+
+  const year = 2000 + Number(d.slice(2));
+  const now = new Date();
+  /* A card is good through the LAST day of its expiry month, so the
+     comparison is against the first of the following month. Comparing against
+     today would reject a perfectly valid card for up to thirty days. */
+  if (new Date(year, month, 1) <= now) return null;
+
+  return { month, year };
+}
+
+export function isValidCardExpiry(input: string): boolean {
+  return parseCardExpiry(input) !== null;
+}
+
+/** Amex prints four digits on the front; everyone else prints three on the back. */
+export function cvvLength(cardNumber: string): 3 | 4 {
+  return /^3[47]/.test(cardNumber.replace(/\D/g, "")) ? 4 : 3;
+}

@@ -6,7 +6,7 @@ import { isValidUsPhone, parseUsPhone } from "@/lib/masks";
    Who is asking for the price list.
 
    Short on purpose — four fields and a photo. This is not a second
-   application; it is the one question the enquiry form cannot answer, which
+   application; it is the one question the inquiry form cannot answer, which
    is whether the person behind the email address is who they say they are.
    MSA §11 makes Provider Cost confidential, so it is worth the minute.
 

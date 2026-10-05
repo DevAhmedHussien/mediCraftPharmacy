@@ -3,12 +3,12 @@ import { z } from "zod";
 import { isValidUsPhone, parseUsPhone } from "@/lib/masks";
 
 /* ===========================================================================
-   The public enquiry — step 1 of the pipeline.
+   The public inquiry — step 1 of the pipeline.
 
    WHY THIS IS SHORT
    -----------------
    It used to be the forty-field account-setup questionnaire: DEA numbers,
-   prescriber signatures, communications preferences, all before the enquirer
+   prescriber signatures, communications preferences, all before the inquirer
    had seen a single price. That asks a practice to hand over regulated
    identifiers to a company they have not yet decided to trade with, and it is
    the reason a form like that gets abandoned two screens in.
@@ -54,7 +54,7 @@ export const leadSchema = z.object({
   referral: optionalText,
 
   /* Sign-in. They need a way back into the portal to see the formulary we are
-     about to send, so the enquiry and the account are created together rather
+     about to send, so the inquiry and the account are created together rather
      than emailing a magic link that expires before anyone clicks it. */
   email: z.string().trim().toLowerCase().email("Enter a valid email address."),
   password: z

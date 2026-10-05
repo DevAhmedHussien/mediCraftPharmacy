@@ -168,7 +168,7 @@ export const PUBLIC_PHASES = (["Application", "Pricing", "Onboarding"] as const)
  * production.
  */
 const STEP_INDEX: Record<PartnerStatus, number> = {
-  // The enquiry is in and the applicant must now say who they are.
+  // The inquiry is in and the applicant must now say who they are.
   APPLICATION_SUBMITTED: 1,
   IDENTITY_SUBMITTED: 2, // submitted; we are checking who it is
   PRODUCT_LIST_SENT: 3,

@@ -212,10 +212,21 @@ export async function acceptListPricingAction(_prev: FormState): Promise<FormSta
 
   revalidatePath("/portal");
   revalidatePath("/portal/pricing");
-  return {
-    ok: true,
-    message: `Pricing accepted for ${chosen} ${chosen === 1 ? "medication" : "medications"}.`,
-  };
+  revalidatePath("/portal/onboarding");
+
+  /* Straight on to the next step rather than a green banner on a page whose
+     work is finished.
+     
+     Accepting pricing used to leave the partner exactly where they were,
+     reading "Pricing accepted for 14 medications." on a screen that now had
+     nothing for them to do. The tracker moved, two scrolls further down the
+     page, and the next step was a link they had to go and find. The whole
+     point of this stage ending is that another one starts.
+
+     Must stay outside the try above: `redirect` works by throwing, and a
+     catch around it would swallow the navigation and report it as a failed
+     transition. */
+  redirect("/portal/onboarding");
 }
 
 /** Accept the negotiated list. Writes the price book, inactive until verified. */
@@ -242,7 +253,9 @@ export async function acceptNegotiatedAction(
 
   revalidatePath("/portal");
   revalidatePath("/portal/pricing");
-  return { ok: true, message: "Pricing accepted." };
+  revalidatePath("/portal/onboarding");
+  // Same as accepting list pricing above: the stage is over, so move.
+  redirect("/portal/onboarding");
 }
 
 /** Ask for another round on the numbers. */

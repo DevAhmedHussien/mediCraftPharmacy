@@ -78,7 +78,7 @@ export const ADMIN_NAV_GROUPS: Array<{
       { href: "/admin/traffic", label: "Traffic", icon: BarChart3 },
       { href: "/admin/products", label: "Products", icon: Package },
       { href: "/admin/categories", label: "Categories", icon: FolderTree },
-      { href: "/admin/enquiries", label: "Enquiries", icon: Inbox },
+      { href: "/admin/inquiries", label: "Inquiries", icon: Inbox },
       { href: "/admin/blog", label: "Articles", icon: FileText },
     ],
   },

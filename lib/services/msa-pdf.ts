@@ -116,7 +116,6 @@ export type MsaFields = {
  */
 export type ClientProfile = {
   tradingName?: string | null;
-  einLast4?: string | null;
   businessType?: string | null;
   businessAddress?: string | null;
   billingAddress?: string | null;
@@ -893,7 +892,10 @@ function buildClientProfile(
   row("Legal business name", companyName);
   row("Trading name (DBA)", profile.tradingName);
   row("Business type", profile.businessType);
-  row("EIN", profile.einLast4 ? `•••• ${profile.einLast4}` : null);
+  /* The EIN row is gone with the field. It printed "EIN  •••• 4417" on a
+     contract, which told a signer nothing they did not know and told a reader
+     of a leaked PDF four digits they did not have — and the number is no
+     longer collected at all. */
   row("Business address", profile.businessAddress);
   row("Billing address", profile.billingAddress ?? "Same as business address");
   row(

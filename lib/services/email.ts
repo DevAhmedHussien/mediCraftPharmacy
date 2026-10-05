@@ -562,11 +562,11 @@ They stay verified and keep ordering everything already on their schedule while 
 
   /* A public form was submitted. Deliberately contentless: a refill request
      is PHI, and the rule here is a type, a link, and nothing else. */
-  "admin/site-enquiry": (p) => ({
+  "admin/site-inquiry": (p) => ({
     subject: String(p.subject ?? "A website form was submitted"),
     preheader: "Open the admin to read it.",
     body: String(p.body ?? "Something was submitted through the website."),
-    cta: { label: "Open the enquiry", path: String(p.link ?? "/admin/enquiries") },
+    cta: { label: "Open the inquiry", path: String(p.link ?? "/admin/inquiries") },
   }),
 
   "admin/identity-submitted": (p) => ({

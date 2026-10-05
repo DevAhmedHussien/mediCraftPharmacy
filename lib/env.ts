@@ -109,7 +109,7 @@ const base = z.object({
   CALENDAR_TIMEZONE: z.string().default("America/New_York"),
 
   /* --- GoHighLevel ------------------------------------------------------
-     Public enquiries are mirrored into the CRM. Both the token and the
+     Public inquiries are mirrored into the CRM. Both the token and the
      location are required together: a token without a location cannot address
      a sub-account, and a location without a token cannot authenticate, so
      either one alone is a misconfiguration rather than a partial setup. The
@@ -164,7 +164,7 @@ const schema = base.superRefine((v, ctx) => {
     }
   }
   /* One of the GHL pair without the other is a half-configured CRM: the
-     enquiry would still be stored, but nothing would reach the sales team and
+     inquiry would still be stored, but nothing would reach the sales team and
      nothing would say so. Fail on boot instead. */
   if (Boolean(v.GHL_API_TOKEN) !== Boolean(v.GHL_LOCATION_ID)) {
     ctx.addIssue({

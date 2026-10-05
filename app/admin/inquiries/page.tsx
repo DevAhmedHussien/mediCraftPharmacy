@@ -1,21 +1,21 @@
-import { EnquiryList } from "@/components/admin/EnquiryList";
+import { InquiryList } from "@/components/admin/InquiryList";
 import { PageHeader, Panel } from "@/components/admin/ui";
 import { requireAdminPage } from "@/lib/guard";
-import { listEnquiries } from "@/lib/services/enquiries";
+import { listInquiries } from "@/lib/services/inquiries";
 
-export const metadata = { title: "Enquiries" };
+export const metadata = { title: "Inquiries" };
 export const dynamic = "force-dynamic";
 
-export default async function AdminEnquiriesPage() {
+export default async function AdminInquiriesPage() {
   await requireAdminPage();
 
-  const rows = await listEnquiries();
+  const rows = await listInquiries();
   const waiting = rows.filter((row) => row.status === "NEW").length;
 
   return (
     <div className="space-y-4">
       <PageHeader
-        title="Enquiries"
+        title="Inquiries"
         description="Contact messages, patient refill requests and job applications from the public site."
       />
 
@@ -24,7 +24,7 @@ export default async function AdminEnquiriesPage() {
         description="Refill requests contain protected health information: the list shows that one arrived, and opening it is recorded."
         bodyClassName="p-0"
       >
-        <EnquiryList
+        <InquiryList
           rows={rows.map((row) => ({ ...row, createdAt: row.createdAt.toISOString() }))}
         />
       </Panel>

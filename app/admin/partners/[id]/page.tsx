@@ -416,7 +416,17 @@ export default async function PartnerDetailPage({ params }: { params: { id: stri
                 rows={[
                   ["Legal entity", onboarding.legalBusinessName],
                   ["Trading as", onboarding.dba],
-                  ["EIN", onboarding.einLast4 ? `•••• ${onboarding.einLast4}` : null],
+                  [
+                    "Card on file",
+                    onboarding.cardLast4
+                      ? `${onboarding.cardBrand ?? "Card"} ending ${onboarding.cardLast4}` +
+                        (onboarding.cardExpMonth && onboarding.cardExpYear
+                          ? ` · expires ${String(onboarding.cardExpMonth).padStart(2, "0")}/${String(
+                              onboarding.cardExpYear
+                            ).slice(-2)}`
+                          : "")
+                      : null,
+                  ],
                   [
                     "Business address",
                     [

@@ -301,7 +301,7 @@ No email, no SMS, and NO tag edits. Only move the Opportunity:
   stage_verified    → "Verified", mark the Opportunity Won
 
 ====================================================================
-WORKFLOW 3 — "Website enquiry acknowledgement"
+WORKFLOW 3 — "Website inquiry acknowledgement"
 Trigger: Contact Tag · Tag is added · contact_us_form
 ====================================================================
   EMAIL  Subject: We have your message

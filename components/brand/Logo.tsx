@@ -234,7 +234,7 @@ export function Logo({
   tone?: Tone;
   animate?: Animate;
   /** Glyph-id namespace. Only needed when a second lockup of the same tone
-   *  shares a page with the navbar's (e.g. the enquiry form's letterhead). */
+   *  shares a page with the navbar's (e.g. the inquiry form's letterhead). */
   idPrefix?: string;
 }) {
   const fill = markFills(tone);

@@ -12,7 +12,7 @@ import { leadSchema, type LeadValues } from "@/lib/schemas/lead";
 import { applyTransition } from "@/lib/services/transition";
 
 /* ===========================================================================
-   The public enquiry.
+   The public inquiry.
 
    Creates the account and the lead, then hands the opening transition to the
    state machine so the confirmation email, the reviewer's email and the admin
@@ -32,7 +32,7 @@ export type LeadResult = {
   redirectTo?: string;
 };
 
-export async function submitEnquiry(input: LeadValues): Promise<LeadResult> {
+export async function submitInquiry(input: LeadValues): Promise<LeadResult> {
   const parsed = leadSchema.safeParse(input);
 
   if (!parsed.success) {
@@ -48,7 +48,7 @@ export async function submitEnquiry(input: LeadValues): Promise<LeadResult> {
   /* The honeypot carried a value, so this is a bot. Answer exactly as success
      would, so it learns nothing and stops retrying — and write nothing. */
   if (data.nickname) {
-    return { ok: true, message: "Thank you — we have your enquiry." };
+    return { ok: true, message: "Thank you — we have your inquiry." };
   }
 
   const limit = rateLimit(`register:${clientIp(headers())}`, RATE_LIMITS.register);
@@ -95,7 +95,7 @@ export async function submitEnquiry(input: LeadValues): Promise<LeadResult> {
       await tx.partnerApplication.create({
         data: {
           partnerId: partner.id,
-          /* accountType stays null: nobody enquiring about pricing has a view
+          /* accountType stays null: nobody inquiring about pricing has a view
              yet on whether they are opening a new account or linking one. The
              portal form asks, once there is something to decide about. */
           practiceName: data.practiceName,
@@ -119,10 +119,10 @@ export async function submitEnquiry(input: LeadValues): Promise<LeadResult> {
       return partner.id;
     });
   } catch (error) {
-    console.error("[enquiry] failed", error);
+    console.error("[inquiry] failed", error);
     return {
       ok: false,
-      message: "We could not save your enquiry. Please try again, or call us.",
+      message: "We could not save your inquiry. Please try again, or call us.",
     };
   }
 
@@ -138,10 +138,10 @@ export async function submitEnquiry(input: LeadValues): Promise<LeadResult> {
       actorEmail: email,
       actorRole: "PARTNER",
       initial: true,
-      note: "Enquiry submitted.",
+      note: "Inquiry submitted.",
     });
   } catch (error) {
-    console.error("[enquiry] opening transition failed", error);
+    console.error("[inquiry] opening transition failed", error);
   }
 
   /* Sign them in. They chose a password fifteen seconds ago; a login wall now
@@ -150,17 +150,17 @@ export async function submitEnquiry(input: LeadValues): Promise<LeadResult> {
   try {
     await signIn("credentials", { email, password: data.password, redirect: false });
   } catch (error) {
-    console.error("[enquiry] auto sign-in failed", error);
+    console.error("[inquiry] auto sign-in failed", error);
     return {
       ok: true,
-      message: "Thank you — we have your enquiry. Please sign in to track its progress.",
+      message: "Thank you — we have your inquiry. Please sign in to track its progress.",
       redirectTo: "/login",
     };
   }
 
   return {
     ok: true,
-    message: "Thank you — we have your enquiry. Taking you to your portal…",
+    message: "Thank you — we have your inquiry. Taking you to your portal…",
     redirectTo: "/portal?welcome=1",
   };
 }

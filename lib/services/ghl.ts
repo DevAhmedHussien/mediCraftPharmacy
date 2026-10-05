@@ -3,13 +3,13 @@ import "server-only";
 import { env } from "@/lib/env";
 
 /* ===========================================================================
-   GoHighLevel — mirroring public enquiries into the CRM.
+   GoHighLevel — mirroring public inquiries into the CRM.
 
    UPSERT, NOT CREATE
    ------------------
    `POST /contacts/` refuses with a 400 when a contact with that email or phone
    already exists in the location. On a public contact form that is the common
-   case, not the edge one: people enquire twice, and the people most worth
+   case, not the edge one: people inquire twice, and the people most worth
    routing to sales are often already in the CRM from a call or a campaign. A
    plain create would fail for exactly those.
 
@@ -18,9 +18,9 @@ import { env } from "@/lib/env";
    rather than replaced, so a contact that already carries `partner_applicant`
    keeps it and gains `contact_us_form` alongside.
 
-   FAILING HERE MUST NOT FAIL THE ENQUIRY
+   FAILING HERE MUST NOT FAIL THE INQUIRY
    -------------------------------------
-   The enquiry is already recorded in our own database before this runs, and
+   The inquiry is already recorded in our own database before this runs, and
    staff are notified from that record. GoHighLevel being down, rate limiting
    us, or rotating a token is a CRM problem, not a reason to tell someone their
    message did not send and make them submit it again. Every failure path here
@@ -29,7 +29,7 @@ import { env } from "@/lib/env";
    WHAT IS NOT LOGGED
    ------------------
    No name, email, phone or message body ever reaches a log line — only the
-   status code and GHL's own error text. The same rule the enquiry service and
+   status code and GHL's own error text. The same rule the inquiry service and
    the refill action follow.
    ========================================================================= */
 
@@ -54,7 +54,7 @@ export type GhlContactInput = {
   phone?: string;
   /** The practice, so sales sees an organisation and not just a person. */
   companyName?: string;
-  /** Free-text note shown on the contact, e.g. the enquiry subject. */
+  /** Free-text note shown on the contact, e.g. the inquiry subject. */
   source?: string;
   /** Extra tags on top of the configured default. */
   tags?: string[];

@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, Loader2, ShieldAlert } from "lucide-react";
 
-import { readEnquiry, triageEnquiry } from "@/app/admin/enquiries/actions";
+import { readInquiry, triageInquiry } from "@/app/admin/inquiries/actions";
 import { Cell, DataTable, Pill, Row, type Tone } from "@/components/admin/ui";
 
 /* ===========================================================================
@@ -16,7 +16,7 @@ import { Cell, DataTable, Pill, Row, type Tone } from "@/components/admin/ui";
    table because it was convenient is the failure mode this avoids.
    ========================================================================= */
 
-export type EnquiryRow = {
+export type InquiryRow = {
   id: string;
   kind: "CONTACT" | "REFILL" | "CAREER";
   name: string | null;
@@ -29,13 +29,13 @@ export type EnquiryRow = {
 };
 
 const STATUS_TONE: Record<string, Tone> = { NEW: "warn", HANDLED: "good", SPAM: "neutral" };
-const KIND_LABEL: Record<EnquiryRow["kind"], string> = {
+const KIND_LABEL: Record<InquiryRow["kind"], string> = {
   CONTACT: "Contact",
   REFILL: "Refill",
   CAREER: "Careers",
 };
 
-export function EnquiryList({ rows }: { rows: EnquiryRow[] }) {
+export function InquiryList({ rows }: { rows: InquiryRow[] }) {
   const router = useRouter();
   const [open, setOpen] = useState<Record<string, unknown> | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
@@ -43,9 +43,9 @@ export function EnquiryList({ rows }: { rows: EnquiryRow[] }) {
 
   const view = (id: string) =>
     startTransition(async () => {
-      const result = await readEnquiry(id);
+      const result = await readInquiry(id);
       if (result.ok) {
-        setOpen(result.enquiry.payload);
+        setOpen(result.inquiry.payload);
         setOpenId(id);
       }
     });
@@ -116,7 +116,7 @@ export function EnquiryList({ rows }: { rows: EnquiryRow[] }) {
                     type="button"
                     onClick={() =>
                       startTransition(async () => {
-                        await triageEnquiry(row.id, "HANDLED");
+                        await triageInquiry(row.id, "HANDLED");
                         router.refresh();
                       })
                     }

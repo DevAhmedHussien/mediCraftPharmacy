@@ -103,7 +103,7 @@ ${posts.length === 0
 
 ## Contact
 
-- Provider enquiries: ${site.providerEmail}
+- Provider inquiries: ${site.providerEmail}
 - General: ${site.email}
 ${hasRealPhone ? `- Phone: ${site.phone}` : `- Phone: see ${site.url}/contact`}
 - Hours: ${site.hoursShort}

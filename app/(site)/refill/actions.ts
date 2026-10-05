@@ -5,8 +5,8 @@ import { headers } from "next/headers";
 import type { FormState } from "@/lib/forms";
 import { refillSchema, validate } from "@/lib/forms.schema";
 import { clientIp, RATE_LIMITS, rateLimit } from "@/lib/rate-limit";
-import { recordEnquiry } from "@/lib/services/enquiries";
-import { notifyStaffOfEnquiry } from "@/lib/services/enquiry-notify";
+import { recordInquiry } from "@/lib/services/inquiries";
+import { notifyStaffOfInquiry } from "@/lib/services/inquiry-notify";
 
 /**
  * Patient refill requests.
@@ -38,13 +38,13 @@ export async function requestRefill(
   }
 
   try {
-    const enquiry = await recordEnquiry({
+    const inquiry = await recordInquiry({
       kind: "REFILL",
       payload: result.data as unknown as Record<string, unknown>,
       ip,
     });
 
-    await notifyStaffOfEnquiry(enquiry.id, "REFILL");
+    await notifyStaffOfInquiry(inquiry.id, "REFILL");
   } catch (error) {
     // Never echo the submission into the error path either.
     console.error("[refill] could not record the request", (error as Error)?.message);

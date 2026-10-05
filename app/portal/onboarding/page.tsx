@@ -55,7 +55,14 @@ export default async function PortalOnboardingPage() {
           },
         },
       },
-      onboarding: { select: { draft: true, submittedAt: true, einLast4: true } },
+      onboarding: {
+        select: {
+          draft: true,
+          submittedAt: true,
+          cardBrand: true,
+          cardLast4: true,
+        },
+      },
     },
   });
   if (!partner) redirect("/portal");
@@ -73,7 +80,7 @@ export default async function PortalOnboardingPage() {
    * Submitting clears it and promotes everything into real columns, so a
    * sent-back applicant would otherwise open an empty form — hence the second
    * layer, rebuilt from what was actually stored. The third layer is the
-   * public enquiry, so the practice name and address are already filled in the
+   * public inquiry, so the practice name and address are already filled in the
    * first time they see this. */
   const draft = (saved?.draft ?? {}) as Partial<AccountDetailsValues>;
 
@@ -83,7 +90,7 @@ export default async function PortalOnboardingPage() {
    * back for corrections who did not retype their DEA number would lose it.
    * Returning a partner their own DEA over an authenticated TLS session is not
    * a disclosure — it is the reason these columns are encrypted rather than
-   * hashed. The EIN is the one exception: it is asked for once, is not part of
+   * hashed. The card number is the one exception: it is asked for once, is not part of
    * a repeatable row, and is never round-tripped. */
   const prescribers = (application?.prescribers ?? []).map((prescriber) => ({
     name: prescriber.name,
@@ -165,9 +172,9 @@ export default async function PortalOnboardingPage() {
           ) : (
             <p className="rounded-tile border border-emerald-200 bg-emerald-50 px-4 py-3 text-meta text-emerald-900">
               Your account details are approved.
-              {saved?.einLast4 && (
+              {saved?.cardLast4 && (
                 <span className="mt-1 block font-mono text-caption">
-                  EIN on file: •••• {saved.einLast4}
+                  Card on file: {saved.cardBrand ?? "Card"} ending {saved.cardLast4}
                 </span>
               )}
             </p>
@@ -230,8 +237,8 @@ function SubmittedSummary({
         )}
       </p>
       <p className="mt-6 border-t border-line pt-4 text-caption text-ink-muted">
-        Licence and tax identifiers are encrypted and shown as their last four digits only. To
-        change anything here,{" "}
+        Prescriber identifiers and your card number are encrypted and shown as their last four
+        digits only. The card&rsquo;s security code is never stored. To change anything here,{" "}
         <Link href="/support" className="link-arrow">
           contact your account representative
         </Link>

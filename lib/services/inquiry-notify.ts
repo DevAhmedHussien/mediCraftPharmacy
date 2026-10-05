@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { SiteEnquiryKind } from "@prisma/client";
+import type { SiteInquiryKind } from "@prisma/client";
 
 import { db } from "@/lib/db";
 import { site } from "@/lib/site";
@@ -18,13 +18,13 @@ import { site } from "@/lib/site";
    member of staff opens that one record.
    ========================================================================= */
 
-const SUBJECTS: Record<SiteEnquiryKind, { subject: string; body: string }> = {
+const SUBJECTS: Record<SiteInquiryKind, { subject: string; body: string }> = {
   REFILL: {
     subject: "A patient refill request arrived",
     body: "A refill request is waiting in the admin. The details are protected health information and are not included here — open the record to read them.",
   },
   CONTACT: {
-    subject: "A website enquiry arrived",
+    subject: "A website inquiry arrived",
     body: "Someone used the contact form on the website.",
   },
   CAREER: {
@@ -40,9 +40,9 @@ const SUBJECTS: Record<SiteEnquiryKind, { subject: string; body: string }> = {
  * with backoff instead of losing the alert — and a failure here never rolls
  * back the submission, which is already safely stored by the time this runs.
  */
-export async function notifyStaffOfEnquiry(enquiryId: string, kind: SiteEnquiryKind) {
+export async function notifyStaffOfInquiry(inquiryId: string, kind: SiteInquiryKind) {
   const copy = SUBJECTS[kind];
-  const link = `${site.url}/admin/enquiries?open=${enquiryId}`;
+  const link = `${site.url}/admin/inquiries?open=${inquiryId}`;
 
   const recipients = await db.user.findMany({
     where: { isActive: true, role: { in: ["ADMIN", "SUPER_ADMIN"] } },
@@ -53,10 +53,10 @@ export async function notifyStaffOfEnquiry(enquiryId: string, kind: SiteEnquiryK
 
   await db.emailOutbox.createMany({
     data: recipients.map((recipient) => ({
-      // No historyId — this is not a pipeline transition. The enquiry id plus
+      // No historyId — this is not a pipeline transition. The inquiry id plus
       // the recipient is the natural key, and it keeps a retry idempotent.
-      idempotencyKey: `enquiry:${enquiryId}:${recipient.email}`,
-      template: "admin/site-enquiry",
+      idempotencyKey: `inquiry:${inquiryId}:${recipient.email}`,
+      template: "admin/site-inquiry",
       to: recipient.email,
       props: { kind, subject: copy.subject, body: copy.body, link },
     })),

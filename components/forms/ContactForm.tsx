@@ -29,7 +29,7 @@ export function ContactForm() {
    * These are uncontrolled inputs posting to a server action, so nothing
    * resets them on its own: the success banner appeared above a form still
    * holding the message that had just been sent, which reads as "it did not
-   * go" and gets the same enquiry submitted two or three times. */
+   * go" and gets the same inquiry submitted two or three times. */
   useEffect(() => {
     if (state.ok && cleared.current !== state) {
       cleared.current = state;

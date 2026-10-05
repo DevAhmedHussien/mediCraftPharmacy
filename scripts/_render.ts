@@ -20,7 +20,6 @@ const bytes = await buildMsaPdf({
   ],
   profile: {
     tradingName: "Gulfside Wellness",
-    einLast4: "4417",
     businessType: "Telehealth practice",
     businessAddress: "1200 Beach Blvd, Suite 210, Clearwater, FL 33755",
     billingAddress: null,

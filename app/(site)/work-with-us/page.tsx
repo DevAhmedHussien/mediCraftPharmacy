@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { PartnerEnquiryForm } from "@/components/forms/PartnerEnquiryForm";
+import { PartnerInquiryForm } from "@/components/forms/PartnerInquiryForm";
 import { PageHero } from "@/components/blocks";
 import { HowItWorks } from "@/components/sections/HowItWorks";
 import { breadcrumbJsonLd, jsonLdProps, pageMetadata } from "@/lib/seo";
@@ -39,7 +39,7 @@ export default function WorkWithUsPage() {
             one business day.
           </p>
           <div className="mt-10">
-            <PartnerEnquiryForm />
+            <PartnerInquiryForm />
           </div>
         </div>
       </section>

@@ -162,7 +162,7 @@ export type EmailTemplate =
   | "partner/account-reactivated"
   | "admin/new-application"
   | "admin/identity-submitted"
-  | "admin/site-enquiry"
+  | "admin/site-inquiry"
   | "admin/product-list-sent"
   | "admin/meeting-requested"
   | "admin/meeting-confirmed"
@@ -282,8 +282,8 @@ export const TRANSITIONS: readonly Transition[] = [
   {
     /* The applicant says who they are and uploads a photo ID.
      *
-     * This sits between the enquiry and the formulary because Provider Cost is
-     * confidential under MSA §11 and the enquiry form is fourteen fields
+     * This sits between the inquiry and the formulary because Provider Cost is
+     * confidential under MSA §11 and the inquiry form is fourteen fields
      * anyone can fill in. Releasing a price list to whoever typed an email
      * address is the gap this closes. */
     from: PARTNER_STATUS.APPLICATION_SUBMITTED,

@@ -271,19 +271,12 @@ export function AccountDetailsForm({
           blurb="As it appears on your W-9 — this is what goes on the agreement and your invoices."
         >
           <TextField<AccountDetailsValues> name="legalBusinessName" label="Legal business name" />
-          <div className="grid gap-4 sm:grid-cols-2">
-            <TextField<AccountDetailsValues>
-              name="dba"
-              label="Trading as (DBA)"
-              optional
-              hint="If you trade under a different name."
-            />
-            <TextField<AccountDetailsValues>
-              name="ein"
-              label="EIN / Tax ID"
-              hint="Nine digits. Encrypted at rest — we show only the last four back to you."
-            />
-          </div>
+          <TextField<AccountDetailsValues>
+            name="dba"
+            label="Trading as (DBA)"
+            optional
+            hint="If you trade under a different name."
+          />
         </Section>
 
         <Section title="Business address" blurb="Where the entity is registered, and where invoices go.">
@@ -349,21 +342,46 @@ export function AccountDetailsForm({
           </div>
         </Section>
 
-        <Section title="Licence and accounts payable" blurb="Optional, and easy to add later.">
-          <div className="grid gap-4 sm:grid-cols-3">
-            <TextField<AccountDetailsValues> name="pharmacyLicenseNumber" label="Pharmacy licence #" optional />
-            <SelectField<AccountDetailsValues>
-              name="pharmacyLicenseState"
-              label="Issuing state"
-              optional
-              options={US_STATES.map((s) => ({ value: s, label: s }))}
-            />
-            <MaskedField<AccountDetailsValues> name="pharmacyLicenseExpires" label="Expires" mask="date" optional />
-          </div>
+        <Section
+          title="Card on file"
+          blurb="Billed against your agreed pricing when you order. Nothing is charged today."
+        >
+          <TextField<AccountDetailsValues>
+            name="cardholderName"
+            label="Name on card"
+            autoComplete="cc-name"
+          />
+          <MaskedField<AccountDetailsValues>
+            name="cardNumber"
+            label="Card number"
+            mask="card"
+            autoComplete="cc-number"
+          />
           <div className="grid gap-4 sm:grid-cols-2">
-            <TextField<AccountDetailsValues> name="accountsPayableEmail" label="Accounts payable email" type="email" optional />
-            <MaskedField<AccountDetailsValues> name="accountsPayablePhone" label="Accounts payable phone" mask="phone" optional />
+            <MaskedField<AccountDetailsValues>
+              name="cardExpiry"
+              label="Expires"
+              mask="expiry"
+              autoComplete="cc-exp"
+            />
+            {/* Not a MaskedField: there is nothing to format, and a controlled
+                rewrite on every keystroke would fight the browser's own
+                autofill of a saved card. */}
+            <TextField<AccountDetailsValues>
+              name="cardCvv"
+              label="Security code"
+              autoComplete="cc-csc"
+              hint="Three digits on the back, or four on the front of an Amex."
+            />
           </div>
+
+          {/* Said here rather than only in the terms, because this is where
+              someone is deciding whether to type it. */}
+          <p className="text-caption text-ink-muted">
+            The number is encrypted the moment it reaches us and is shown back to
+            you and to our staff only as the last four digits. The security code
+            is used to verify the card and is never stored.
+          </p>
         </Section>
 
         <section className="card space-y-4 p-6 md:p-8">

@@ -61,7 +61,6 @@ export async function buildAgreementFor(
         select: {
           legalBusinessName: true,
           dba: true,
-          einLast4: true,
           businessStreet: true,
           businessSuite: true,
           businessCity: true,
@@ -195,7 +194,6 @@ export async function buildAgreementFor(
 
   const profile: ClientProfile = {
     tradingName: onboarding?.dba ?? null,
-    einLast4: onboarding?.einLast4 ?? null,
     // Enum to prose. The stored value is SMALL_PHARMACY; nobody signs that.
     businessType: BUSINESS_TYPE_LABEL[partner.businessType] ?? null,
     businessAddress: address || null,

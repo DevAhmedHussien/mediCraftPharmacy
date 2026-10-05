@@ -1110,6 +1110,10 @@ export const legal = {
         body: "Your information is used to process prescriptions, communicate with your prescriber, coordinate shipping, and fulfill legal and regulatory obligations. We do not sell, rent, or share your personal information with third parties for marketing purposes.",
       },
       {
+        heading: "Provider Account and Payment Information",
+        body: "Separately from patient information, practices that open a provider account give us business details — the legal entity, its address, authorised signer, prescribers and their DEA and NPI numbers — and a payment card for billing. Identifiers of this kind, and the card number, are encrypted at rest and are shown back only as their last four digits; the card security code is not retained. This is business information about a practice rather than protected health information about a patient, and it is used to operate the account, bill for orders, and meet our regulatory obligations. It is not sold, rented, or shared for marketing.",
+      },
+      {
         heading: "Your Rights",
         body: "You have the right to access, correct, and request deletion of your personal information, subject to legal and regulatory requirements. To exercise these rights, contact us at privacy@medicraftpharmacy.com.",
       },
@@ -1128,6 +1132,10 @@ export const legal = {
       {
         heading: "Prescription Requirement",
         body: "All compounded medications require a valid prescription from a licensed prescriber. MediCraft does not dispense medications without a valid prescription on file. Patients may not order medications directly.",
+      },
+      {
+        heading: "Payment Cards and Billing",
+        body: "Practices that open a provider account are asked for a payment card during onboarding. Nothing is charged at that point; the card is held on file and billed against the pricing schedule agreed with that practice, for orders the practice places. The card number is encrypted at rest and is displayed back to the practice, and to our staff, only as its brand and last four digits. The card security code is used to verify the card at the time it is given and is not retained. A practice may replace or remove the card on file at any time by contacting their account representative; removing it ends the ability to place orders until another is supplied. Disputed charges should be raised with us before a chargeback is filed, and will be investigated against the order record and the agreed schedule.",
       },
       {
         heading: "Limitation of Liability",

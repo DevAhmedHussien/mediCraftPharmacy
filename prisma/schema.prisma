@@ -394,6 +394,26 @@ model PartnerOnboarding {
   /// Display-only, so an admin can match a document without a decrypt call.
   einLast4          String?
 
+  /// --- Card on file -----------------------------------------------------
+  /// Taken during onboarding and billed against the agreed schedule.
+  ///
+  /// THERE IS NO CVV COLUMN, AND THAT IS NOT AN OVERSIGHT. Card network
+  /// rules prohibit retaining the security code once a payment is
+  /// authorised; a processor that finds stored CVVs can close the merchant
+  /// account over it. The code is validated when it is typed, used, and
+  /// dropped. Anyone adding a column for it later should read this first.
+  ///
+  /// The number itself follows the same shape as every other regulated
+  /// identifier here — AES-256-GCM envelope plus the four digits needed to
+  /// say "Visa ending 4242" — so nothing decrypts it to render a list.
+  cardholderName     String?
+  cardBrand          String?
+  cardPanCiphertext  String?
+  cardLast4          String?
+  cardExpMonth       Int?
+  cardExpYear        Int?
+  cardCapturedAt     DateTime?
+
   businessStreet String?
   businessSuite  String?
   businessCity   String?
@@ -993,9 +1013,9 @@ model WebhookEvent {
 /// field-level encryption the prescriber identifiers use, and staff are
 /// notified with a message that carries a type and a link and nothing else —
 /// the same rule the partner pipeline already follows.
-model SiteEnquiry {
+model SiteInquiry {
   id   String          @id @default(cuid())
-  kind SiteEnquiryKind
+  kind SiteInquiryKind
 
   /// Enough to recognise and reply, never enough to identify a patient's
   /// condition. Null on a refill, where even the name is PHI in context.
@@ -1010,7 +1030,7 @@ model SiteEnquiry {
   /// Set when the submission contains protected health information.
   isPhi             Boolean @default(false)
 
-  status     SiteEnquiryStatus @default(NEW)
+  status     SiteInquiryStatus @default(NEW)
   handledAt  DateTime?
   handledById String?
 
@@ -1020,25 +1040,35 @@ model SiteEnquiry {
 
   @@index([status, createdAt])
   @@index([kind, createdAt])
+  /// The spelling changed in the application, not in the database. Renaming
+  /// the Prisma model without this would have generated a migration that
+  /// renames a live table and two enum types for a vocabulary change — a
+  /// rewrite of every row to fix a letter. The code says Inquiry; Postgres
+  /// goes on saying Enquiry, and nobody has to care.
+  @@map("SiteEnquiry")
 }
 
-enum SiteEnquiryKind {
+enum SiteInquiryKind {
   CONTACT
   REFILL
   CAREER
+
+  @@map("SiteEnquiryKind")
 }
 
-enum SiteEnquiryStatus {
+enum SiteInquiryStatus {
   NEW
   HANDLED
   SPAM
+
+  @@map("SiteEnquiryStatus")
 }
 
 /// Pending CRM mirrors, written in the same transaction as the status change.
 ///
 /// GoHighLevel was originally called inline from `applyTransition`. That put a
 /// third-party HTTP round trip on the critical path of every status change —
-/// including a visitor submitting the public enquiry form — and a slow CRM
+/// including a visitor submitting the public inquiry form — and a slow CRM
 /// turned into a slow submit, then a timeout, then a lost sync with nothing
 /// left to retry from. Enqueuing instead makes the mirror atomic with the
 /// transition that caused it and lets the existing worker drain it.
@@ -1361,13 +1391,13 @@ model PartnerApplication {
   medicraftRep         String?
 
   // --- From the public interest form ---------------------------------------
-  /// The enquirer's role, e.g. "Owner/Prescriber".
+  /// The inquirer's role, e.g. "Owner/Prescriber".
   contactRole           String?
   /// How the practice operates — office only, telehealth, network, central fill.
   orgType               String?
   website               String?
   medicationsOfInterest String?
-  /// Free text from the enquiry. Not shown in any email — see the email rules.
+  /// Free text from the inquiry. Not shown in any email — see the email rules.
   interestNotes         String?
 
   /// When the full account-setup form was completed in the portal. `submittedAt`
