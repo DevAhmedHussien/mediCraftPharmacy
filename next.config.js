@@ -69,6 +69,51 @@ const nextConfig = {
      * 20-30% under WebP) and anything older falls back to WebP.
      */
     formats: ["image/avif", "image/webp"],
+
+    /*
+     * How long an optimised image stays fresh in a browser.
+     *
+     * The default is 60 SECONDS, and that is what every image on the site was
+     * being served with: `cache-control: public, max-age=60, must-revalidate`.
+     * A minute after a visitor loads a page, every photograph on it is stale,
+     * so the next page view re-requests all of them — and with no CDN in
+     * front, each of those round trips is ~400ms to a single small instance
+     * in us-east-1. That is the "images take a long time to appear".
+     *
+     * Thirty days instead. The optimiser keys its cache on the source URL,
+     * the width and the quality, so this is only unsafe if a file is REPLACED
+     * under a name it already had — which is the same trap the email logo fell
+     * into. The rule for this repo is already versioned filenames
+     * (medicraft-logo-2026.png); keep to it and this is free.
+     */
+    minimumCacheTTL: 2592000,
+  },
+
+  /*
+   * Long-lived caching for the static image tree.
+   *
+   * Next serves /public with `public, max-age=0`, which makes a browser
+   * revalidate every logo and photograph on every navigation. Those are
+   * conditional requests, so they come back 304 with no body — but each one
+   * still costs a full round trip, and there are a dozen on the home page.
+   *
+   * A day of freshness plus a week of stale-while-revalidate: a repeat
+   * visitor paints instantly from cache, and a replaced file is picked up in
+   * the background within a day rather than needing a hard refresh. Hashed
+   * assets under /_next/static already get a year from Next itself.
+   */
+  async headers() {
+    return [
+      {
+        source: "/images/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=86400, stale-while-revalidate=604800",
+          },
+        ],
+      },
+    ];
   },
 };
 

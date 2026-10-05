@@ -55,7 +55,14 @@ export default async function BlogIndexPage() {
           {posts.length === 0 ? (
             <p className="text-meta text-ink-muted">No posts published yet.</p>
           ) : (
-            <ul className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            /* TWO COLUMNS, NOT THREE.
+               At three across, the cover was a 24rem strip and every one of
+               these photographs is of a vial on a bench — detail that simply
+               does not survive being shown that small. Two across roughly
+               doubles the area the image gets, which is the difference
+               between a thumbnail and a photograph. Four posts also happen to
+               land as a clean 2x2 rather than a row of three and an orphan. */
+            <ul className="grid gap-x-7 gap-y-10 md:grid-cols-2">
               {posts.map((post) => (
                 <li key={post.slug}>
                   <article className="card card-hover group h-full overflow-hidden p-0">
@@ -65,45 +72,63 @@ export default async function BlogIndexPage() {
                           URL: the bucket is private and every read goes
                           through the app, which is what keeps an uploaded
                           licence and a blog cover under the same rule. */}
-                      {post.cover && (
-                        <div className="relative aspect-[16/10] overflow-hidden bg-sand">
+                      <div className="relative aspect-[16/10] overflow-hidden bg-sand">
+                        {post.cover ? (
                           <Image
                             src={`/api/uploads/${post.cover.key}`}
                             alt={post.cover.alt ?? ""}
                             fill
-                            sizes="(min-width: 1024px) 24rem, (min-width: 768px) 45vw, 92vw"
-                            className="object-cover"
+                            /* Matches the two-column layout. These were still
+                               describing the old three-column grid, so the
+                               browser was handed a candidate about half the
+                               width it needed and upscaled it. */
+                            sizes="(min-width: 768px) 46vw, 92vw"
+                            className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
                           />
-                        </div>
-                      )}
+                        ) : (
+                          /* A post with no cover used to render no image
+                             element at all, so one coverless post in a grid
+                             of covered ones collapsed to half the height of
+                             its neighbours and broke the row. The tile holds
+                             the shape. */
+                          <div aria-hidden className="absolute inset-0 bg-gradient-to-br from-sand to-white" />
+                        )}
+                      </div>
 
-                      <div className="flex h-full flex-col p-6">
-                      {post.categories.length > 0 && (
-                        <p className="text-label font-medium uppercase tracking-wide text-cyan-700">
-                          {post.categories.map((c) => c.category.name).join(" · ")}
+                      {/* `flex-1`, not `h-full`. On a flex child `h-full`
+                          resolves against the container rather than the space
+                          left over, so the text block claimed the card's full
+                          height next to an image that was already using part
+                          of it. */}
+                      <div className="flex flex-1 flex-col p-7">
+                        {post.categories.length > 0 && (
+                          <p className="text-label font-semibold uppercase tracking-[0.12em] text-brand-700">
+                            {post.categories.map((c) => c.category.name).join(" · ")}
+                          </p>
+                        )}
+
+                        <h2 className="mt-3 text-[1.3125rem] font-bold leading-[1.25] text-ink text-balance">
+                          {post.title}
+                        </h2>
+
+                        {post.excerpt && (
+                          <p className="mt-3 text-meta leading-relaxed text-ink-soft text-pretty">
+                            {post.excerpt}
+                          </p>
+                        )}
+
+                        <p className="mt-auto flex items-center gap-2 pt-6 text-caption text-ink-muted">
+                          <time dateTime={post.publishedAt?.toISOString()}>
+                            {post.publishedAt?.toLocaleDateString("en-US", {
+                              month: "long",
+                              day: "numeric",
+                              year: "numeric",
+                              timeZone: "UTC",
+                            })}
+                          </time>
+                          <span aria-hidden className="h-3 w-px bg-line" />
+                          {post.readingMinutes} min read
                         </p>
-                      )}
-
-                      <h2 className="mt-2.5 text-[1.125rem] font-bold leading-snug text-ink text-balance">
-                        {post.title}
-                      </h2>
-
-                      {post.excerpt && (
-                        <p className="mt-2.5 text-meta text-ink-soft text-pretty">{post.excerpt}</p>
-                      )}
-
-                      <p className="mt-auto pt-5 font-mono text-caption text-ink-muted">
-                        <time dateTime={post.publishedAt?.toISOString()}>
-                          {post.publishedAt?.toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                            timeZone: "UTC",
-                          })}
-                        </time>
-                        {" · "}
-                        {post.readingMinutes} min read
-                      </p>
                       </div>
                     </Link>
                   </article>

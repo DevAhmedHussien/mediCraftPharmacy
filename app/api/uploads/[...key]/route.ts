@@ -39,6 +39,27 @@ const PARTNER_DOCUMENT_PREFIX = /^partners\/([^/]+)\/documents\//;
 const BLOG_MEDIA_PREFIX = /^blog\//;
 
 /**
+ * Content types we are willing to serve INLINE, by extension.
+ *
+ * Images only, and raster images at that. No SVG: an SVG is a document that
+ * can carry script, so rendering one inline from our own origin is
+ * stored XSS. It stays on the attachment path with everything else.
+ */
+const INLINE_TYPES: Record<string, string> = {
+  webp: "image/webp",
+  avif: "image/avif",
+  png: "image/png",
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  gif: "image/gif",
+};
+
+function inlineTypeFor(key: string): string | null {
+  const ext = key.split(".").pop()?.toLowerCase() ?? "";
+  return INLINE_TYPES[ext] ?? null;
+}
+
+/**
  * Decide whether this session may touch this key, for this operation.
  *
  * READ AND WRITE ARE NOT THE SAME PERMISSION. A reviewer needs to open a
@@ -137,10 +158,43 @@ export async function GET(_request: Request, { params }: { params: { key: string
     return NextResponse.json({ error: "Not found." }, { status: 404 });
   }
 
+  /* --- Blog media is a public asset and has to be served like one ---------
+     This route was written for partner documents, and those rules were being
+     applied to article cover photographs as well: `attachment`, so a browser
+     asked to download rather than display; `application/octet-stream`,
+     because the content type came from a PartnerDocument row that does not
+     exist for blog media; and `private, no-store`, so the file was fetched
+     again on every single page view by every visitor, forever.
+
+     It still rendered, because next/image fetches the bytes server-side and
+     re-serves them — which is exactly why nobody noticed. The cost just moved:
+     every optimizer miss meant our own server pulling 130KB back out of S3.
+
+     Narrow on purpose. The inline path needs BOTH a public prefix and a
+     raster image extension; anything else falls through to the attachment
+     path below, unchanged. */
+  const publicImage = BLOG_MEDIA_PREFIX.test(key) ? inlineTypeFor(key) : null;
+
+  if (publicImage) {
+    return new NextResponse(new Uint8Array(body), {
+      headers: {
+        "Content-Disposition": "inline",
+        "Content-Type": publicImage,
+        "Content-Length": String(body.byteLength),
+        /* Immutable, and safe to be: these keys carry a dated path and a
+           replaced cover is uploaded under a new one. If that ever stops
+           being true, the key has to change — not this header. */
+        "Cache-Control": "public, max-age=31536000, immutable",
+        "X-Content-Type-Options": "nosniff",
+      },
+    });
+  }
+
   return new NextResponse(new Uint8Array(body), {
     headers: {
-      // `attachment`, always. An uploaded SVG or PDF rendered inline is script
-      // execution on our own origin; forcing a download is the difference.
+      // `attachment`, always, for anything private. An uploaded SVG or PDF
+      // rendered inline is script execution on our own origin; forcing a
+      // download is the difference.
       "Content-Disposition": `attachment; filename="${encodeURIComponent(
         document?.filename ?? "document"
       )}"`,

@@ -88,6 +88,7 @@ jobs:
           scp -i /tmp/deploy_key deploy/fetch-secrets.sh   "ec2-user@${HOST}:/opt/medicraft/fetch-secrets.sh"
           scp -i /tmp/deploy_key deploy/backup.sh          "ec2-user@${HOST}:/opt/medicraft/backup.sh"
           scp -i /tmp/deploy_key deploy/drain-outbox.sh    "ec2-user@${HOST}:/opt/medicraft/drain-outbox.sh"
+          scp -i /tmp/deploy_key deploy/migrate.sh         "ec2-user@${HOST}:/opt/medicraft/migrate.sh"
 
       - name: Migrate, then deploy
         env:
@@ -100,7 +101,7 @@ jobs:
             cd /opt/medicraft
             source .env.infra
 
-            chmod +x fetch-secrets.sh backup.sh drain-outbox.sh
+            chmod +x fetch-secrets.sh backup.sh drain-outbox.sh migrate.sh
             sudo install -m 755 backup.sh /usr/local/bin/medicraft-backup
             sudo install -m 755 drain-outbox.sh /usr/local/bin/medicraft-drain-outbox
             # Every five minutes. applyTransition enqueues rather than sends,
