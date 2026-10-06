@@ -105,7 +105,7 @@ export function PostForm({ post, categories }: { post?: Post; categories: Catego
                 {STATUSES.map((option) => (
                   <label
                     key={option.value}
-                    className="flex cursor-pointer items-start gap-2.5 rounded-[5px] border p-2.5 transition-colors has-[:checked]:border-[color:var(--admin-accent)] has-[:checked]:bg-[#f4f7ff]"
+                    className="flex cursor-pointer items-start gap-2.5 rounded-[5px] border p-2.5 transition-colors has-[:checked]:border-[color:var(--admin-accent)] has-[:checked]:bg-[theme(colors.info.bg)]"
                     style={{ borderColor: "var(--admin-border)" }}
                   >
                     <input

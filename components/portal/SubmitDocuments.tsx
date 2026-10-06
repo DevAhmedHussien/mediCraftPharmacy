@@ -26,8 +26,8 @@ export function SubmitDocuments({ missing }: { missing: string[] }) {
           role={result.ok ? "status" : "alert"}
           className={
             result.ok
-              ? "mb-5 flex items-start gap-2.5 rounded-tile border border-emerald-200 bg-emerald-50 px-4 py-3 text-meta text-emerald-900"
-              : "mb-5 flex items-start gap-2.5 rounded-tile border border-red-200 bg-red-50 px-4 py-3 text-meta text-red-900"
+              ? "mb-5 flex items-start gap-2.5 rounded-tile border border-success-fg/25 bg-success-bg px-4 py-3 text-meta text-success-fg"
+              : "mb-5 flex items-start gap-2.5 rounded-tile border border-danger-fg/25 bg-danger-bg px-4 py-3 text-meta text-danger-fg"
           }
         >
           {result.ok ? (

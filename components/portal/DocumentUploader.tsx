@@ -140,13 +140,13 @@ export function DocumentRow({
         <div className="min-w-0">
           <h3 className="flex items-center gap-2 text-meta font-bold text-ink">
             {satisfied ? (
-              <CheckCircle2 className="size-4 shrink-0 text-emerald-600" strokeWidth={2.4} aria-hidden />
+              <CheckCircle2 className="size-4 shrink-0 text-success-fg" strokeWidth={2.4} aria-hidden />
             ) : (
               <span
                 aria-hidden
                 className={
                   spec.required
-                    ? "size-2 shrink-0 rounded-full bg-amber-500"
+                    ? "size-2 shrink-0 rounded-full bg-warning-fg"
                     : "size-2 shrink-0 rounded-full bg-line"
                 }
               />
@@ -192,7 +192,7 @@ export function DocumentRow({
       {error && (
         <p
           role="alert"
-          className="mt-3 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-caption font-medium text-red-800"
+          className="mt-3 flex items-start gap-2 rounded-lg border border-danger-fg/25 bg-danger-bg px-3 py-2 text-caption font-medium text-danger-fg"
         >
           <AlertCircle className="mt-0.5 size-3.5 shrink-0" strokeWidth={2.2} aria-hidden />
           {error}
@@ -237,7 +237,7 @@ export function DocumentRow({
                       router.refresh();
                     })
                   }
-                  className="inline-flex items-center gap-1 text-caption font-medium text-red-700 hover:underline disabled:opacity-50"
+                  className="inline-flex items-center gap-1 text-caption font-medium text-danger-fg hover:underline disabled:opacity-50"
                 >
                   <Trash2 className="size-3.5" strokeWidth={2} aria-hidden />
                   Remove
@@ -245,7 +245,7 @@ export function DocumentRow({
               )}
 
               {doc.reviewerComment && (
-                <p className="w-full text-caption text-amber-800">{doc.reviewerComment}</p>
+                <p className="w-full text-caption text-warning-fg">{doc.reviewerComment}</p>
               )}
             </li>
           ))}
@@ -264,7 +264,7 @@ export function DocumentRow({
 function StatusPill({ status }: { status: UploadedDocument["status"] }) {
   if (status === "ACCEPTED") {
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-caption font-medium text-emerald-800">
+      <span className="inline-flex items-center gap-1 rounded-full bg-success-bg px-2 py-0.5 text-caption font-medium text-success-fg">
         <CheckCircle2 className="size-3" strokeWidth={2.4} aria-hidden />
         Accepted
       </span>
@@ -272,7 +272,7 @@ function StatusPill({ status }: { status: UploadedDocument["status"] }) {
   }
   if (status === "REJECTED") {
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-caption font-medium text-red-800">
+      <span className="inline-flex items-center gap-1 rounded-full bg-danger-bg px-2 py-0.5 text-caption font-medium text-danger-fg">
         <AlertCircle className="size-3" strokeWidth={2.4} aria-hidden />
         Rejected
       </span>

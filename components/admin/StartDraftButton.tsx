@@ -27,7 +27,7 @@ export function StartDraftButton({
       {revision && applicantNote && (
         <blockquote
           className="mb-4 rounded-[5px] border-l-2 py-2 pl-3 text-[0.8125rem] leading-relaxed text-[color:var(--admin-ink-70)]"
-          style={{ borderColor: "var(--admin-accent)", background: "#f4f7ff" }}
+          style={{ borderColor: "var(--admin-accent)", background: "var(--status-info-bg)" }}
         >
           {applicantNote}
         </blockquote>

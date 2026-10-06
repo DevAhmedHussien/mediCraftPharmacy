@@ -71,7 +71,7 @@ export function AdminUserMenu({
           open && "bg-[color:var(--admin-bg)]"
         )}
       >
-        <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-[#e8eefe] text-[0.6875rem] font-semibold text-[color:var(--admin-accent)]">
+        <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-[theme(colors.info.bg)] text-[0.6875rem] font-semibold text-[color:var(--admin-accent)]">
           {initials}
         </span>
 
@@ -112,7 +112,7 @@ export function AdminUserMenu({
             <p className="truncate font-mono text-[0.6875rem] text-[color:var(--admin-ink-50)]">
               {email}
             </p>
-            <p className="mt-1.5 inline-flex items-center gap-1.5 rounded bg-[#e8eefe] px-1.5 py-px text-[0.625rem] font-semibold uppercase tracking-wider text-[color:var(--admin-accent)]">
+            <p className="mt-1.5 inline-flex items-center gap-1.5 rounded bg-[theme(colors.info.bg)] px-1.5 py-px text-[0.625rem] font-semibold uppercase tracking-wider text-[color:var(--admin-accent)]">
               <UserRound className="size-3" strokeWidth={2.2} aria-hidden />
               {roleLabel}
             </p>

@@ -110,7 +110,7 @@ export function NegotiatedList({ items }: { items: NegotiatedItem[] }) {
               <td className="px-4 py-2.5 text-right tabular-nums text-ink-muted line-through">
                 ${totals.list.toFixed(2)}
               </td>
-              <td className="px-4 py-2.5 text-right text-caption font-medium text-emerald-700">
+              <td className="px-4 py-2.5 text-right text-caption font-medium text-success-fg">
                 −${totals.saved.toFixed(2)}
               </td>
               <td className="px-4 py-2.5 text-right font-bold tabular-nums text-ink">

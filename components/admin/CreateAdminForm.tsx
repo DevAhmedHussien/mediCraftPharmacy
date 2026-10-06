@@ -111,7 +111,7 @@ export function CreateAdminForm({
               className="admin-input"
             />
             {state.errors?.confirmPassword && (
-              <p role="alert" className="mt-1 text-[0.75rem] font-medium text-[#9c3a2a]">
+              <p role="alert" className="mt-1 text-[0.75rem] font-medium text-[theme(colors.danger.fg)]">
                 {state.errors.confirmPassword}
               </p>
             )}

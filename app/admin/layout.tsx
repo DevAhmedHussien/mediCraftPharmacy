@@ -70,7 +70,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           <Link href="/admin" aria-label="MediCraft admin">
             <Logo className="h-6 w-auto" animate="none" />
           </Link>
-          <span className="rounded bg-[#e8eefe] px-1.5 py-px text-[0.625rem] font-semibold uppercase tracking-wider text-[color:var(--admin-accent)]">
+          <span className="rounded bg-[theme(colors.info.bg)] px-1.5 py-px text-[0.625rem] font-semibold uppercase tracking-wider text-[color:var(--admin-accent)]">
             Admin
           </span>
         </div>

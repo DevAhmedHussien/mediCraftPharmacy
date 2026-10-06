@@ -244,7 +244,7 @@ export function AdminRow({
                 className="admin-input"
               />
               {pwdState.errors?.confirmPassword && (
-                <p role="alert" className="mt-1 text-[0.75rem] font-medium text-[#9c3a2a]">
+                <p role="alert" className="mt-1 text-[0.75rem] font-medium text-[theme(colors.danger.fg)]">
                   {pwdState.errors.confirmPassword}
                 </p>
               )}

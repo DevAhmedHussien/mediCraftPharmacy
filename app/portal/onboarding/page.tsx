@@ -170,7 +170,7 @@ export default async function PortalOnboardingPage() {
               two business days. Nothing else is needed from you.
             </WaitingNotice>
           ) : (
-            <p className="rounded-tile border border-emerald-200 bg-emerald-50 px-4 py-3 text-meta text-emerald-900">
+            <p className="rounded-tile border border-success-fg/25 bg-success-bg px-4 py-3 text-meta text-success-fg">
               Your account details are approved.
               {saved?.cardLast4 && (
                 <span className="mt-1 block font-mono text-caption">
@@ -188,7 +188,7 @@ export default async function PortalOnboardingPage() {
       ) : (
         <>
           {status === PARTNER_STATUS.ONBOARDING_CHANGES_REQUESTED ? (
-            <p className="rounded-tile border border-amber-200 bg-amber-50 px-4 py-3 text-meta text-amber-900">
+            <p className="rounded-tile border border-warning-fg/25 bg-warning-bg px-4 py-3 text-meta text-warning-fg">
               <strong className="font-bold">A few corrections are needed.</strong> Your answers are
               still here — change what needs changing and save again.
             </p>

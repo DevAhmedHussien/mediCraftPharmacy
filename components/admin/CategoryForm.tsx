@@ -195,7 +195,7 @@ function DangerZone({
             <AdminSubmit>Move products</AdminSubmit>
           </div>
           {moveState.errors?.toId && (
-            <p role="alert" className="text-[0.75rem] font-medium text-[#9c3a2a]">
+            <p role="alert" className="text-[0.75rem] font-medium text-[theme(colors.danger.fg)]">
               {moveState.errors.toId}
             </p>
           )}

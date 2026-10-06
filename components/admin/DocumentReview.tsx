@@ -199,7 +199,7 @@ function Row({
       )}
 
       {error && (
-        <p role="alert" className="mt-2 text-[0.75rem] font-medium text-[#9c3a2a]">
+        <p role="alert" className="mt-2 text-[0.75rem] font-medium text-[theme(colors.danger.fg)]">
           {error}
         </p>
       )}

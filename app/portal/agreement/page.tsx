@@ -59,7 +59,7 @@ export default async function PortalAgreementPage() {
       back={{ href: "/portal", label: "Your application" }}
     >
       {changeOrder && (
-        <div className="mb-6 rounded-tile border border-amber-200 bg-amber-50 px-5 py-4">
+        <div className="mb-6 rounded-tile border border-warning-fg/25 bg-warning-bg px-5 py-4">
           <p className="font-bold text-ink">
             Change order {changeOrder.number} is waiting for your signature
           </p>
@@ -78,8 +78,8 @@ export default async function PortalAgreementPage() {
       )}
 
       {signed ? (
-        <div className="rounded-tile border border-emerald-200 bg-emerald-50 px-4 py-3">
-          <p className="text-meta text-emerald-900">
+        <div className="rounded-tile border border-success-fg/25 bg-success-bg px-4 py-3">
+          <p className="text-meta text-success-fg">
             Signed by {envelope.signedName} on{" "}
             {envelope.completedAt?.toLocaleString("en-US", {
               dateStyle: "long",

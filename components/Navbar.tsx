@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowRight, ChevronDown, UserRound } from "lucide-react";
@@ -125,6 +126,19 @@ export function Navbar({
                 <NavGroup
                   key={item.label}
                   item={item}
+                  /* The reference puts one image card beside the pharmacy
+                     links. Copy is the chain-of-custody section's own, so
+                     nothing new was invented for it. */
+                  promo={
+                    item.label === "The pharmacy"
+                      ? {
+                          href: "/quality",
+                          src: "/images/site/mc-hero-custody.webp",
+                          eyebrow: "Chain of custody",
+                          title: "Every package filmed. Every shipment tracked.",
+                        }
+                      : undefined
+                  }
                   open={openMenu === item.label}
                   active={item.children.some((child) => isActive(child.href))}
                   onOpen={() => setOpenMenu(item.label)}
@@ -191,8 +205,12 @@ export function Navbar({
                 href="/login"
                 className="flex items-center gap-1.5 whitespace-nowrap text-[14px] font-normal text-ink-soft transition-colors hover:text-navy"
               >
+                {/* "Sign in", per the reference. It said "Provider portal",
+                    which names a destination rather than the action — and
+                    staff sign in here too, so the old label was also wrong
+                    for half the people using it. */}
                 <UserRound className="h-3.5 w-3.5" strokeWidth={1.8} aria-hidden />
-                Provider portal
+                Sign in
               </Link>
             )}
 
@@ -239,63 +257,134 @@ export function Navbar({
  * /about — so the item is never a dead end for anyone who clicks rather than
  * hovers, and the panel markup always renders so every link is crawlable.
  */
+/* ===========================================================================
+   A header dropdown, per the Home reference.
+
+   A <button>, NOT a link. The trigger opens a panel; it does not navigate.
+   It was a <Link href={item.href}> carrying `aria-expanded`, which told a
+   screen reader "expandable" and then took the user to /about when they
+   pressed Enter — the one key they would use to expand it. The parent route
+   is still reachable: it is the first item inside the panel.
+
+   The panel is `role="region"` with an `aria-label`, not `role="menu"`.
+   These are ordinary links to ordinary pages, and a menu role promises
+   arrow-key semantics that plain links do not implement — announcing a
+   contract the markup does not keep is worse than announcing nothing.
+
+   Opens on hover AND on click, closes on Escape. Hover alone is unusable
+   without a pointer; click alone loses the browse-by-hover that makes a
+   desktop nav quick.
+   ========================================================================= */
 function NavGroup({
   item,
   open,
   active,
   onOpen,
   onClose,
+  promo,
 }: {
   item: HeaderNavItem;
   open: boolean;
   active: boolean;
   onOpen: () => void;
   onClose: () => void;
+  /** The reference puts one image card beside the links. */
+  promo?: { href: string; src: string; eyebrow: string; title: string };
 }) {
+  const panelId = `menu-${item.label.toLowerCase().replace(/\s+/g, "-")}`;
+
   return (
-    <div className="relative" onMouseEnter={onOpen} onMouseLeave={onClose}>
-      <Link
-        href={item.href}
+    <div
+      className="relative"
+      onMouseEnter={onOpen}
+      onMouseLeave={onClose}
+      onKeyDown={(event) => {
+        if (event.key === "Escape" && open) {
+          event.stopPropagation();
+          onClose();
+        }
+      }}
+    >
+      <button
+        type="button"
         aria-expanded={open}
+        aria-controls={panelId}
+        onClick={() => (open ? onClose() : onOpen())}
         onFocus={onOpen}
-        onClick={onClose}
         className={cn("nav-link flex items-center gap-1", active && "nav-link-active")}
       >
         {item.label}
         <ChevronDown
+          aria-hidden
           className={cn(
-            "h-3.5 w-3.5 text-ink-muted transition-transform duration-200",
+            "h-3.5 w-3.5 text-ink-muted transition-transform duration-200 motion-reduce:transition-none",
             open && "rotate-180"
           )}
           strokeWidth={2}
         />
         <span aria-hidden className={cn("nav-underline", active && "nav-underline-on")} />
-      </Link>
+      </button>
 
       <div
+        id={panelId}
+        role="region"
+        aria-label={item.label}
         className={cn(
-          /* The same glass surface as the pill it hangs from. It was a plain
-             white rectangle with a 14px radius — the one piece of the header
-             that still looked like the old design. */
-          "absolute left-0 top-full mt-2 w-[22rem] overflow-hidden rounded-card border border-white/90 bg-white/[0.72] shadow-glass backdrop-blur-xl backdrop-saturate-150 transition-opacity duration-150",
+          /* 94% opaque, per the reference — not the 72% the nav pill uses.
+             The pill floats over the page ground; this panel hangs over page
+             CONTENT, and at 72% the hero headline read straight through it. */
+          "absolute left-0 top-full mt-2 overflow-hidden rounded-card border border-white/95 bg-white/[0.94] shadow-menu backdrop-blur-[24px] backdrop-saturate-150 transition-opacity duration-150 motion-reduce:transition-none",
+          promo ? "w-[40rem]" : "w-[22rem]",
           open ? "opacity-100" : "pointer-events-none opacity-0"
         )}
         hidden={!open}
       >
-        <ul className="p-2">
-          {item.children?.map((child) => (
-            <li key={child.href}>
-              <Link
-                href={child.href}
-                onClick={onClose}
-                className="block rounded-xl px-3 py-2.5 transition-colors hover:bg-white/80"
-              >
-                <span className="block text-meta font-semibold text-ink">{child.label}</span>
-                <span className="mt-0.5 block text-caption text-ink-muted">{child.blurb}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <div className={cn("p-2", promo && "grid grid-cols-[1fr_15rem] gap-2")}>
+          <ul>
+            {item.children?.map((child) => (
+              <li key={child.href}>
+                <Link
+                  href={child.href}
+                  onClick={onClose}
+                  className="block rounded-xl px-3 py-2.5 transition-colors hover:bg-white/80 motion-reduce:transition-none"
+                >
+                  <span className="block text-[14px] font-medium text-navy">{child.label}</span>
+                  <span className="mt-0.5 block text-[12.5px] leading-snug text-ink-muted">
+                    {child.blurb}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+
+          {promo && (
+            <Link
+              href={promo.href}
+              onClick={onClose}
+              className="group/promo relative flex flex-col justify-end overflow-hidden rounded-xl bg-stone p-4"
+            >
+              <Image
+                src={promo.src}
+                alt=""
+                fill
+                sizes="15rem"
+                className="object-cover transition-transform duration-300 group-hover/promo:scale-[1.03] motion-reduce:transform-none"
+              />
+              <span className="relative">
+                <span className="block font-mono text-[10.5px] uppercase tracking-eyebrow text-white/80">
+                  {promo.eyebrow}
+                </span>
+                <span className="mt-1 block text-[14px] font-medium leading-snug text-white">
+                  {promo.title}
+                </span>
+              </span>
+              <span
+                aria-hidden
+                className="absolute inset-0 bg-gradient-to-t from-navy/80 to-navy/10"
+              />
+            </Link>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -353,7 +442,7 @@ function MegaPanel({
           rule under it. It sits below a floating pill now, so a full-bleed
           bar with a hard bottom border read as a second header. */}
       <div className="mx-auto w-full max-w-[1120px] px-5">
-        <div className="overflow-hidden rounded-card border border-white/90 bg-white/[0.72] shadow-glass backdrop-blur-xl backdrop-saturate-150">
+        <div className="overflow-hidden rounded-card border border-white/95 bg-white/[0.94] shadow-menu backdrop-blur-[24px] backdrop-saturate-150">
         <div className="container-x grid gap-10 py-9 lg:grid-cols-[1.6fr_1fr]">
           <div>
             <p className="eyebrow">Shop by category</p>

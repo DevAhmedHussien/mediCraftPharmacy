@@ -44,7 +44,7 @@ export function FieldError({ id, message }: { id?: string; message?: string }) {
   if (!message) return null;
 
   return (
-    <p id={id} role="alert" className="mt-1.5 text-caption font-medium text-red-600">
+    <p id={id} role="alert" className="mt-1.5 text-caption font-medium text-danger-fg">
       {message}
     </p>
   );

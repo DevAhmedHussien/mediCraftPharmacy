@@ -23,9 +23,9 @@ import { AlertCircle, CheckCircle2, Info } from "lucide-react";
 export type AlertTone = "success" | "error" | "info";
 
 const STYLES: Record<AlertTone, { border: string; background: string; color: string }> = {
-  success: { border: "#bcd9c6", background: "#f2f9f4", color: "#2c6b4d" },
-  error: { border: "#e4b8ae", background: "#fdf4f2", color: "#9c3a2a" },
-  info: { border: "#c3d2f0", background: "#f4f7ff", color: "#2c4a68" },
+  success: { border: "#bcd9c6", background: "var(--status-success-bg)", color: "var(--status-success-fg)" },
+  error: { border: "color-mix(in srgb, var(--status-danger-fg) 30%, transparent)", background: "var(--status-danger-bg)", color: "var(--status-danger-fg)" },
+  info: { border: "#c3d2f0", background: "var(--status-info-bg)", color: "#2c4a68" },
 };
 
 const ICONS: Record<AlertTone, typeof Info> = {

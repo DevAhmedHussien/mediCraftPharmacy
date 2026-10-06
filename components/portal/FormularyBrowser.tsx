@@ -187,7 +187,7 @@ export function FormularyBrowser({
               type="button"
               disabled={pending}
               onClick={() => startTransition(async () => void (await clearAllSelected()))}
-              className="font-medium text-ink-soft hover:text-red-700 hover:underline disabled:opacity-50"
+              className="font-medium text-ink-soft hover:text-danger-fg hover:underline disabled:opacity-50"
             >
               Clear selection
             </button>
@@ -260,7 +260,7 @@ export function FormularyBrowser({
                       </span>
                     )}
                     {row.deaSchedule && row.deaSchedule !== "NC" && (
-                      <span className="rounded-full bg-amber-50 px-2 py-0.5 text-caption font-medium text-amber-800">
+                      <span className="rounded-full bg-warning-bg px-2 py-0.5 text-caption font-medium text-warning-fg">
                         {row.deaSchedule}
                       </span>
                     )}

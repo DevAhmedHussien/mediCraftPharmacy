@@ -103,7 +103,7 @@ export default async function PartnerDetailPage({ params }: { params: { id: stri
       {(partner.rejectedReason || partner.suspendedReason) && (
         <p
           className="admin-panel px-4 py-2.5 text-[0.8125rem]"
-          style={{ borderColor: "#e4b8ae", background: "#fdf4f2", color: "#9c3a2a" }}
+          style={{ borderColor: "color-mix(in srgb, var(--status-danger-fg) 30%, transparent)", background: "var(--status-danger-bg)", color: "var(--status-danger-fg)" }}
         >
           <strong className="font-semibold">Reason:</strong>{" "}
           {partner.rejectedReason ?? partner.suspendedReason}

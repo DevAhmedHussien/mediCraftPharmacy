@@ -39,7 +39,7 @@ import { cn } from "@/lib/utils";
    ========================================================================= */
 
 const SERIES = [
-  { key: "views" as const, label: "Page views", color: "#1b54fb" },
+  { key: "views" as const, label: "Page views", color: "var(--admin-accent)" },
   { key: "uniques" as const, label: "Unique visitors", color: "#0c959d" },
 ];
 
@@ -147,8 +147,8 @@ export function TrafficChart({
         >
           <defs>
             <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#1b54fb" stopOpacity="0.14" />
-              <stop offset="100%" stopColor="#1b54fb" stopOpacity="0" />
+              <stop offset="0%" stopColor="var(--admin-accent)" stopOpacity="0.14" />
+              <stop offset="100%" stopColor="var(--admin-accent)" stopOpacity="0" />
             </linearGradient>
           </defs>
 

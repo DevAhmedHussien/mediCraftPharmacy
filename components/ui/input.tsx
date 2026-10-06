@@ -33,7 +33,7 @@ export const fieldClass =
      
      The 16px-on-mobile rule below is unchanged and must stay: Safari zooms
      the page when a field under 16px takes focus. */
-  "w-full rounded-[14px] border border-hair bg-white px-4 py-3 text-[1rem] text-navy outline-none transition-colors md:text-[15px] placeholder:text-ink-muted focus:border-brand-500 focus:ring-2 focus:ring-brand-100 disabled:cursor-not-allowed disabled:bg-paper disabled:text-ink-muted aria-[invalid=true]:border-red-400";
+  "w-full rounded-[14px] border border-hair bg-white px-4 py-3 text-[1rem] text-navy outline-none transition-colors md:text-[15px] placeholder:text-ink-muted focus:border-brand-500 focus:ring-2 focus:ring-brand-100 disabled:cursor-not-allowed disabled:bg-paper disabled:text-ink-muted aria-[invalid=true]:border-danger-fg/50";
 
 export type InputProps = React.InputHTMLAttributes<HTMLInputElement>;
 

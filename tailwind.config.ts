@@ -74,6 +74,23 @@ const config: Config = {
         stone: "#ecedef",
         tint: "#eef2ff",
 
+        /* --- Semantic status ---------------------------------------------
+           Four states, named for what they MEAN rather than what colour they
+           are. The repo had 66 hardcoded `emerald-50` / `red-600` /
+           `amber-200` classes doing this job, which is why a success banner
+           in the portal and one in the admin were different greens.
+
+           `success` is cyan-700 on a pale cyan, not green: the identity has
+           no green, and a green tick beside a cyan brand mark reads as a
+           third colour nobody chose. The other three are desaturated toward
+           the navy so they sit in the same light as every other surface.
+
+           Each is a pair — `fg` clears 4.5:1 on its own `bg`. */
+        success: { DEFAULT: "#0b6e74", fg: "#0b6e74", bg: "#e3f7f7" },
+        warning: { DEFAULT: "#8a5a00", fg: "#8a5a00", bg: "#fff4dd" },
+        danger: { DEFAULT: "#b42318", fg: "#b42318", bg: "#fdecea" },
+        info: { DEFAULT: "#1b54fb", fg: "#1b54fb", bg: "#eef2ff" },
+
         brand,
         cyan,
         navy: {
@@ -155,6 +172,10 @@ const config: Config = {
            navy-tinted like the originals so every card sits in one light. */
         glass: "inset 0 1px 0 rgba(255,255,255,.8), 0 8px 30px rgba(13,25,62,.05)",
         float: "inset 0 1px 0 rgba(255,255,255,.9), 0 12px 40px rgba(13,25,62,.08)",
+        /* The dropdown panel. Deeper and wider than `float` because it hangs
+           over page content rather than sitting on the page — without the
+           separation the panel and the hero read as one surface. */
+        menu: "0 24px 60px rgba(13,25,62,.14)",
       },
       letterSpacing: {
         /* The redesign's display type is Satoshi 400 at 88px, which needs

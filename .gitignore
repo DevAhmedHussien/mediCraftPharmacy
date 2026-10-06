@@ -29,3 +29,6 @@ next-env.d.ts
 # .terraform.lock.hcl IS committed on purpose: it pins provider versions so
 # CI and a laptop resolve the same ones.
 tsconfig.tsbuildinfo
+
+# Design references — mockups to recreate, not shipped code.
+design_handoff/

@@ -144,7 +144,7 @@ export function StatStrip({
             <dd
               className={cn(
                 "mt-1 flex items-baseline gap-1.5 text-[1.625rem] font-semibold leading-none tabular-nums tracking-[-0.02em]",
-                urgent && "text-[#9c3a2a]"
+                urgent && "text-[theme(colors.danger.fg)]"
               )}
             >
               {urgent && (

@@ -57,10 +57,10 @@ export function ProcessSequence({ className }: { className?: string }) {
         />
 
         {/* ---- The reject path ---- */}
-        <div className="mt-7 flex items-start gap-3 rounded-tile border border-amber-300/60 bg-amber-50 px-5 py-4">
+        <div className="mt-7 flex items-start gap-3 rounded-tile border border-warning-fg/35/60 bg-warning-bg px-5 py-4">
           <svg
             viewBox="0 0 24 24"
-            className="mt-0.5 h-5 w-5 shrink-0 text-amber-600"
+            className="mt-0.5 h-5 w-5 shrink-0 text-warning-fg"
             fill="none"
             stroke="currentColor"
             strokeWidth="1.8"

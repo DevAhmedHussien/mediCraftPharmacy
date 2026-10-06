@@ -61,7 +61,7 @@ const HALTED: PartnerStatus[] = [
 ];
 
 /** The halted tone, shared with the admin rail's notice. */
-const STOP = { border: "#e4b8ae", bg: "#fdf4f2", ink: "#9c3a2a" } as const;
+const STOP = { border: "color-mix(in srgb, var(--status-danger-fg) 30%, transparent)", bg: "var(--status-danger-bg)", ink: "var(--status-danger-fg)" } as const;
 
 type Phase = Step["phase"];
 const PHASES: Phase[] = ["Application", "Pricing", "Onboarding"];

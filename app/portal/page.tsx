@@ -111,7 +111,7 @@ export default async function PortalPage({
 
 
       {(partner.rejectedReason || partner.suspendedReason) && (
-        <p className="mt-6 rounded-tile border border-red-200 bg-red-50 px-4 py-3 text-meta text-red-900">
+        <p className="mt-6 rounded-tile border border-danger-fg/25 bg-danger-bg px-4 py-3 text-meta text-danger-fg">
           <strong className="font-bold">Reason:</strong>{" "}
           {partner.rejectedReason ?? partner.suspendedReason}
         </p>

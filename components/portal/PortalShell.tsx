@@ -67,7 +67,7 @@ export function PortalShell({
       {welcome && (
         <p
           role="status"
-          className="mb-6 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-[0.875rem] text-emerald-900"
+          className="mb-6 rounded-lg border border-success-fg/25 bg-success-bg px-4 py-3 text-[0.875rem] text-success-fg"
         >
           Your application has been received and you are signed in. This is where you
           track it from here.

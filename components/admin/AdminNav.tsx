@@ -67,7 +67,7 @@ export function AdminNav({
                         <span
                           className={cn(
                             "shrink-0 rounded px-1.5 py-px text-[0.6875rem] font-semibold tabular-nums",
-                            "bg-[#f8e9e5] text-[#9c3a2a]"
+                            "bg-[#f8e9e5] text-[theme(colors.danger.fg)]"
                           )}
                         >
                           {waiting}

@@ -209,7 +209,7 @@ export function AmendmentStatusCard({ amendment }: { amendment: Amendment }) {
         {amendment.adminNote && (
           <p
             className="mt-4 rounded-lg border-l-2 py-2 pl-3 text-[0.8125rem] leading-relaxed text-[color:var(--admin-ink-70)]"
-            style={{ borderColor: "var(--admin-accent)", background: "#f4f7ff" }}
+            style={{ borderColor: "var(--admin-accent)", background: "var(--status-info-bg)" }}
           >
             {amendment.adminNote}
           </p>
@@ -266,7 +266,7 @@ export function AmendmentStatusCard({ amendment }: { amendment: Amendment }) {
                   placeholder="Which items, and what you were expecting."
                 />
                 {roundState.errors?.note && (
-                  <p role="alert" className="text-[0.75rem] font-medium text-[#9c3a2a]">
+                  <p role="alert" className="text-[0.75rem] font-medium text-[theme(colors.danger.fg)]">
                     {roundState.errors.note}
                   </p>
                 )}
@@ -289,7 +289,7 @@ export function AmendmentStatusCard({ amendment }: { amendment: Amendment }) {
                   placeholder="So the first ten minutes are not spent working out what the call is for."
                 />
                 {callState.errors?.notes && (
-                  <p role="alert" className="text-[0.75rem] font-medium text-[#9c3a2a]">
+                  <p role="alert" className="text-[0.75rem] font-medium text-[theme(colors.danger.fg)]">
                     {callState.errors.notes}
                   </p>
                 )}

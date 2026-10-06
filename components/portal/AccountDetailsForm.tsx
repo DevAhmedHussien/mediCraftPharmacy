@@ -213,7 +213,7 @@ export function AccountDetailsForm({
                   <button
                     type="button"
                     onClick={() => prescribers.remove(index)}
-                    className="inline-flex items-center gap-1.5 text-caption font-medium text-red-700 hover:underline"
+                    className="inline-flex items-center gap-1.5 text-caption font-medium text-danger-fg hover:underline"
                   >
                     <Trash2 className="size-3.5" strokeWidth={2} aria-hidden />
                     Remove this prescriber
@@ -524,7 +524,7 @@ function StatesPicker() {
       </div>
 
       {error && (
-        <p role="alert" className="mt-2 text-caption font-medium text-red-600">
+        <p role="alert" className="mt-2 text-caption font-medium text-danger-fg">
           {error}
         </p>
       )}

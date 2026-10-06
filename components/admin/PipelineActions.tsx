@@ -261,7 +261,7 @@ function MoveForm({
         className="admin-input mt-1.5"
       />
       {state.errors?.note && (
-        <p role="alert" className="mt-1.5 text-[0.75rem] font-medium text-[#9c3a2a]">
+        <p role="alert" className="mt-1.5 text-[0.75rem] font-medium text-[theme(colors.danger.fg)]">
           {state.errors.note}
         </p>
       )}

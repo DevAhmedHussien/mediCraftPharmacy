@@ -279,7 +279,7 @@ h3 {
     @apply btn bg-transparent text-ink-soft hover:bg-white/70 hover:text-navy active:translate-y-px;
   }
   .btn-destructive {
-    @apply btn bg-red-600 text-white hover:bg-red-700 active:translate-y-px;
+    @apply btn bg-danger-fg text-white hover:brightness-110 active:translate-y-px;
   }
   .btn-sm {
     @apply px-[18px] py-2.5 text-[14px];
@@ -576,7 +576,7 @@ h3 {
   /* "In progress" needs to read as honest rather than as an accreditation
      already held — amber, not cyan, and the copy always says so. */
   .badge-progress {
-    @apply inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-caption font-semibold text-amber-800;
+    @apply inline-flex items-center gap-1.5 rounded-full border border-warning-fg/35 bg-warning-bg px-3 py-1 text-caption font-semibold text-warning-fg;
   }
 
   /* Callout — a tinted aside with a brand rule down the left edge. */
@@ -1378,6 +1378,22 @@ h3 {
     --admin-ink-70: #4a5470;
     --admin-ink-50: #78829a;
     --admin-accent: #1b54fb;
+
+    /* --- Status, as custom properties -------------------------------
+       The same four semantic pairs as `theme.extend.colors`, exposed as
+       CSS variables because a React `style={{}}` attribute is plain CSS —
+       Tailwind's `theme()` does not resolve there, and a `style` prop is
+       the only way to colour the console's panels, which take their
+       surfaces from variables so the whole dashboard repoints from one
+       block. Classes should still use `bg-success-bg` and friends. */
+    --status-success-fg: #0b6e74;
+    --status-success-bg: #e3f7f7;
+    --status-warning-fg: #8a5a00;
+    --status-warning-bg: #fff4dd;
+    --status-danger-fg: #b42318;
+    --status-danger-bg: #fdecea;
+    --status-info-fg: #1b54fb;
+    --status-info-bg: #eef2ff;
   }
 
   /* Only the admin paints the whole page in its own surface.

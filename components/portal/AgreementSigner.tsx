@@ -62,7 +62,7 @@ export function AgreementSigner({
         <span className="text-meta text-ink">{consent}</span>
       </label>
       {state.errors?.agreed && (
-        <p role="alert" className="mt-1.5 text-caption font-medium text-red-600">
+        <p role="alert" className="mt-1.5 text-caption font-medium text-danger-fg">
           {state.errors.agreed}
         </p>
       )}
@@ -82,7 +82,7 @@ export function AgreementSigner({
           className="mt-2 w-full max-w-sm rounded-[0.5rem] border border-line bg-white px-3 py-2.5 font-serif text-[1.25rem] text-ink placeholder:font-sans placeholder:text-[0.9375rem] placeholder:text-ink-muted focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
         />
         {state.errors?.typedName && (
-          <p role="alert" className="mt-1.5 text-caption font-medium text-red-600">
+          <p role="alert" className="mt-1.5 text-caption font-medium text-danger-fg">
             {state.errors.typedName}
           </p>
         )}

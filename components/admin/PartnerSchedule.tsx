@@ -102,7 +102,7 @@ export function PartnerSchedule({ lines }: { lines: ScheduleLine[] }) {
                       <span className="block text-[0.75rem] text-[color:var(--admin-ink-50)]">
                         {[line.strength, line.form].filter(Boolean).join(" · ") || "—"}
                         {line.deaSchedule && line.deaSchedule !== "NC" && (
-                          <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-amber-900">
+                          <span className="ml-2 rounded bg-warning-bg px-1.5 py-0.5 text-warning-fg">
                             {line.deaSchedule}
                           </span>
                         )}

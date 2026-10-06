@@ -63,7 +63,10 @@ export function CustodyFilm({
             <span className="flex items-center gap-2">
               {/* Static dot. A blinking one on archived footage would imply a
                   live feed, which is not what is being claimed. */}
-              <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+              {/* A recording indicator. Red is the universal convention for
+                  "recording" and is not a status in this design system's sense,
+                  so it stays a literal rather than becoming `danger`. */}
+              <span className="h-1.5 w-1.5 rounded-full bg-[#e5484d]" />
               REC
             </span>
             <span className="text-white/45">{shown.cam}</span>

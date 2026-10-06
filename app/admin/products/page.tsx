@@ -53,7 +53,7 @@ export default async function AdminProductsPage({
         <p
           role="status"
           className="admin-panel px-4 py-2.5 text-[0.8125rem]"
-          style={{ borderColor: "#bcd9c6", background: "#f2f9f4", color: "#2c6b4d" }}
+          style={{ borderColor: "#bcd9c6", background: "var(--status-success-bg)", color: "var(--status-success-fg)" }}
         >
           Product saved.
         </p>

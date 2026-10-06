@@ -51,7 +51,7 @@ function FieldShell({
         <p className="mt-1 text-[0.75rem] text-[color:var(--admin-ink-50)]">{hint}</p>
       )}
       {error && (
-        <p id={`${id}-error`} role="alert" className="mt-1 text-[0.75rem] font-medium text-[#9c3a2a]">
+        <p id={`${id}-error`} role="alert" className="mt-1 text-[0.75rem] font-medium text-[theme(colors.danger.fg)]">
           {error}
         </p>
       )}

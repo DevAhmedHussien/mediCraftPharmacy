@@ -53,7 +53,7 @@ export function PricingDecision({
 }) {
   if (accepted) {
     return (
-      <p className="flex items-center gap-2.5 rounded-tile border border-emerald-200 bg-emerald-50 px-4 py-3 text-meta text-emerald-900">
+      <p className="flex items-center gap-2.5 rounded-tile border border-success-fg/25 bg-success-bg px-4 py-3 text-meta text-success-fg">
         <CheckCircle2 className="size-4 shrink-0" strokeWidth={2.2} aria-hidden />
         You accepted this pricing. It is locked to your account.
       </p>
@@ -142,7 +142,7 @@ function ListPricingChoice({ selectedCount }: { selectedCount: number }) {
             placeholder="We dispense around 40 GLP-1 vials a month and would like to discuss tiered pricing at that volume."
           />
           {requestState.errors?.requestNotes && (
-            <p role="alert" className="mt-1.5 text-caption font-medium text-red-600">
+            <p role="alert" className="mt-1.5 text-caption font-medium text-danger-fg">
               {requestState.errors.requestNotes}
             </p>
           )}
@@ -210,7 +210,7 @@ function NegotiatedChoice({ versionId }: { versionId: string }) {
             placeholder="The semaglutide lines work, but the peptide pricing is still above what we pay today."
           />
           {roundState.errors?.note && (
-            <p role="alert" className="mt-1.5 text-caption font-medium text-red-600">
+            <p role="alert" className="mt-1.5 text-caption font-medium text-danger-fg">
               {roundState.errors.note}
             </p>
           )}
