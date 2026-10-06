@@ -121,6 +121,15 @@ const base = z.object({
   GHL_API_VERSION: z.string().default("2021-07-28"),
   /** Tag applied to every contact created from the website contact form. */
   GHL_CONTACT_TAG: z.string().default("contact_us_form"),
+  /**
+   * Text partners and inquirers at each pipeline step. Off by default: US
+   * carriers block SMS from a number without A2P 10DLC registration, so this
+   * waits until the GHL location's registration is approved.
+   */
+  GHL_SMS_ENABLED: z
+    .enum(["true", "false"])
+    .default("false")
+    .transform((v) => v === "true"),
 
   /**
    * Lets the public application form create an account with a password.

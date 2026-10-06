@@ -8,6 +8,7 @@ import {
   stageTagsToRemove,
 } from "@/lib/partner/ghl-tags";
 import type { PartnerStatus } from "@/lib/partner/status";
+import { movePartnerOpportunity } from "@/lib/services/crm-pipeline";
 import {
   addGhlTags,
   ghlConfigured,
@@ -189,7 +190,16 @@ export async function syncPartnerToCrm({
     const removed = await removeGhlTags(contactId, stale);
     if (!removed.ok) return removed.reason;
 
-    return null;
+    /* Last, because its own tail — the note and the text — must not repeat on
+       a retry. Everything above is safe to run twice. */
+    return await movePartnerOpportunity({
+      partnerId,
+      contactId,
+      label,
+      companyName: partner.companyName,
+      contactName: partner.contactName,
+      hasPhone: Boolean(partner.phone),
+    });
   } catch (error) {
     return (error as Error)?.message ?? "unknown error";
   }

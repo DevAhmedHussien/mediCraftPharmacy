@@ -8,6 +8,7 @@ import { env } from "@/lib/env";
 import { clientIp, RATE_LIMITS, rateLimit } from "@/lib/rate-limit";
 import { recordInquiry } from "@/lib/services/inquiries";
 import { notifyStaffOfInquiry } from "@/lib/services/inquiry-notify";
+import { openContactInquiry } from "@/lib/services/crm-pipeline";
 import { upsertGhlContact } from "@/lib/services/ghl";
 
 /**
@@ -57,6 +58,14 @@ export async function submitContact(
       tags: [env.GHL_CONTACT_TAG],
     });
     if (!crm.ok) console.error("[contact] GHL upsert failed:", crm.reason);
+    else if (!crm.skipped) {
+      await openContactInquiry({
+        contactId: crm.contactId,
+        firstName: String(payload.firstName ?? ""),
+        name: [payload.firstName, payload.lastName].filter(Boolean).join(" "),
+        hasPhone: Boolean(String(payload.phone ?? "").trim()),
+      });
+    }
   } catch (error) {
     console.error("[contact] could not record the inquiry", (error as Error)?.message);
     return { ok: false, message: "We could not send that. Please try again, or call us." };

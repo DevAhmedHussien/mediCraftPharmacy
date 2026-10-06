@@ -260,3 +260,167 @@ export async function updateGhlContact(
     clearTimeout(timer);
   }
 }
+
+/* --- Pipelines, notes and SMS ---------------------------------------------
+   The same contract as everything above — never throws, never logs anything
+   of the person's — through one request helper rather than a fifth copy of
+   the fetch-and-timeout block. */
+
+type GhlJsonResult = { ok: true; json: unknown } | { ok: false; reason: string };
+
+async function ghlRequest(
+  method: "GET" | "POST" | "PUT",
+  path: string,
+  body?: unknown,
+  /** Conversations pins an older contract than the rest of the API. */
+  version: string = env.GHL_API_VERSION
+): Promise<GhlJsonResult> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
+  try {
+    const response = await fetch(`${env.GHL_API_BASE}${path}`, {
+      method,
+      headers: {
+        Authorization: `Bearer ${env.GHL_API_TOKEN}`,
+        Version: version,
+        Accept: "application/json",
+        ...(body ? { "Content-Type": "application/json" } : {}),
+      },
+      ...(body ? { body: JSON.stringify(body) } : {}),
+      signal: controller.signal,
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      const detail = await response.text().catch(() => "");
+      return { ok: false, reason: `HTTP ${response.status} ${detail.slice(0, 200)}` };
+    }
+    return { ok: true, json: await response.json().catch(() => ({})) };
+  } catch (error) {
+    const reason =
+      (error as Error)?.name === "AbortError"
+        ? `no response within ${TIMEOUT_MS}ms`
+        : ((error as Error)?.message ?? "unknown transport error");
+    return { ok: false, reason };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+export type GhlPipeline = {
+  id: string;
+  name: string;
+  stages: { id: string; name: string }[];
+};
+
+/**
+ * Every pipeline in the location, with its stages.
+ *
+ * Cached for ten minutes: the worker resolves names to ids on every sync, and
+ * pipelines change when someone edits the board, not per request. A failure
+ * is never cached.
+ */
+let pipelineCache: { at: number; pipelines: GhlPipeline[] } | null = null;
+const PIPELINE_TTL_MS = 10 * 60_000;
+
+export async function listGhlPipelines(): Promise<
+  { ok: true; pipelines: GhlPipeline[] } | { ok: false; reason: string }
+> {
+  if (pipelineCache && Date.now() - pipelineCache.at < PIPELINE_TTL_MS) {
+    return { ok: true, pipelines: pipelineCache.pipelines };
+  }
+  const result = await ghlRequest(
+    "GET",
+    `/opportunities/pipelines?locationId=${encodeURIComponent(env.GHL_LOCATION_ID ?? "")}`
+  );
+  if (!result.ok) return result;
+
+  const pipelines = ((result.json as { pipelines?: GhlPipeline[] }).pipelines ?? []).map(
+    (p) => ({ id: p.id, name: p.name, stages: (p.stages ?? []).map((s) => ({ id: s.id, name: s.name })) })
+  );
+  pipelineCache = { at: Date.now(), pipelines };
+  return { ok: true, pipelines };
+}
+
+/**
+ * Create the contact's opportunity in a pipeline, or move the one they have.
+ *
+ * GHL matches on contact + pipeline, so a contact has at most one card per
+ * board and every transition moves that same card.
+ */
+export async function upsertGhlOpportunity(input: {
+  contactId: string;
+  pipelineId: string;
+  stageId: string;
+  name: string;
+  status: "open" | "won";
+}): Promise<{ ok: true; opportunityId: string } | { ok: false; reason: string }> {
+  const result = await ghlRequest("POST", "/opportunities/upsert", {
+    locationId: env.GHL_LOCATION_ID,
+    contactId: input.contactId,
+    pipelineId: input.pipelineId,
+    pipelineStageId: input.stageId,
+    name: input.name,
+    status: input.status,
+  });
+  if (!result.ok) return result;
+
+  const id = (result.json as { opportunity?: { id?: string } }).opportunity?.id;
+  return id ? { ok: true, opportunityId: id } : { ok: false, reason: "upsert returned no opportunity id" };
+}
+
+/** The contact's opportunity in one pipeline, if they have one. */
+export async function findGhlOpportunity(
+  contactId: string,
+  pipelineId: string
+): Promise<{ ok: true; opportunity: { id: string; status: string } | null } | { ok: false; reason: string }> {
+  const query = new URLSearchParams({
+    location_id: env.GHL_LOCATION_ID ?? "",
+    contact_id: contactId,
+    pipeline_id: pipelineId,
+  });
+  const result = await ghlRequest("GET", `/opportunities/search?${query}`);
+  if (!result.ok) return result;
+
+  const found = (result.json as { opportunities?: { id: string; status: string }[] }).opportunities?.[0];
+  return { ok: true, opportunity: found ? { id: found.id, status: found.status } : null };
+}
+
+/** Close or reopen an opportunity without moving it. */
+export async function setGhlOpportunityStatus(
+  opportunityId: string,
+  status: "open" | "won" | "lost" | "abandoned"
+): Promise<{ ok: true } | { ok: false; reason: string }> {
+  const result = await ghlRequest("PUT", `/opportunities/${opportunityId}/status`, { status });
+  return result.ok ? { ok: true } : result;
+}
+
+/** A note on the contact's timeline. */
+export async function addGhlNote(
+  contactId: string,
+  body: string
+): Promise<{ ok: true } | { ok: false; reason: string }> {
+  const result = await ghlRequest("POST", `/contacts/${contactId}/notes`, { body });
+  return result.ok ? { ok: true } : result;
+}
+
+/**
+ * Text the contact from the location's number.
+ *
+ * Off unless `GHL_SMS_ENABLED` is true: US carriers block unregistered A2P
+ * traffic, so this stays dark until the location's 10DLC registration is done.
+ */
+export async function sendGhlSms(
+  contactId: string,
+  message: string
+): Promise<{ ok: true; skipped?: true } | { ok: false; reason: string }> {
+  if (!env.GHL_SMS_ENABLED) return { ok: true, skipped: true };
+  const result = await ghlRequest(
+    "POST",
+    "/conversations/messages",
+    { type: "SMS", contactId, message },
+    "2021-04-15"
+  );
+  return result.ok ? { ok: true } : result;
+}
