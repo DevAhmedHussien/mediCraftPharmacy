@@ -65,8 +65,13 @@ export default function HomePage() {
             sizes="(min-width: 1120px) 1080px, 100vw"
             className="object-cover"
           />
-          <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-2/5 bg-gradient-to-b from-white/30 to-transparent" />
-          <Glass as="dl" className="absolute inset-x-5 top-5 grid grid-cols-2 gap-px overflow-hidden rounded-[20px] shadow-float lg:grid-cols-4">
+          <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-white/30 to-transparent" />
+          {/* Pinned to the FOOT of the image, not the head. At the top the
+              plate covered the vial — the one thing the photograph is of —
+              and sat directly under the floating header, so two frosted
+              panels stacked with 20px between them. At the bottom it reads
+              as a caption on the image, which is what it is. */}
+          <Glass as="dl" className="absolute inset-x-5 bottom-5 grid grid-cols-2 gap-px overflow-hidden rounded-[20px] shadow-float lg:grid-cols-4">
             {hero.spec.fields.map((f) => (
               <div key={f.field} className="flex flex-col gap-1 bg-white/35 px-[18px] py-4 text-left">
                 <dt className="font-mono text-[10.5px] uppercase tracking-[0.1em] text-ink-soft">{f.field}</dt>

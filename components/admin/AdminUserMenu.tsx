@@ -66,7 +66,7 @@ export function AdminUserMenu({
         aria-expanded={open}
         aria-haspopup="menu"
         className={cn(
-          "flex items-center gap-2 rounded-lg py-1 pl-1 pr-1.5 transition-colors",
+          "flex items-center gap-2 rounded-full py-1 pl-1 pr-1.5 transition-colors",
           "hover:bg-[color:var(--admin-bg)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--admin-accent)]",
           open && "bg-[color:var(--admin-bg)]"
         )}
@@ -122,7 +122,7 @@ export function AdminUserMenu({
             <Link
               href="/"
               role="menuitem"
-              className="flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-[0.8125rem] text-[color:var(--admin-ink-70)] transition-colors hover:bg-[color:var(--admin-bg)] hover:text-[color:var(--admin-ink)]"
+              className="flex items-center gap-2 rounded-[0.625rem] px-2.5 py-1.5 text-[0.8125rem] text-[color:var(--admin-ink-70)] transition-colors hover:bg-[color:var(--admin-bg)] hover:text-[color:var(--admin-ink)]"
             >
               View site
             </Link>
@@ -132,7 +132,7 @@ export function AdminUserMenu({
               <button
                 type="submit"
                 role="menuitem"
-                className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-[0.8125rem] text-[color:var(--admin-ink-70)] transition-colors hover:bg-[color:var(--admin-bg)] hover:text-[color:var(--admin-ink)]"
+                className="flex w-full items-center gap-2 rounded-[0.625rem] px-2.5 py-1.5 text-left text-[0.8125rem] text-[color:var(--admin-ink-70)] transition-colors hover:bg-[color:var(--admin-bg)] hover:text-[color:var(--admin-ink)]"
               >
                 <LogOut className="size-3.5 shrink-0" strokeWidth={2} aria-hidden />
                 Sign out

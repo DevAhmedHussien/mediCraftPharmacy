@@ -28,7 +28,7 @@ export function BreakdownList({
       ) : (
         <ul className="space-y-px">
           {rows.map((row) => (
-            <li key={row.label} className="relative overflow-hidden rounded-[4px]">
+            <li key={row.label} className="relative overflow-hidden rounded-lg">
               <span
                 aria-hidden
                 className="absolute inset-y-0 left-0 bg-[#e7edf5]"

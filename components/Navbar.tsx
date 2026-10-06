@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowRight, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import type { IconName } from "@/components/icons/set";
 import { NavDrawer } from "@/components/nav/NavDrawer";
@@ -109,7 +109,11 @@ export function Navbar({
      * the active-route logic — is untouched. This is a restyle of the shell. */
     <header className="sticky top-4 z-50 mx-auto mt-4 w-full max-w-[1120px] px-5">
       {/* ---- The pill ---- */}
-      <div className="rounded-full border border-white/90 bg-white/[0.62] shadow-glass backdrop-blur-xl backdrop-saturate-150">
+      {/* `relative` so BOTH dropdowns position against the pill rather than
+          against their own button. The reference spans its panels edge to
+          edge of the header; anchored to a button they were 640px boxes that
+          jumped sideways as you moved between The pharmacy and Products. */}
+      <div className="relative rounded-full border border-white/90 bg-white/[0.62] shadow-glass backdrop-blur-xl backdrop-saturate-150">
         <nav className="flex items-center justify-between gap-6 py-2.5 pl-[22px] pr-2.5">
           {/* `.logo-lockup` is the hover/focus target that drives the grind. */}
           <Link
@@ -166,18 +170,33 @@ export function Navbar({
               className="static"
               onMouseEnter={() => setOpenMenu("products")}
               onMouseLeave={() => setOpenMenu(null)}
+              onKeyDown={(event) => {
+                if (event.key === "Escape" && openMenu === "products") {
+                  event.stopPropagation();
+                  setOpenMenu(null);
+                }
+              }}
             >
-              <Link
-                href="/products"
+              {/* A BUTTON, like the pharmacy trigger and like the reference.
+                  It was a <Link> carrying `aria-expanded` — a control that
+                  announces itself as expandable and then navigates away when
+                  you activate it, with no `aria-controls` pointing at the
+                  thing it expands. /products is still one click away: it is
+                  "View the full formulary" at the top of the panel, which is
+                  where the reference puts it. */}
+              <button
+                type="button"
                 aria-expanded={openMenu === "products"}
+                aria-controls="nav-panel-products"
+                onClick={() => setOpenMenu(openMenu === "products" ? null : "products")}
                 onFocus={() => setOpenMenu("products")}
-                onClick={() => setOpenMenu(null)}
                 className={cn("nav-link flex items-center gap-1", productsActive && "nav-link-active")}
               >
                 Products
                 <ChevronDown
+                  aria-hidden
                   className={cn(
-                    "h-3.5 w-3.5 text-ink-muted transition-transform duration-200",
+                    "h-3.5 w-3.5 text-ink-muted transition-transform duration-200 motion-reduce:transition-none",
                     openMenu === "products" && "rotate-180"
                   )}
                   strokeWidth={2}
@@ -186,7 +205,7 @@ export function Navbar({
                   aria-hidden
                   className={cn("nav-underline", productsActive && "nav-underline-on")}
                 />
-              </Link>
+              </button>
 
               <MegaPanel categories={categories} open={openMenu === "products"} onNavigate={() => setOpenMenu(null)} />
             </div>
@@ -319,7 +338,8 @@ function NavGroup({
 
   return (
     <div
-      className="relative"
+      /* Deliberately not `relative` — see the note on the pill. The panel
+         inside positions against the header, not against this button. */
       onMouseEnter={onOpen}
       onMouseLeave={onClose}
       onKeyDown={(event) => {
@@ -349,66 +369,92 @@ function NavGroup({
         <span aria-hidden className={cn("nav-underline", active && "nav-underline-on")} />
       </button>
 
+      {/* FULL HEADER WIDTH, like the reference — not a box anchored under its
+          own button. The panel is positioned against the header's inner
+          container, so both menus open to the same edges and the page does
+          not appear to shift sideways when you move between them. */}
       <div
         id={panelId}
         role="region"
         aria-label={item.label}
         className={cn(
-          /* 94% opaque, per the reference — not the 72% the nav pill uses.
-             The pill floats over the page ground; this panel hangs over page
-             CONTENT, and at 72% the hero headline read straight through it. */
-          "absolute left-0 top-full mt-2 overflow-hidden rounded-card border border-white/95 bg-white/[0.94] shadow-menu backdrop-blur-[24px] backdrop-saturate-150 transition-opacity duration-150 motion-reduce:transition-none",
-          promo ? "w-[40rem]" : "w-[22rem]",
-          open ? "opacity-100" : "pointer-events-none opacity-0"
+          /* OPAQUE, not frosted — and this is a correction, not a preference.
+          
+             The panel carried `bg-white/[0.94]` with `backdrop-blur-[24px]`,
+             copied from the reference. It cannot work here: the pill it
+             lives inside has its own `backdrop-filter`, which makes the pill
+             a BACKDROP ROOT, and a descendant's backdrop-filter may only
+             sample within that root. So the blur sampled the pill's own
+             near-transparent background, did nothing, and left 6% of the
+             page showing through — which over an 88px hero headline is not
+             6% of nothing, it is a legible word sitting behind a menu.
+          
+             Solid white, with the hairline and the menu shadow carrying the
+             separation instead. Also cheaper: a backdrop-filter that blurs
+             nothing still costs a compositing pass on every frame. */
+          "absolute inset-x-0 top-[calc(100%+0.625rem)] rounded-card border border-hair-soft bg-white p-3 shadow-menu",
+          /* The one piece of motion on the header, and it answers an action:
+             the panel rises 6px as it fades, so it reads as coming OUT of
+             the pill rather than appearing on top of the page. 160ms — long
+             enough to see the direction, short enough that a second menu
+             opened straight after does not feel queued. */
+          "transition-[opacity,transform] duration-[160ms] ease-out motion-reduce:transition-none",
+          promo ? "lg:grid lg:grid-cols-[minmax(0,1.6fr)_minmax(15rem,1fr)] lg:gap-3" : "",
+          open
+            ? "translate-y-0 opacity-100"
+            : "pointer-events-none -translate-y-1.5 opacity-0 motion-reduce:translate-y-0"
         )}
         hidden={!open}
       >
-        <div className={cn("p-2", promo && "grid grid-cols-[1fr_15rem] gap-2")}>
-          <ul>
-            {item.children?.map((child) => (
-              <li key={child.href}>
-                <Link
-                  href={child.href}
-                  onClick={onClose}
-                  className="block rounded-xl px-3 py-2.5 transition-colors hover:bg-white/80 motion-reduce:transition-none"
-                >
-                  <span className="block text-[14px] font-medium text-navy">{child.label}</span>
-                  <span className="mt-0.5 block text-[12.5px] leading-snug text-ink-muted">
-                    {child.blurb}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
+        {/* `auto-fit` at 220px: four links land as 2x2 in the wide column and
+            as one column on a narrow one, with no breakpoint to maintain. */}
+        <ul
+          className="grid gap-1"
+          style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 13.75rem), 1fr))" }}
+        >
+          {item.children?.map((child) => (
+            <li key={child.href}>
+              <Link
+                href={child.href}
+                onClick={onClose}
+                className="flex flex-col gap-1 rounded-2xl px-4 py-3.5 transition-colors hover:bg-stone focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-500 motion-reduce:transition-none"
+              >
+                <span className="text-[0.9375rem] font-medium text-navy">{child.label}</span>
+                <span className="text-[0.8125rem] leading-[1.45] text-ink-soft">
+                  {child.blurb}
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
 
-          {promo && (
-            <Link
-              href={promo.href}
-              onClick={onClose}
-              className="group/promo relative flex flex-col justify-end overflow-hidden rounded-xl bg-stone p-4"
-            >
-              <Image
-                src={promo.src}
-                alt=""
-                fill
-                sizes="15rem"
-                className="object-cover transition-transform duration-300 group-hover/promo:scale-[1.03] motion-reduce:transform-none"
-              />
-              <span className="relative">
-                <span className="block font-mono text-[10.5px] uppercase tracking-eyebrow text-white/80">
-                  {promo.eyebrow}
-                </span>
-                <span className="mt-1 block text-[14px] font-medium leading-snug text-white">
-                  {promo.title}
-                </span>
+        {promo && (
+          <Link
+            href={promo.href}
+            onClick={onClose}
+            className="group/promo relative mt-3 hidden min-h-[11.25rem] overflow-hidden rounded-2xl bg-stone lg:mt-0 lg:block"
+          >
+            <Image
+              src={promo.src}
+              alt=""
+              fill
+              sizes="22rem"
+              className="object-cover transition-transform duration-300 group-hover/promo:scale-[1.03] motion-reduce:transform-none"
+            />
+            {/* A caption CARD inset from the edges, as the reference draws it
+                — not a gradient washing the whole image. The gradient dimmed
+                the photograph to make two lines of text legible; a small
+                frosted plate leaves the image alone and is easier to read. */}
+            <span className="absolute inset-x-2.5 bottom-2.5 flex flex-col gap-0.5 rounded-xl bg-navy/[0.72] px-3.5 py-3 backdrop-blur-[10px]">
+              <span className="font-mono text-[0.65625rem] uppercase tracking-eyebrow text-cyan-400">
+                {promo.eyebrow}
               </span>
-              <span
-                aria-hidden
-                className="absolute inset-0 bg-gradient-to-t from-navy/80 to-navy/10"
-              />
-            </Link>
-          )}
-        </div>
+              <span className="text-[0.875rem] font-medium leading-snug text-white">
+                {promo.title}
+              </span>
+            </span>
+          </Link>
+        )}
       </div>
     </div>
   );
@@ -457,83 +503,83 @@ function MegaPanel({
     <div
       // `invisible` rather than unmounted, so the panel keeps its place in the
       // tab order and the transition has something to animate.
+      id="nav-panel-products"
+      role="region"
+      aria-label="Products"
       className={cn(
-        "absolute inset-x-0 top-full transition-[opacity,visibility] duration-200",
-        open ? "visible opacity-100" : "invisible opacity-0"
+        "absolute inset-x-0 top-full transition-[opacity,transform,visibility] duration-[160ms] ease-out motion-reduce:transition-none",
+        open
+          ? "visible translate-y-0 opacity-100"
+          : "invisible -translate-y-1.5 opacity-0 motion-reduce:translate-y-0"
       )}
     >
       {/* The mega-panel, as a glass sheet rather than a white band with a
           rule under it. It sits below a floating pill now, so a full-bleed
           bar with a hard bottom border read as a second header. */}
-      <div className="mx-auto w-full max-w-[1120px] px-5">
-        <div className="overflow-hidden rounded-card border border-white/95 bg-white/[0.94] shadow-menu backdrop-blur-[24px] backdrop-saturate-150">
-        <div className="container-x grid gap-10 py-9 lg:grid-cols-[1.6fr_1fr]">
-          <div>
+      <div className="mt-2.5 w-full">
+        {/* 12px of padding and 8px between the three stacked parts, as the
+            reference has it — the panel is a tray holding rounded rows, not a
+            bordered card with a layout inside it. */}
+        <div className="flex flex-col gap-2 rounded-card border border-hair-soft bg-white p-3 shadow-menu">
+          {/* The eyebrow and the formulary link share one line at the TOP.
+              The link used to sit in a ruled footer at the bottom, below
+              eleven rows, which is the last place someone scanning
+              categories is looking for "show me all of them". */}
+          <div className="flex items-baseline justify-between gap-4 px-4 pb-1 pt-2">
             <p className="eyebrow">Shop by category</p>
-
-            <div className="mt-6 grid gap-x-8 gap-y-1 sm:grid-cols-2 lg:grid-cols-3">
-              {categories.map((c) => {
-                const count = c.count;
-                return (
-                  <Link
-                    key={c.slug}
-                    href={`/products/${c.slug}`}
-                    onClick={onNavigate}
-                    className="group/item flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-white/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
-                  >
-                    {/* A rule, not a thumbnail.
-                        Eleven packshots in a menu is eleven images fetched to
-                        decorate a list of eleven words, and the words are what
-                        anyone reads. */}
-                    <span
-                      aria-hidden
-                      className="h-8 w-px shrink-0 bg-line transition-colors group-hover/item:bg-brand-500"
-                    />
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-meta font-bold text-ink">
-                        {c.name}
-                      </span>
-                      {/* Counts are data, so mono — and omitted rather than
-                          shown as a bare zero where nothing is published. */}
-                      <span className="block font-mono text-caption text-ink-muted">
-                        {count > 0
-                          ? `${count} ${count === 1 ? "product" : "products"}`
-                          : "On request"}
-                      </span>
-                    </span>
-                  </Link>
-                );
-              })}
-            </div>
-
-            <div className="mt-7 flex flex-wrap items-center gap-x-8 gap-y-3 border-t border-hair pt-5">
-              <Link href="/products" className="link-arrow text-meta">
-                View the full formulary
-                <ArrowRight className="h-4 w-4" strokeWidth={2} />
-              </Link>
-              <p className="fine-print">
-                All formulations require a valid prescription from a licensed provider.
-              </p>
-            </div>
-          </div>
-
-          {/* A quiet aside, not a picture.
-              The panel used to carry a product square the size of the menu's
-              whole right-hand column — a lot of weight for decoration beside a
-              list someone opened to navigate. */}
-          <div className="hidden self-start rounded-card border border-hair-soft bg-white/70 p-6 lg:block">
-            <p className="text-[1.0625rem] font-bold leading-snug text-ink text-balance">
-              Request the current formulary for your specialty
-            </p>
-            <p className="mt-2 text-caption leading-relaxed text-ink-soft">
-              A pharmacy liaison responds within one business day.
-            </p>
-            <Link href="/contact" className="btn-primary btn-sm mt-5">
-              Request formulary
-              <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.2} />
+            <Link
+              href="/products"
+              onClick={onNavigate}
+              className="shrink-0 text-[0.84375rem] font-medium text-brand-500 transition-colors hover:text-navy motion-reduce:transition-none"
+            >
+              View the full formulary <span aria-hidden>→</span>
             </Link>
           </div>
-        </div>
+
+          {/* `auto-fill` at a 200px floor rather than 2/3 columns at named
+              breakpoints: eleven categories divide badly into three, and the
+              reference lets the panel fit as many as its width allows. */}
+          <ul
+            className="grid gap-0.5"
+            /* 15rem, not the reference's 200px. Its mock shows a fixed
+               "ON REQUEST" beside every name; ours shows a real count, so
+               the name had less room and "Weight Management" came out as
+               "Weight Mana…". A truncated category is not a category. */
+            style={{ gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 15rem), 1fr))" }}
+          >
+            {categories.map((c) => (
+              <li key={c.slug}>
+                <Link
+                  href={`/products/${c.slug}`}
+                  onClick={onNavigate}
+                  className="flex items-center justify-between gap-2.5 rounded-[14px] px-4 py-3 text-[0.90625rem] text-navy transition-colors hover:bg-stone focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-500 motion-reduce:transition-none"
+                >
+                  <span className="min-w-0">{c.name}</span>
+                  {/* Counts are data, so mono — and "On request" rather than
+                      a bare zero where nothing is published yet. */}
+                  <span className="shrink-0 font-mono text-[0.625rem] uppercase tracking-[0.06em] text-ink-muted">
+                    {c.count > 0
+                      ? `${c.count} ${c.count === 1 ? "product" : "products"}`
+                      : "On request"}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+
+          {/* The prescription notice and the one action, on a tinted rail at
+              the foot. It replaces a right-hand column that held a card the
+              size of the menu — a lot of weight for one sentence beside a
+              list someone opened in order to navigate. */}
+          <div className="mt-1 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-stone px-4 py-3.5">
+            <p className="text-[0.84375rem] text-ink-soft">
+              All formulations require a valid prescription from a licensed provider.
+              A pharmacy liaison responds within one business day.
+            </p>
+            <Link href="/contact" onClick={onNavigate} className="btn btn-primary btn-sm shrink-0">
+              Request formulary
+            </Link>
+          </div>
         </div>
       </div>
     </div>

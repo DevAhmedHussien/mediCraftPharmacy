@@ -51,7 +51,7 @@ export function AdminAlert({
   return (
     <p
       role={resolved === "error" ? "alert" : "status"}
-      className="mb-3 flex items-start gap-2 rounded-lg border px-3 py-2 text-[0.8125rem]"
+      className="mb-3 flex items-start gap-2 rounded-2xl border px-3.5 py-2.5 text-[0.8125rem]"
       style={{ borderColor: style.border, background: style.background, color: style.color }}
     >
       <Icon className="mt-0.5 size-3.5 shrink-0" strokeWidth={2.2} aria-hidden />

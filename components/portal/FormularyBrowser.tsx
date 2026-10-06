@@ -228,7 +228,7 @@ export function FormularyBrowser({
               >
                 <span
                   className={cn(
-                    "mt-0.5 flex size-[1.15rem] shrink-0 items-center justify-center rounded-[0.3rem] border transition-colors",
+                    "mt-0.5 flex size-[1.15rem] shrink-0 items-center justify-center rounded-md border transition-colors",
                     row.selected
                       ? "border-brand-500 bg-brand-500 text-white"
                       : "border-line bg-white"

@@ -462,7 +462,7 @@ export function RowAction({
   type?: "button" | "submit";
 }) {
   const className = cn(
-    "admin-focus inline-flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors",
+    "admin-focus inline-flex size-8 shrink-0 items-center justify-center rounded-[0.625rem] transition-colors",
     tone === "danger"
       ? "text-[color:var(--admin-ink-50)] hover:bg-danger-bg hover:text-danger-fg"
       : "text-[color:var(--admin-ink-50)] hover:bg-[color:var(--admin-bg)] hover:text-[color:var(--admin-ink)]"

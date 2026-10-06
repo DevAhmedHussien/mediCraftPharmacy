@@ -192,7 +192,7 @@ export function DocumentRow({
       {error && (
         <p
           role="alert"
-          className="mt-3 flex items-start gap-2 rounded-lg border border-danger-fg/25 bg-danger-bg px-3 py-2 text-caption font-medium text-danger-fg"
+          className="mt-3 flex items-start gap-2 rounded-2xl border border-danger-fg/25 bg-danger-bg px-3 py-2 text-caption font-medium text-danger-fg"
         >
           <AlertCircle className="mt-0.5 size-3.5 shrink-0" strokeWidth={2.2} aria-hidden />
           {error}

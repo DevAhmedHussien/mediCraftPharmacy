@@ -53,8 +53,19 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
+/* The document ground is `paper`, not white.
+ *
+ * Every page was painting its own `bg-paper` patch over a WHITE body, which
+ * works right up to the edges of that patch: the strip above a page that
+ * starts with a floating header, the macOS overscroll bounce, and any route
+ * that forgot the class all showed white behind a design whose entire ground
+ * is #f7f7f5. Setting it here means a page never has to say it. */
+html {
+  @apply bg-paper;
+}
+
 body {
-  @apply bg-white text-body text-ink antialiased;
+  @apply bg-paper text-body text-ink antialiased;
   font-family: var(--font-sans);
 }
 
@@ -584,7 +595,7 @@ h3 {
     @apply flex gap-5;
   }
   .step-num {
-    @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-500 text-meta font-black text-white;
+    @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-500 text-meta font-black text-white;
   }
   .process-card {
     @apply relative rounded-tile border border-line bg-white p-6;
@@ -691,7 +702,7 @@ h3 {
     @apply sr-only;
   }
   .skip-link:focus-visible {
-    @apply not-sr-only fixed left-4 top-4 z-[100] rounded-lg bg-brand-500 px-5 py-3 text-meta font-bold text-white outline-none ring-2 ring-white;
+    @apply not-sr-only fixed left-4 top-4 z-[100] rounded-full bg-brand-500 px-5 py-3 text-meta font-bold text-white outline-none ring-2 ring-white;
   }
   /* `main` is a focus target for the skip link but must not show a ring when
      reached by mouse. */
@@ -781,7 +792,7 @@ h3 {
      regular, and a medium nav against a regular 88px headline reads as the
      nav shouting. */
   .nav-link {
-    @apply relative flex items-center whitespace-nowrap rounded-md px-2.5 py-2 text-[14px] font-normal text-ink-soft transition-colors duration-200 hover:text-navy focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500;
+    @apply relative flex items-center whitespace-nowrap rounded-[0.625rem] px-2.5 py-2 text-[14px] font-normal text-ink-soft transition-colors duration-200 hover:text-navy focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500;
   }
   .nav-link-active {
     @apply font-medium text-navy;
@@ -1749,8 +1760,13 @@ h3 {
     --tw-ring-offset-color: var(--admin-surface);
   }
 
+  /* 14px, the radius every field in the application uses — the console's
+     own filter box was 8px, which next to a rail of pills and a row of
+     24px panels was the one control still drawn to the old scale. Padding
+     goes up with it: a 14px radius on a 28px-tall box eats its own corners,
+     so the curve has something to sit on. */
   .admin-input {
-    @apply w-full rounded-lg px-2.5 py-1.5 text-[0.8125rem];
+    @apply w-full rounded-[14px] px-3.5 py-2.5 text-[0.8125rem];
     background: var(--admin-surface);
     border: 1px solid var(--admin-border-strong);
     color: var(--admin-ink);
@@ -1764,7 +1780,9 @@ h3 {
     box-shadow: 0 0 0 3px rgb(27 84 251 / 0.12);
   }
   .admin-input[aria-invalid="true"] {
-    border-color: #c0553f;
+    /* `danger`, not a one-off #c0553f — the last stray status hex in the
+       stylesheet. */
+    border-color: var(--status-danger-fg);
   }
 
   /* Rail navigation. 14px in a 9/10 box with a 10px radius, as the reference

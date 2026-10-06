@@ -126,7 +126,7 @@ export function StageWork({ data }: { data: StageData }) {
             )}
 
             <blockquote
-              className="mt-4 rounded-lg border-l-2 py-2 pl-3 text-[0.8125rem] leading-relaxed text-[color:var(--admin-ink-70)]"
+              className="mt-4 rounded-r-[14px] border-l-2 py-2 pl-3 text-[0.8125rem] leading-relaxed text-[color:var(--admin-ink-70)]"
               style={{ borderColor: "var(--admin-accent)", background: "var(--status-info-bg)" }}
             >
               {meeting.partnerNote || meeting.requestNotes}
