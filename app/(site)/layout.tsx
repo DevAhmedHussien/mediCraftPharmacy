@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import { Footer } from "@/components/Footer";
+import { MotionProvider } from "@/components/motion/MotionProvider";
 import { categoryThumb } from "@/lib/media";
 import { Navbar } from "@/components/Navbar";
 import { CookieConsent } from "@/components/CookieConsent";
@@ -214,7 +215,12 @@ export default async function SiteLayout({ children }: { children: ReactNode }) 
           class rather than a bare `main` selector so the admin's own <main>
           does not inherit a 108px gap it has no header to fill. */}
       <main id="main" tabIndex={-1} className="site-main">
-        {children}
+        {/* The animation engine, mounted once for the marketing shell and
+            nowhere else — /admin, /portal and /login sit outside this route
+            group and keep their CSS transitions. `strict` inside makes a
+            stray `motion.*` import throw rather than quietly double the
+            bundle; see components/motion/MotionProvider.tsx. */}
+        <MotionProvider>{children}</MotionProvider>
       </main>
 
       {/* The Phone / Email / Location band that used to sit here is gone.

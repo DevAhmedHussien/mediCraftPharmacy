@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { Card, Eyebrow, Glass, SectionTitle } from "@/components/ui/glass";
+import { Counter } from "@/components/motion/Counter";
 import { Button } from "@/components/ui/button";
 import { hero, providers, quality } from "@/lib/content";
 import { site, telHref } from "@/lib/site";
@@ -71,7 +72,17 @@ export default function HomePage() {
               and sat directly under the floating header, so two frosted
               panels stacked with 20px between them. At the bottom it reads
               as a caption on the image, which is what it is. */}
-          <Glass as="dl" className="absolute inset-x-5 bottom-5 grid grid-cols-2 gap-px overflow-hidden rounded-[20px] shadow-float lg:grid-cols-4">
+          {/* The ONLY thing above the fold that moves. 12px rather than 24
+              because it sits on the photograph — a longer throw reads as the
+              plate sliding off the picture — and 200ms behind the paint so
+              the image has landed before the caption arrives on it.
+              
+              CSS, not a motion leaf: it is one element, it animates once on
+              load rather than on scroll, and `/` has an 8 kB budget. */}
+          <Glass
+            as="dl"
+            className="absolute inset-x-5 bottom-5 grid grid-cols-2 gap-px overflow-hidden rounded-[20px] shadow-float motion-safe:animate-[reveal-up-sm_600ms_cubic-bezier(0.22,1,0.36,1)_200ms_both] lg:grid-cols-4"
+          >
             {hero.spec.fields.map((f) => (
               <div key={f.field} className="flex flex-col gap-1 bg-white/35 px-[18px] py-4 text-left">
                 <dt className="font-mono text-[10.5px] uppercase tracking-[0.1em] text-ink-soft">{f.field}</dt>
@@ -92,7 +103,7 @@ export default function HomePage() {
             Most pharmacies can tell you a package shipped. We can show you exactly what was in it.
           </p>
         </div>
-        <ol className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <ol className="reveal-group grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {custody.map((s, i) => (
             <li key={s.title}>
               <Card className="flex h-full min-h-[240px] flex-col gap-3.5 p-7">
@@ -115,9 +126,12 @@ export default function HomePage() {
             How we hold the standard →
           </Link>
         </div>
+        {/* Each row on the CSS `.reveal` utility, not a motion leaf. Four
+            ruled rows do not need an orchestrator, and this way the whole
+            section ships no JavaScript. */}
         <ul className="border-t border-hair">
           {tests.map((t) => (
-            <li key={t.mark} className="grid grid-cols-[110px_minmax(0,1fr)] gap-5 border-b border-hair py-[26px]">
+            <li key={t.mark} className="reveal grid grid-cols-[110px_minmax(0,1fr)] gap-5 border-b border-hair py-[26px]">
               <span className="pt-1 font-mono text-xs tracking-[0.06em] text-brand-500">{t.mark}</span>
               <div className="flex flex-col gap-1.5">
                 <h3 className="text-[19px] font-medium">{t.title}</h3>
@@ -137,7 +151,7 @@ export default function HomePage() {
           </div>
           <Link href="/products" className="text-[15px] font-medium text-brand-500 hover:text-navy">View the full formulary →</Link>
         </div>
-        <ul className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
+        <ul className="reveal-group grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
           {areas.map((a) => (
             <li key={a.href}>
               <Link href={a.href} className="group relative block aspect-[3/4] overflow-hidden rounded-card bg-stone">
@@ -167,10 +181,15 @@ export default function HomePage() {
           <SectionTitle id="start-h">{onboarding.title}</SectionTitle>
           <p className="text-[17px] leading-[1.65] text-ink-soft">{onboarding.lead}</p>
         </div>
-        <ol className="grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
+        <ol className="reveal-group grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
           {onboarding.steps.map((s, i) => (
             <li key={s.title} className="flex flex-col gap-3 border-t border-hair-strong pt-5">
-              <span className="font-mono text-xs text-ink-muted">{String(i + 1).padStart(2, "0")}</span>
+              {/* `tabular-nums` so the box does not reflow as the digit
+                  changes — a counter that nudges its neighbours is a layout
+                  shift, and the target here is CLS 0. */}
+              <span className="font-mono text-xs tabular-nums text-ink-muted">
+                0<Counter value={i + 1} />
+              </span>
               <h3 className="text-lg font-medium leading-snug">{s.title}</h3>
               <p className="text-[14.5px] leading-relaxed text-ink-soft text-pretty">{s.body}</p>
             </li>
@@ -180,7 +199,7 @@ export default function HomePage() {
 
       {/* ---- Closing CTA ---- */}
       <section aria-labelledby="cta-h" className={`${container} ${section} pb-24`}>
-        <div className="flex flex-col items-center gap-5 rounded-hero border border-hair-soft bg-gradient-to-b from-white to-[#f1f3f8] px-6 py-[clamp(2.5rem,6vw,5.5rem)] text-center">
+        <div className="reveal flex flex-col items-center gap-5 rounded-hero border border-hair-soft bg-gradient-to-b from-white to-[#f1f3f8] px-6 py-[clamp(2.5rem,6vw,5.5rem)] text-center">
           <h2 id="cta-h" className="max-w-[720px] text-[clamp(2.1rem,4.6vw,3.6rem)] font-normal leading-[1.06] tracking-[-0.04em] text-balance">
             Ready to Partner with MediCraft?
           </h2>

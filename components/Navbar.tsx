@@ -79,6 +79,34 @@ export function Navbar({
   // Any navigation closes it, however it was triggered.
   useEffect(() => setOpenMenu(null), [pathname]);
 
+  /* Whether the page has moved, for the pill's colour only.
+   *
+   * ONE passive listener, rAF-throttled, and it writes a boolean rather than
+   * a scroll position — so a fast scroll schedules at most one frame of work
+   * and React re-renders at most twice in a session. A listener that set
+   * `scrollY` into state would re-render the header on every frame of every
+   * scroll, on every page.
+   *
+   * The pill then transitions in CSS. Nothing here animates. */
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    let frame = 0;
+    const read = () => {
+      frame = 0;
+      setScrolled(window.scrollY > 8);
+    };
+    const onScroll = () => {
+      if (frame) return;
+      frame = requestAnimationFrame(read);
+    };
+    read();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (frame) cancelAnimationFrame(frame);
+    };
+  }, []);
+
   useEffect(() => {
     if (!openMenu) return;
     const onKey = (event: KeyboardEvent) => {
@@ -113,7 +141,10 @@ export function Navbar({
           against their own button. The reference spans its panels edge to
           edge of the header; anchored to a button they were 640px boxes that
           jumped sideways as you moved between The pharmacy and Products. */}
-      <div className="relative rounded-full border border-white/90 bg-white/[0.62] shadow-glass backdrop-blur-xl backdrop-saturate-150">
+      <div
+        data-scrolled={scrolled ? "" : undefined}
+        className="relative rounded-full border border-white/90 bg-white/[0.62] shadow-glass backdrop-blur-xl backdrop-saturate-150 transition-[background-color,border-color,box-shadow] duration-300 motion-reduce:transition-none data-[scrolled]:border-white data-[scrolled]:bg-white/[0.82] data-[scrolled]:shadow-float"
+      >
         <nav className="flex items-center justify-between gap-6 py-2.5 pl-[22px] pr-2.5">
           {/* `.logo-lockup` is the hover/focus target that drives the grind. */}
           <Link

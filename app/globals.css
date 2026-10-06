@@ -1196,6 +1196,82 @@ h3 {
 }
 
 @layer utilities {
+  /* ===================================================================
+     SCROLL REVEAL, IN CSS.
+
+     Zero JavaScript. `animation-timeline: view()` drives the keyframes
+     from the element's own progress through the viewport, so the work
+     happens on the compositor and nothing ships to the client.
+
+     WHY THIS AND NOT A MOTION LIBRARY FOR THE COMMON CASE
+     -----------------------------------------------------
+     The home page's First Load JS is 102 kB. Pulling framer-motion onto
+     it costs ~47 kB even with LazyMotion, and the budget for this work
+     is 8 kB. A reveal is opacity and a transform; it does not need an
+     animation engine. The engine is reserved for the two things CSS
+     genuinely cannot do — see components/motion/.
+
+     THREE ESCAPE HATCHES, because content that does not appear is worse
+     than content that does not move:
+       · browsers without `animation-timeline` get no rule at all, so
+         the element is simply visible (this is why the @supports wraps
+         the rule and not the keyframes)
+       · `prefers-reduced-motion` is gated at the media-query level
+       · nothing here sets opacity outside the animation, so a failure
+         to run leaves the element at its natural opacity of 1
+     =================================================================== */
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .reveal {
+        animation: reveal-up linear both;
+        animation-timeline: view();
+        animation-range: entry 0% entry 40%;
+      }
+
+      /* A stagger, without an orchestrator.
+      
+         Each child starts its range a little later than the one before,
+         which reads as a sequence for exactly the same reason a
+         JS stagger does — and costs nothing. Six steps, because the
+         brief caps a group at six and because beyond that the last card
+         is still waiting when the first is long finished. */
+      .reveal-group > * {
+        animation: reveal-up linear both;
+        animation-timeline: view();
+        animation-range: entry 0% entry 40%;
+      }
+      .reveal-group > *:nth-child(2) { animation-range: entry 5% entry 45%; }
+      .reveal-group > *:nth-child(3) { animation-range: entry 10% entry 50%; }
+      .reveal-group > *:nth-child(4) { animation-range: entry 15% entry 55%; }
+      .reveal-group > *:nth-child(5) { animation-range: entry 20% entry 60%; }
+      .reveal-group > *:nth-child(n + 6) { animation-range: entry 25% entry 65%; }
+    }
+  }
+
+  @keyframes reveal-up {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* The shorter throw, for things that sit on or near an image — a 24px
+     rise under a hero plate reads as the plate sliding off the picture. */
+  @keyframes reveal-up-sm {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
   /* The tick mark used by .check-list, as a data URI so it needs no request. */
   .check-list,
   .check-list-invert {
