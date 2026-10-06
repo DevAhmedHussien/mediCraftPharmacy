@@ -92,11 +92,11 @@ export default function CareersPage() {
             />
           </Reveal>
 
-          <ul className="mt-10 border-t border-line">
+          <ul className="mt-10 border-t border-hair">
             {careers.map((job) => (
               <li
                 key={job.title}
-                className="flex flex-col gap-4 border-b border-line py-6 sm:flex-row sm:items-center sm:justify-between"
+                className="flex flex-col gap-4 border-b border-hair py-6 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div>
                   <h3 className="text-[1.125rem] font-bold text-brand-600">{job.title}</h3>
@@ -137,7 +137,7 @@ export default function CareersPage() {
             />
           </Reveal>
           <Reveal delay={0.1} className="mt-12">
-            <div className="rounded-panel border border-line bg-white p-7 md:p-10">
+            <div className="rounded-card border border-hair-soft bg-white p-7 md:p-10">
               <CareerForm />
             </div>
           </Reveal>

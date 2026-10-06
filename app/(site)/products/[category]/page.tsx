@@ -121,23 +121,20 @@ export default async function CategoryPage({ params }: Params) {
             /* Nothing published in this specialty yet. The pharmacy still
                compounds here, so this invites the inquiry instead of reading
                as an empty shelf. */
-            <div className="rounded-tile border-2 border-dashed border-line bg-sand px-6 py-16 text-center">
-              <p className="text-[1.0625rem] font-bold text-ink">
+            <div className="flex flex-col items-start gap-2.5 rounded-card border border-dashed border-hair-strong px-7 py-12">
+              <p className="text-[1.25rem] font-medium text-navy">
                 {formulary.comingSoon.title}
               </p>
-              <p className="mx-auto mt-2 max-w-md text-meta text-ink-soft text-pretty">
+              <p className="max-w-[46ch] text-[0.9375rem] text-ink-soft text-pretty">
                 {formulary.comingSoon.body}
               </p>
-              <Link
-                href={formulary.comingSoon.cta.href}
-                className="btn-primary mt-6 inline-flex"
-              >
-                {formulary.comingSoon.cta.label} <span aria-hidden>→</span>
+              <Link href={formulary.comingSoon.cta.href} className="btn btn-primary mt-1.5">
+                {formulary.comingSoon.cta.label}
               </Link>
             </div>
           )}
 
-          <aside className="mt-14 flex items-start gap-4 rounded-tile border border-line bg-sand px-6 py-5">
+          <aside className="mt-14 flex items-start gap-4 rounded-[1.25rem] border border-hair-soft bg-white px-6 py-5">
             <Icon name="rx" className="mt-0.5 h-5 w-5 text-cyan-700" />
             <p className="text-meta text-ink-soft text-pretty">
               <strong className="font-bold text-ink">

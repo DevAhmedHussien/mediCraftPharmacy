@@ -37,7 +37,7 @@ export function HowItWorks({ showCta = false }: { showCta?: boolean }) {
         <div className="mt-12 grid gap-10 lg:grid-cols-3 lg:gap-8">
           {PUBLIC_PHASES.map(({ phase, steps }) => (
             <div key={phase}>
-              <h3 className="border-b border-line pb-3 text-meta font-bold text-ink">
+              <h3 className="border-b border-hair pb-3 text-meta font-medium text-navy">
                 {phase}
               </h3>
 
@@ -46,7 +46,7 @@ export function HowItWorks({ showCta = false }: { showCta?: boolean }) {
                   <li key={step.id} className="flex gap-4">
                     <span
                       aria-hidden
-                      className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-full border border-line bg-white font-mono text-caption font-bold text-brand-600"
+                      className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-full border border-hair bg-white font-mono text-caption text-brand-500"
                     >
                       {step.number}
                     </span>
@@ -66,7 +66,7 @@ export function HowItWorks({ showCta = false }: { showCta?: boolean }) {
         </div>
 
         {showCta && (
-          <div className="mt-12 flex flex-wrap items-center gap-x-8 gap-y-3 border-t border-line pt-8">
+          <div className="mt-12 flex flex-wrap items-center gap-x-8 gap-y-3 border-t border-hair pt-8">
             <Link href="/work-with-us" className="btn-primary btn-lg">
               Open a provider account
               <ArrowRight className="h-4 w-4" strokeWidth={2.2} />

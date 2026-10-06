@@ -44,7 +44,7 @@ export default function ContactPage() {
         <div className="container-x">
           <div className="grid gap-10 lg:grid-cols-[1.4fr_1fr] lg:gap-14">
             <Reveal>
-              <div className="rounded-panel border border-line bg-white p-7 md:p-10">
+              <div className="rounded-[1.75rem] border border-hair-soft bg-white p-[clamp(1.375rem,3.4vw,2.5rem)]">
                 <SectionHead
                   title={contact.form.title}
                   lead={contact.form.lead}
@@ -107,7 +107,7 @@ export default function ContactPage() {
                         href={s.href}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center justify-between gap-3 rounded-lg border-[1.5px] border-line px-4 py-3 text-meta font-medium text-ink transition-colors hover:border-brand-300 hover:text-brand-600"
+                        className="flex items-center justify-between gap-3 rounded-2xl border border-hair px-4 py-3.5 text-meta font-medium text-navy transition-colors hover:border-hair-strong hover:bg-white motion-reduce:transition-none"
                       >
                         <span>{s.name}</span>
                         <span className="text-caption text-ink-muted">{s.handle}</span>

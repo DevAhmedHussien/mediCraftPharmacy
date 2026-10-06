@@ -351,8 +351,13 @@ h3 {
   }
   /* brand-600 rather than brand-500: these are set at body size, where the
      deeper blue holds up better (7.47:1 on white). */
+  /* Navy, medium. It was brand-600 BOLD — which meant every card heading on
+     the site was the same colour as every link on the site, so on the contact
+     page "Phone", "Business Hours" and "Follow MediCraft" all looked
+     clickable and none of them were. Blue stays for links and the eyebrow;
+     headings are navy and earn their weight from size. */
   .card-title {
-    @apply font-display mb-2.5 text-[1.0625rem] font-bold text-brand-600;
+    @apply font-display mb-2.5 text-[1.0625rem] font-medium text-navy;
   }
   /* Keeps a two-line title clear of the corner arrow on linked cards. */
   a.card .card-title {
@@ -401,8 +406,13 @@ h3 {
    *
    * The brand tint, not white: a white card on a white section has nothing to
    * separate it, and a border alone would make it a box. */
+  /* The tinted callout panel. `tint` is the reference's own pale blue; it was
+     `brand-50/60` over `brand-100`, which is the same idea reached for twice
+     with two different values. The name is a fossil — this panel has not been
+     navy since the light redesign — but it is referenced from markup and
+     renaming it would be churn for no reader. */
   .panel-navy {
-    @apply relative overflow-hidden rounded-panel border border-brand-100 bg-brand-50/60 p-8 text-ink md:p-10;
+    @apply relative overflow-hidden rounded-card border border-hair-soft bg-tint p-8 text-ink md:p-10;
   }
   /*
    * No bloom here. This panel appears a dozen times across the site, so a
@@ -575,17 +585,25 @@ h3 {
   /* ---------------------------------------------------------------------
      Chips, pills, badges
      ------------------------------------------------------------------ */
+  /* The filter pill. 14px medium in a 10/16 pill, as the reference draws it
+     — it was 12px BOLD, which at that size turns the category names into
+     shouted labels and makes eleven of them in a row read as a toolbar rather
+     than as a set of choices.
+
+     The selected state is navy, not brand blue: blue is what every LINK on
+     this page is, so a blue pill in a rail of pills looked like the one you
+     could click rather than the one you had. */
   .chip {
-    @apply inline-flex items-center gap-2 rounded-full border border-line bg-white px-4 py-2 text-caption font-bold text-ink-soft transition;
+    @apply inline-flex items-center gap-2 rounded-full border border-hair bg-white px-4 py-2.5 text-[0.875rem] font-medium text-ink-soft transition-colors duration-200 hover:border-hair-strong hover:text-navy motion-reduce:transition-none;
   }
   .chip-active {
-    @apply border-brand-500 bg-brand-500 text-white;
+    @apply border-navy bg-navy text-white hover:border-navy hover:text-white;
   }
   /* Both badges were drawn for a navy footer — translucent white on dark, and
      a pale amber that only reads against it. On the light footer they were
      invisible and washed out respectively. */
   .badge-pill {
-    @apply inline-flex items-center rounded-full border border-line bg-white px-3 py-1 text-caption font-medium text-ink-soft;
+    @apply inline-flex items-center rounded-full border border-hair bg-white px-3 py-1 text-caption font-medium text-ink-soft;
   }
   /* "In progress" needs to read as honest rather than as an accreditation
      already held — amber, not cyan, and the copy always says so. */
@@ -594,11 +612,15 @@ h3 {
   }
 
   /* Callout — a tinted aside with a brand rule down the left edge. */
+  /* On the `info` / `success` pairs rather than raw palette steps, so a
+     callout here and a status banner in the portal are the same two colours.
+     The 20px radius and the left rule are unchanged — the rule is what marks
+     this as an aside rather than another card. */
   .callout {
-    @apply rounded-r-tile border-l-[3px] border-brand-500 bg-brand-50 px-6 py-5 text-meta text-ink-soft;
+    @apply rounded-r-[1.25rem] border-l-[3px] border-info bg-info-bg px-6 py-5 text-meta text-ink-soft;
   }
   .callout-cyan {
-    @apply rounded-r-tile border-l-[3px] border-cyan-500 bg-cyan-50 px-6 py-5 text-meta text-ink-soft;
+    @apply rounded-r-[1.25rem] border-l-[3px] border-success bg-success-bg px-6 py-5 text-meta text-ink-soft;
   }
 
   .hairline {

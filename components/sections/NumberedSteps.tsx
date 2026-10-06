@@ -51,7 +51,7 @@ export function NumberedSteps({
                 {String(index + 1).padStart(2, "0")}
               </span>
               {!last && (
-                <span aria-hidden className="hidden h-px flex-1 bg-line lg:block" />
+                <span aria-hidden className="hidden h-px flex-1 bg-hair lg:block" />
               )}
             </div>
 

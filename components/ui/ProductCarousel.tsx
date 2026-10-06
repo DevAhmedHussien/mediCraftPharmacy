@@ -101,8 +101,14 @@ export function ProductCarousel({
          * grid. `scroll-pl-*` must mirror that padding: without it, mandatory
          * snapping rests the track at scrollLeft = padding rather than 0, and
          * the "at start" check never fires.
+         *
+         * ALL THREE MUST EQUAL THE CONTAINER'S GUTTER, which is now a flat
+         * 20px. They were 24px with a 40px step at `lg`, matching the gutters
+         * `.container-x` had before the redesign — so the track hung 20px past
+         * the container on both sides and the last visible slide was sliced
+         * down its middle instead of stopping at the page edge.
          */
-        className="no-scrollbar -mx-6 flex snap-x snap-mandatory gap-6 scroll-pl-6 overflow-x-auto px-6 pb-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-4 lg:-mx-10 lg:scroll-pl-10 lg:px-10"
+        className="no-scrollbar -mx-5 flex snap-x snap-mandatory gap-4 scroll-pl-5 overflow-x-auto px-5 pb-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-4"
       >
         {children}
       </ul>
@@ -135,5 +141,5 @@ function ArrowButton({
 
 /** Fixed-width slide. Keeps the shelf's snap geometry in one place. */
 export function CarouselItem({ children }: { children: ReactNode }) {
-  return <li className="w-[268px] shrink-0 snap-start sm:w-[300px]">{children}</li>;
+  return <li className="w-[250px] shrink-0 snap-start">{children}</li>;
 }

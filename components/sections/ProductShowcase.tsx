@@ -41,14 +41,24 @@ export function ProductShowcase({
   className?: string;
 }) {
   return (
-    <ul className={cn("grid gap-5 sm:grid-cols-2 lg:grid-cols-3", className)}>
+    /* `auto-fill` at a 250px floor, as the reference has it, instead of
+       1 / 2 / 3 at named breakpoints. A fixed three-up left a 1120px grid
+       with cards 347px wide — wider than the packshot inside them, so every
+       tile was mostly empty plate. The floor lets a wide viewport fit four. */
+    <ul
+      className={cn("grid gap-4", className)}
+      style={{ gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 15.625rem), 1fr))" }}
+    >
       {products.map((product, index) => (
         <li key={product.slug}>
           <Link
             href={`/product/${product.slug}`}
-            className="group block h-full overflow-hidden rounded-tile border border-line bg-white transition-colors hover:border-brand-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
+            className="group flex h-full flex-col gap-3.5 rounded-card border border-hair-soft bg-white/70 p-3 transition-colors hover:bg-white focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
           >
-            <div className="relative aspect-[4/3] bg-sand">
+            {/* The plate is a surface the packshot sits ON, not a frame around
+                it: 16px radius inside the card's 24px, stone rather than white,
+                and the image held at 88% so the vial never touches an edge. */}
+            <div className="relative aspect-square overflow-hidden rounded-2xl bg-stone">
               <Image
                 src={product.image}
                 alt=""
@@ -56,52 +66,29 @@ export function ProductShowcase({
                 /* The first row is likely in view on a laptop; the rest are
                    not. Only those get `priority`, because marking all nine
                    would have them compete with each other and with the hero. */
-                priority={index < 3}
-                sizes="(min-width: 1024px) 21rem, (min-width: 640px) 45vw, 90vw"
-                className="object-contain p-6 transition-transform duration-300 group-hover:scale-[1.03]"
+                priority={index < 4}
+                sizes="(min-width: 1120px) 16rem, (min-width: 640px) 45vw, 90vw"
+                className="object-contain p-[6%] transition-transform duration-300 group-hover:scale-[1.03] motion-reduce:transition-none"
               />
             </div>
 
-            {/* The foot reads as a label, not a caption.
+            {/* Strength and form run ABOVE the name, in the mono register.
              *
-             * It was the name over a dot-joined string — "2.5 mg/mL ·
-             * Injectable" — which is the e-commerce default and throws away
-             * the two facts a prescriber is actually scanning for. Strength
-             * and form are what identify a preparation; set as a ruled pair
-             * in the mono register they can be compared down a column of nine
-             * cards at a glance, which a run-on caption cannot.
-             *
-             * `·` as a separator is also the thing every generated page
-             * reaches for. Here the structure separates them instead. */}
-            <div className="border-t border-line px-5 py-4">
-              <h3 className="text-[1.0625rem] font-bold leading-snug text-ink text-balance">
+             * They were a ruled dl underneath — two rows of label/value per
+             * card, which is nine ruled tables on one page and reads as a
+             * spreadsheet. Set as one mono line on top they still compare
+             * cleanly down a column, because they all start at the same x and
+             * all sit in the same typeface, and they cost one line instead of
+             * five. This is what the reference does. */}
+            <div className="flex flex-col gap-1.5 px-2 pb-2">
+              {(product.doses || product.form) && (
+                <p className="font-mono text-[0.6875rem] tracking-[0.06em] text-ink-muted">
+                  {[product.doses, product.form].filter(Boolean).join(" · ")}
+                </p>
+              )}
+              <h3 className="text-[1.0625rem] font-medium leading-[1.3] text-navy text-balance">
                 {product.name}
               </h3>
-
-              {(product.doses || product.form) && (
-                <dl className="mt-3 space-y-1.5 border-t border-line pt-3">
-                  {product.doses && (
-                    <div className="flex items-baseline justify-between gap-3">
-                      <dt className="font-mono text-label uppercase tracking-[0.12em] text-ink-muted">
-                        Strength
-                      </dt>
-                      <dd className="text-caption font-medium tabular-nums text-ink-soft">
-                        {product.doses}
-                      </dd>
-                    </div>
-                  )}
-                  {product.form && (
-                    <div className="flex items-baseline justify-between gap-3">
-                      <dt className="font-mono text-label uppercase tracking-[0.12em] text-ink-muted">
-                        Form
-                      </dt>
-                      <dd className="text-caption font-medium text-ink-soft">
-                        {product.form}
-                      </dd>
-                    </div>
-                  )}
-                </dl>
-              )}
             </div>
           </Link>
         </li>

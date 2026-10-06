@@ -41,14 +41,14 @@ const OUTBOUND: Gate[] = [
 export function ProcessSequence({ className }: { className?: string }) {
   return (
     <figure className={cn("not-prose", className)}>
-      <div className="rounded-panel border border-line bg-sand p-6 md:p-8">
+      <div className="rounded-card border border-hair-soft bg-white/70 p-6 md:p-8">
         <Track
           phase="Inbound — raw material"
           gates={INBOUND}
           terminal="Released to cleanroom"
         />
 
-        <div className="my-7 border-t border-dashed border-line" />
+        <div className="my-7 border-t border-dashed border-hair-strong" />
 
         <Track
           phase="Outbound — finished product"
@@ -102,7 +102,7 @@ function Track({
       <ol className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {gates.map((g, i) => (
           <li key={g.id} className="relative">
-            <div className="h-full rounded-tile border border-line bg-white p-4">
+            <div className="h-full rounded-2xl border border-hair-soft bg-white p-4">
               <div className="flex items-baseline gap-2">
                 {/* Numbered because this genuinely is a sequence — each gate is
                     passed in order and none can be skipped. */}
@@ -121,7 +121,7 @@ function Track({
             {i < gates.length - 1 && (
               <span
                 aria-hidden
-                className="absolute right-[-0.6rem] top-1/2 hidden h-px w-3 -translate-y-1/2 bg-line lg:block"
+                className="absolute right-[-0.6rem] top-1/2 hidden h-px w-3 -translate-y-1/2 bg-hair lg:block"
               />
             )}
           </li>

@@ -101,18 +101,28 @@ const config: Config = {
         /* Text ramp. Pulled toward the brand navy rather than neutral grey, so
            even body copy carries a trace of the identity's hue.
            `muted` is set at the darkest value that still reads as a third
-           step: it clears 4.5:1 on white *and* on the sand band (4.80 / 4.51).
-           A lighter grey looked better in isolation but failed on the band,
-           where most of the captions on this site actually sit. */
+           step: it clears 4.5:1 on white *and* on the page ground (5.09 /
+           4.75 against #f7f7f5). A lighter grey looked better in isolation
+           but failed on the ground, where most of the captions on this site
+           actually sit. */
         ink: {
           DEFAULT: "#0f1a33",
           soft: "#46536f",
           muted: "#636e89",
         },
-        /* The alternating section band — a grey cooled toward blue so it sits
-           under the palette instead of beside it. */
-        sand: "#f5f8fd",
-        line: "#dde4f0",
+        /* `sand` and `line` are the previous palette's band and divider, and
+           they are kept under their old names because 60-odd marketing call
+           sites reference them. What they POINT AT is now the redesign's
+           ground and hairline — #f5f8fd and #dde4f0 are blue-tinted, and
+           neither value appears anywhere in the reference. Leaving them meant
+           a cool divider sitting next to a warm one on the same card, which
+           is most of why the interior pages still read as the old system
+           after the heroes and containers were rebuilt.
+
+           They are aliases, not a second palette: `sand` IS `paper`, `line`
+           IS `hair`. New markup should use the redesign names. */
+        sand: "#f7f7f5",
+        line: "#e3e3de",
       },
       fontFamily: {
         /*
