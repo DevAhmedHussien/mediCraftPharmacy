@@ -8,6 +8,7 @@ import { LoginForm } from "@/components/admin/LoginForm";
 import { auth } from "@/lib/auth";
 import { homeForRole } from "@/lib/home-route";
 import { pageMetadata } from "@/lib/seo";
+import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
   ...pageMetadata({
@@ -51,72 +52,70 @@ export default async function LoginPage({
   }
 
   return (
-    /* Two halves on a laptop, one column on a phone.
+    /* Two halves that collapse at 520px per column, not at a named
+       breakpoint — `auto-fit` + `minmax(min(100%,520px),1fr)`, from the
+       reference. The picture simply stops fitting and the form takes the
+       row, which is the right behaviour on a 900px tablet where `lg:` would
+       still be showing two cramped columns.
      *
-     * The picture is `hidden lg:block` rather than scaled down, because a
-     * decorative half-screen above a sign-in form on a 390px phone is just
-     * something to scroll past before reaching the two fields you came for.
-     * It also means the image is never fetched on mobile at all.
+     * The aside is `aria-hidden`: it is a photograph and a caption that
+     * repeats the home page's headline. A screen reader reaching the sign-in
+     * page should land on the form.
      */
-    /* On `paper`, like everything else. The form sat on pure white and the
-       panel beside it on the old sand tint, neither of which the redesign
-       has — signing in looked like a different product, which is exactly
-       what the console's token change was about. */
-    <div className="grid min-h-screen bg-paper lg:grid-cols-2">
+    <div
+      className="grid min-h-screen bg-paper"
+      style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 520px), 1fr))" }}
+    >
       {/* ---- The form ---- */}
-      <div className="flex items-center justify-center px-5 py-16 sm:px-10">
-        <div className="w-full max-w-[26rem]">
-          <Link href="/" className="mb-10 block w-fit">
-            <Logo className="h-9 w-auto" />
+      <main id="main" className="flex items-center justify-center px-5 py-16">
+        <div className="flex w-full max-w-[400px] flex-col">
+          <Link href="/" aria-label={`${site.name} home`} className="mb-12 flex self-start">
+            <Logo className="h-8 w-auto" />
           </Link>
 
-          {/* Satoshi 400, navy, tracked in — the display treatment the rest
-              of the site uses. It was Lato Black in `text-ink`. */}
-          <h1 className="font-display text-[clamp(1.9rem,3.4vw,2.4rem)] font-normal leading-[1.1] tracking-title text-navy">
+          <h1 className="font-display text-[40px] font-normal leading-[1.08] tracking-title text-navy">
             Sign in
           </h1>
-          <p className="mt-3 text-[15px] leading-relaxed text-ink-soft">
+          <p className="mt-2.5 text-[15.5px] leading-[1.6] text-ink-soft">
             Staff and partner access to the MediCraft portal.
           </p>
 
           <LoginForm next={searchParams.next} />
 
-          <p className="mt-8 text-caption text-ink-muted">
+          <p className="mt-9 border-t border-hair pt-5 text-[14px] text-ink-muted">
             Not a partner yet?{" "}
             <Link href="/providers" className="font-medium text-brand-500 hover:text-navy">
               Apply for an account
             </Link>
           </p>
         </div>
-      </div>
+      </main>
 
       {/* ---- The picture ----
-          The identity's own product shot, in a card on the brand tint.
-
-          Not full-bleed: this is a studio sweep that lifts to pure white and
-          the vial fills nearly the whole frame, so `object-cover` on a tall
-          half-screen box crops the cap and the glass shelf it is standing on.
-          Contained in a card, the shot keeps its proportions and the white of
-          the sweep reads as the card itself. */}
-      <div className="relative hidden items-center justify-center p-12 lg:flex">
-        <figure className="w-full max-w-[30rem]">
-          <div className="overflow-hidden rounded-hero border border-hair-soft bg-white/70 p-6 shadow-glass">
-            <Image
-              src="/images/brand/vial-clear-glass-shelf.webp"
-              alt="A MediCraft semaglutide vial on a glass shelf"
-              width={1086}
-              height={1448}
-              priority
-              sizes="(min-width: 1024px) 30rem, 0px"
-              className="h-auto w-full"
-            />
+          Full-bleed inside a 32px-radius box with 16px of page padding, and a
+          glass caption sitting on it — not a contained card with the caption
+          underneath. `object-cover` is right here because the box is tall and
+          the crop is intended. */}
+      <aside aria-hidden className="hidden p-4 lg:flex">
+        <div className="relative min-h-[560px] flex-1 overflow-hidden rounded-hero bg-stone">
+          <Image
+            src="/images/brand/vial-clear-glass-shelf.webp"
+            alt=""
+            fill
+            priority
+            sizes="(min-width: 1024px) 50vw, 0px"
+            className="object-cover"
+          />
+          <div className="absolute inset-x-5 bottom-5 max-w-[420px] rounded-[20px] border border-white/90 bg-white/60 px-5 py-[18px] shadow-float backdrop-blur-xl backdrop-saturate-150">
+            <p className="text-[17px] font-medium tracking-[-0.01em] text-navy">
+              Wellness is crafted.
+            </p>
+            <p className="mt-1 text-[14.5px] leading-[1.5] text-ink-soft">
+              Compounded to the prescription, documented at every step.
+            </p>
           </div>
-          <figcaption className="mt-6 text-meta leading-relaxed text-ink-soft">
-            <span className="font-display font-black text-ink">Wellness is crafted.</span>{" "}
-            Compounded to the prescription, documented at every step.
-          </figcaption>
-        </figure>
-      </div>
+        </div>
+      </aside>
     </div>
   );
 }
