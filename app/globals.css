@@ -74,11 +74,17 @@ h3 {
 /* The chrome is fixed, so the document is inset by its height once here rather
    than every page remembering to leave room for it.
 
-   Scoped to a class, not the bare `main` element: /admin renders its own
-   <main> under its own (shorter, non-fixed) header, and a blanket rule left a
-   108px void at the top of every admin screen. */
+   NO LONGER NEEDED, AND NOW HARMFUL. The redesign's header is a sticky glass
+   pill, which stays in flow — so the page already starts below it. Keeping
+   this would add a second 4.5rem gap under a header that is not overlapping
+   anything, which reads as a mysteriously empty first screen.
+
+   The rule is kept at zero rather than deleted: `.site-main` is on the (site)
+   layout, `--chrome-h` is still read by `scroll-padding-top` (so an in-page
+   anchor does not land under the pill) and by `.hero-full`, and a future
+   header that goes back to `fixed` needs this seam to exist. */
 .site-main {
-  padding-top: var(--chrome-h);
+  padding-top: 0;
 }
 
 /* Selection picks up the brand rather than the browser default. */
@@ -630,11 +636,21 @@ h3 {
    * background on hover — the underline is the only feedback, which keeps the
    * bar quiet while still telling a visitor where they are.
    */
+  /* `whitespace-nowrap` is load-bearing in the glass pill.
+     
+     The design mock carried four nav items; the real header has five plus the
+     portal link and two CTAs, inside a 1120px pill. Without this, "The
+     pharmacy", "For providers" and "Compounding notes" each break across two
+     lines and the pill grows to twice its height.
+     
+     Weight is 400, not 500 — the redesign sets the whole page in Satoshi
+     regular, and a medium nav against a regular 88px headline reads as the
+     nav shouting. */
   .nav-link {
-    @apply relative flex items-center rounded-md px-3.5 py-2 text-meta font-medium text-ink-soft transition-colors duration-200 hover:text-brand-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500;
+    @apply relative flex items-center whitespace-nowrap rounded-md px-2.5 py-2 text-[14px] font-normal text-ink-soft transition-colors duration-200 hover:text-navy focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500;
   }
   .nav-link-active {
-    @apply font-bold text-brand-600;
+    @apply font-medium text-navy;
   }
   /* Grows from the centre on hover; already full width when the route is
      active. Transform-only, so it never triggers layout. */

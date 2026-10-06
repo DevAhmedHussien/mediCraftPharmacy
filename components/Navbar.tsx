@@ -93,20 +93,33 @@ export function Navbar({
   const productsActive = pathname.startsWith("/product");
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50">
-      {/* ---- The bar ---- */}
-      <div className="chrome border-b border-line">
-        <nav className="container-x flex h-[var(--chrome-h)] items-center justify-between gap-6">
+    /* A floating glass pill, not a full-width bar.
+     *
+     * `sticky`, not `fixed`. Fixed took the header out of flow, so every page
+     * compensated with top padding driven by `--chrome-h`; sticky keeps it in
+     * flow and that compensation becomes unnecessary — the pill simply sits
+     * 16px down and stays there.
+     *
+     * The blur is progressive enhancement. Without backdrop-filter the 62%
+     * white fill still reads as a solid pill on the paper ground, so nothing
+     * about the layout or the legibility depends on it.
+     *
+     * Everything inside — the dropdowns, the mega-panel, the mobile drawer,
+     * the active-route logic — is untouched. This is a restyle of the shell. */
+    <header className="sticky top-4 z-50 mx-auto mt-4 w-full max-w-[1120px] px-5">
+      {/* ---- The pill ---- */}
+      <div className="rounded-full border border-white/90 bg-white/[0.62] shadow-glass backdrop-blur-xl backdrop-saturate-150">
+        <nav className="flex items-center justify-between gap-6 py-2.5 pl-[22px] pr-2.5">
           {/* `.logo-lockup` is the hover/focus target that drives the grind. */}
           <Link
             href="/"
             className="logo-lockup flex shrink-0 items-center rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
           >
-            <Logo className="h-10 w-auto" />
+            <Logo className="h-[30px] w-auto" />
           </Link>
 
           {/* ---- Desktop navigation ---- */}
-          <div className="hidden items-center gap-0.5 xl:flex">
+          <div className="hidden items-center gap-0.5 lg:flex">
             {headerNav.map((item) =>
               item.children ? (
                 <NavGroup
@@ -176,7 +189,7 @@ export function Navbar({
             ) : (
               <Link
                 href="/login"
-                className="flex items-center gap-1.5 text-caption font-medium text-ink-soft transition-colors hover:text-ink"
+                className="flex items-center gap-1.5 whitespace-nowrap text-[14px] font-normal text-ink-soft transition-colors hover:text-navy"
               >
                 <UserRound className="h-3.5 w-3.5" strokeWidth={1.8} aria-hidden />
                 Provider portal
@@ -190,9 +203,16 @@ export function Navbar({
                 <Link
                   key={cta.href}
                   href={cta.href}
+                  /* Pills, matching the hero's buttons. Navy solid goes to
+                     brand blue on hover — the handoff's one hover move,
+                     applied everywhere a solid pill appears. */
                   className={cn(
-                    "btn-sm",
-                    cta.style === "primary" ? "btn-primary" : "btn-outline"
+                    "inline-flex items-center whitespace-nowrap rounded-full px-[18px] py-2.5 text-[14px] font-medium transition-colors duration-200",
+                    "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500",
+                    "motion-reduce:transition-none",
+                    cta.style === "primary"
+                      ? "bg-navy text-white hover:bg-brand-500"
+                      : "border border-hair bg-white/70 text-navy hover:bg-white"
                   )}
                 >
                   {cta.label}

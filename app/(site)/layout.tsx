@@ -187,7 +187,10 @@ export default async function SiteLayout({ children }: { children: ReactNode }) 
   };
 
   return (
-    <>
+    /* The paper ground. Set on the shell rather than on <body> so the admin
+       console and /login — which sit outside this route group — keep their
+       own grounds. */
+    <div className="min-h-screen bg-paper text-navy">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -225,6 +228,6 @@ export default async function SiteLayout({ children }: { children: ReactNode }) 
       {/* Client-only: the stored choice is in localStorage, which the server
           cannot read, so the banner mounts hidden and appears once checked. */}
       <CookieConsent />
-    </>
+    </div>
   );
 }
