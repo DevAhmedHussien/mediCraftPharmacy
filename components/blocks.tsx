@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { Icon, type IconName } from "@/components/icons/set";
 import type { Media } from "@/lib/media";
+import { PageHeader, PageHeaderImage } from "@/components/ui/page-header";
 import { cn } from "@/lib/utils";
 
 /* ===========================================================================
@@ -551,11 +552,16 @@ export function ClosingCta({
 /* --- Page masthead ------------------------------------------------------- */
 
 /**
- * Interior page header. A short navy band rather than a cover photo: the stock
- * imagery the previous design used varied so much in brightness that the type
- * needed a heavy scrim on every page, which read as a template. A flat brand
- * gradient is quieter, loads nothing, and lets the mark's cyan do the accent
- * work.
+ * The interior masthead, now a thin wrapper over the shared PageHeader.
+ *
+ * Fifteen files import `PageHero`, so the name stays and the shape changes
+ * underneath them: the references stack the copy at the full 1120px measure
+ * and give the image its own full-width section below, rather than splitting
+ * the row 7/5. Splitting halved the measure of both.
+ *
+ * `media` still works and renders through `PageHeaderImage`, so no call site
+ * had to change — but a page wanting the reference's glass specification
+ * plate should use `PageHeader` + `PageHeaderImage` directly.
  */
 export function PageHero({
   eyebrow,
@@ -567,65 +573,16 @@ export function PageHero({
   eyebrow?: string;
   title: string;
   lead?: string;
-  /** Optional photograph, shown beside the copy rather than behind it. */
   media?: Media;
   children?: ReactNode;
 }) {
   return (
-    /* No bottom rule and no white panel.
-       
-       The page sits on `paper` now, and a full-width hairline under every
-       interior header drew a line across thirteen pages that the home page
-       does not have. The space below it separates the header perfectly well.
-       
-       Container is 1120px to match the home page and the nav pill; the old
-       `container-x` is wider, so headers and body copy were on two different
-       measures. */
-    <section>
-      <div className="mx-auto w-full max-w-[1120px] px-5">
-        <div
-          className={cn(
-            "grid items-center gap-10 pb-4 pt-14 md:pt-20 lg:pt-24",
-            media && "lg:grid-cols-12 lg:gap-12"
-          )}
-        >
-          <div className={cn(media ? "lg:col-span-7" : "max-w-3xl")}>
-            {eyebrow && <p className="eyebrow">{eyebrow}</p>}
-            <h1 className="mt-4 font-display text-[clamp(2.4rem,5.2vw,4rem)] font-normal leading-[1.04] tracking-display text-navy text-balance">
-              {title}
-            </h1>
-            {lead && (
-              <p className="mt-5 max-w-2xl text-intro leading-relaxed text-ink-soft text-pretty">
-                {lead}
-              </p>
-            )}
-            {children}
-          </div>
-
-          {media && (
-            <div className="lg:col-span-5">
-              {/* Framed, always.
-               *
-               * These covers are 16:9 photographs of rooms and benches — none
-               * of them sits on a clean sweep — so on a white page they need
-               * an edge to read as a photograph rather than a stray panel.
-               * BrandFigure's own rule, applied here for the same reason. */}
-              <figure className="overflow-hidden rounded-card border border-hair-soft">
-                <Image
-                  src={media.src}
-                  alt={media.alt}
-                  width={media.width}
-                  height={media.height}
-                  priority
-                  sizes="(min-width: 1024px) 34rem, 92vw"
-                  className="h-auto w-full"
-                />
-              </figure>
-            </div>
-          )}
-        </div>
-      </div>
-    </section>
+    <>
+      <PageHeader eyebrow={eyebrow} title={title} lead={lead}>
+        {children}
+      </PageHeader>
+      {media && <PageHeaderImage src={media.src} alt={media.alt} />}
+    </>
   );
 }
 

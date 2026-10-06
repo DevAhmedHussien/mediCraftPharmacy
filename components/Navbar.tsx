@@ -4,11 +4,11 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowRight, ChevronDown, UserRound } from "lucide-react";
+import { ArrowRight, ChevronDown } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import type { IconName } from "@/components/icons/set";
 import { NavDrawer } from "@/components/nav/NavDrawer";
-import { headerNav, navCtas, type HeaderNavItem } from "@/lib/site";
+import { headerNav, type HeaderNavItem } from "@/lib/site";
 
 import type { CategoryThumb } from "@/lib/media";
 import { cn } from "@/lib/utils";
@@ -121,7 +121,14 @@ export function Navbar({
 
           {/* ---- Desktop navigation ---- */}
           <div className="hidden items-center gap-0.5 lg:flex">
-            {headerNav.map((item) =>
+            {/* The reference orders the bar:
+                  The pharmacy · Products · For providers · Compounding notes · Contact
+                Products sits SECOND, not last. It was rendered after the
+                `headerNav` loop because it owns a full-bleed mega-panel and
+                is not in that data — so its markup position had silently
+                become its visual position. It is interleaved now: everything
+                before it, then Products, then the rest. */}
+            {headerNav.slice(0, 1).map((item) =>
               item.children ? (
                 <NavGroup
                   key={item.label}
@@ -183,6 +190,27 @@ export function Navbar({
 
               <MegaPanel categories={categories} open={openMenu === "products"} onNavigate={() => setOpenMenu(null)} />
             </div>
+
+            {headerNav.slice(1).map((item) =>
+              item.children ? (
+                <NavGroup
+                  key={item.label}
+                  item={item}
+                  open={openMenu === item.label}
+                  active={item.children.some((child) => isActive(child.href))}
+                  onOpen={() => setOpenMenu(item.label)}
+                  onClose={() => setOpenMenu(null)}
+                />
+              ) : (
+                <NavLink
+                  key={item.href}
+                  href={item.href}
+                  label={item.label}
+                  active={isActive(item.href)}
+                />
+              )
+            )}
+
           </div>
 
           {/* ---- The ways in ----
@@ -192,51 +220,47 @@ export function Navbar({
               three buttons side by side is three primary actions, which is
               none. */}
           <div className="hidden shrink-0 items-center gap-4 lg:flex">
-            {account ? (
-              <Link
-                href={account.href}
-                className="flex items-center gap-1.5 text-caption font-medium text-ink-soft transition-colors hover:text-ink"
-              >
-                <UserRound className="h-3.5 w-3.5" strokeWidth={1.8} aria-hidden />
-                {account.label}
-              </Link>
-            ) : (
-              <Link
-                href="/login"
-                className="flex items-center gap-1.5 whitespace-nowrap text-[14px] font-normal text-ink-soft transition-colors hover:text-navy"
-              >
-                {/* "Sign in", per the reference. It said "Provider portal",
-                    which names a destination rather than the action — and
-                    staff sign in here too, so the old label was also wrong
-                    for half the people using it. */}
-                <UserRound className="h-3.5 w-3.5" strokeWidth={1.8} aria-hidden />
-                Sign in
-              </Link>
-            )}
+            {/* The reference's trailing cluster, in its order:
+                  Patient Refill · Sign in · [Open an Account]
 
-            <span aria-hidden className="h-4 w-px bg-line" />
+                Only the last is a pill. Patient Refill was an outline pill,
+                which gave the header two competing buttons and made a
+                patient-facing link look like the primary action on a page
+                whose primary action is opening a provider account.
 
-            <div className="flex items-center gap-2.5">
-              {navCtas.map((cta) => (
-                <Link
-                  key={cta.href}
-                  href={cta.href}
-                  /* Pills, matching the hero's buttons. Navy solid goes to
-                     brand blue on hover — the handoff's one hover move,
-                     applied everywhere a solid pill appears. */
-                  className={cn(
-                    "inline-flex items-center whitespace-nowrap rounded-full px-[18px] py-2.5 text-[14px] font-medium transition-colors duration-200",
-                    "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500",
-                    "motion-reduce:transition-none",
-                    cta.style === "primary"
-                      ? "bg-navy text-white hover:bg-brand-500"
-                      : "border border-hair bg-white/70 text-navy hover:bg-white"
-                  )}
-                >
-                  {cta.label}
-                </Link>
-              ))}
-            </div>
+                No divider rule — the mock has none, and the pill already
+                separates the actions from the links.
+
+                They drop out in order as the pill narrows: Patient Refill
+                first, then Sign in. That is what `navTertiary` and
+                `navSecondary` do in the reference. */}
+            <Link
+              href="/refill"
+              className="hidden whitespace-nowrap px-3 py-2 text-[14px] text-ink-soft transition-colors hover:text-navy motion-reduce:transition-none xl:block"
+            >
+              Patient Refill
+            </Link>
+
+            <Link
+              href={account ? account.href : "/login"}
+              className="hidden whitespace-nowrap px-3 py-2 text-[14px] text-ink-soft transition-colors hover:text-navy motion-reduce:transition-none lg:block"
+            >
+              {/* No icon. The reference has none, and a person glyph beside
+                  a two-word link is decoration competing with the one real
+                  button in the header. */}
+              {account ? account.label : "Sign in"}
+            </Link>
+
+            <Link
+              href="/work-with-us"
+              className={cn(
+                "inline-flex items-center whitespace-nowrap rounded-full bg-navy px-[18px] py-2.5 text-[14px] font-medium text-white",
+                "transition-colors duration-200 hover:bg-brand-500 motion-reduce:transition-none",
+                "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
+              )}
+            >
+              Open an Account
+            </Link>
           </div>
 
           <NavDrawer categories={categories} account={account} />
