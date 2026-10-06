@@ -56,6 +56,24 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        /* --- Redesign neutrals ------------------------------------------
+           The off-white ground and the hairline greys the new design sits
+           on. Brand blue, cyan and navy are untouched above — these only add
+           the surfaces underneath them.
+
+           `hair` is three steps because the design uses them for three
+           different jobs: dividers and table rules, card borders, and the
+           heavier top rule on a step list. One grey doing all three is what
+           makes a page look like a wireframe. */
+        paper: "#f7f7f5",
+        hair: {
+          DEFAULT: "#e3e3de",
+          soft: "#ecece7",
+          strong: "#dadad4",
+        },
+        stone: "#ecedef",
+        tint: "#eef2ff",
+
         brand,
         cyan,
         navy: {
@@ -94,7 +112,7 @@ const config: Config = {
          * classes apply.
          */
         sans: ["var(--font-satoshi)", "system-ui", "sans-serif"],
-        display: ["var(--font-ui)", "system-ui", "sans-serif"],
+        display: ["var(--font-satoshi)", "system-ui", "sans-serif"],
         // Reserved for regulatory micro-data — USP chapters, lot numbers,
         // beyond-use dates. Never for prose.
         mono: ["var(--font-mono)", "ui-monospace", "monospace"],
@@ -117,6 +135,13 @@ const config: Config = {
       borderRadius: {
         tile: "0.875rem",
         panel: "1.5rem",
+        /* --- Redesign ---------------------------------------------------
+           24px cards and 32px hero/CTA panels. `panel` is already 1.5rem,
+           so `card` is its alias under the name the redesign uses; both are
+           kept because `panel` is referenced by the existing admin console
+           and renaming it there would be churn for no reader. */
+        card: "1.5rem",
+        hero: "2rem",
       },
       boxShadow: {
         // Shadows are tinted with the navy rather than black, so cards sit in
@@ -124,6 +149,20 @@ const config: Config = {
         card: "0 1px 2px rgba(13,25,62,0.04), 0 8px 24px rgba(13,25,62,0.06)",
         lift: "0 2px 4px rgba(13,25,62,0.05), 0 18px 44px rgba(13,25,62,0.11)",
         bar: "0 1px 0 rgba(13,25,62,0.06), 0 6px 20px rgba(13,25,62,0.05)",
+        /* --- Redesign ---------------------------------------------------
+           Frosted surfaces. The inset white top line is what reads as glass;
+           without it a translucent fill just looks faded. Both shadows stay
+           navy-tinted like the originals so every card sits in one light. */
+        glass: "inset 0 1px 0 rgba(255,255,255,.8), 0 8px 30px rgba(13,25,62,.05)",
+        float: "inset 0 1px 0 rgba(255,255,255,.9), 0 12px 40px rgba(13,25,62,.08)",
+      },
+      letterSpacing: {
+        /* The redesign's display type is Satoshi 400 at 88px, which needs
+           pulling in hard; at that size the default tracking reads as gaps
+           between letters rather than as a word. */
+        display: "-0.045em",
+        title: "-0.035em",
+        eyebrow: "0.12em",
       },
       keyframes: {
         "fade-up": {

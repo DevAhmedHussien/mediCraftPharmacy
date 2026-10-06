@@ -23,7 +23,7 @@
    * exactly right for headings, so it takes those. The split is the fonts'
    * own, not a preference. */
   --font-sans: var(--font-satoshi), system-ui, -apple-system, sans-serif;
-  --font-display: var(--font-ui), system-ui, -apple-system, sans-serif;
+  --font-display: var(--font-satoshi), system-ui, -apple-system, sans-serif;
 
   /* The sticky header sits under a translucent white; the saturation boost
      keeps the brand blue vivid when it scrolls beneath instead of going grey. */

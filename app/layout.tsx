@@ -36,35 +36,24 @@ const mono = IBM_Plex_Mono({
   display: "swap",
 });
 
-/**
- * Lato — the identity's second family, from the guideline's own files.
+/* Lato is no longer loaded.
  *
- * The branding folder packages exactly two typefaces: Satoshi (Regular and
- * Black) and Lato (Bold and Black). Both are now self-hosted from those files
- * — converted to woff2, which is the same outlines at a third of the bytes —
- * so the site renders the fonts the identity was drawn in rather than a
- * lookalike fetched from somewhere else.
+ * It carried `font-display` because the identity folder ships it in Bold and
+ * Black, and Satoshi's wide apertures were felt to run loose at body size.
+ * The redesign makes the opposite choice deliberately: one family, set at
+ * regular weight and large size — an 88px H1 in Satoshi 400 tracked to
+ * -0.045em is the whole typographic idea, and a second family would fight it.
  *
- * ONLY BOLD AND BLACK, DELIBERATELY
- * ---------------------------------
- * The folder has no Lato Regular, so Lato cannot carry body copy. It does not
- * need to: Satoshi Regular is in the same folder and is the face the identity
- * sets running text in. So Lato takes the headings, where Bold and Black are
- * exactly the weights wanted, and Satoshi takes everything else. Between them
- * every file the designer supplied is used and nothing else is loaded.
+ * So `--font-ui` is gone rather than redefined. Aliasing it to Satoshi would
+ * have left a variable whose name says "a different face" pointing at the
+ * same one, which is the kind of thing that is true for a year and then
+ * quietly wrong. `font-display` and `--font-display` now name
+ * `--font-satoshi` directly.
  *
- * Dubai Medium is the third file and is not loaded: it is an Arabic-first
- * family, and nothing on an English-language Florida pharmacy site sets type
- * in it.
+ * The Lato woff2 files stay in public/fonts: they are part of the supplied
+ * identity package, weigh nothing unreferenced, and deleting them would make
+ * reverting this a hunt for files rather than an edit.
  */
-const ui = localFont({
-  src: [
-    { path: "../public/fonts/Lato-700.woff2", weight: "700", style: "normal" },
-    { path: "../public/fonts/Lato-900.woff2", weight: "900", style: "normal" },
-  ],
-  variable: "--font-ui",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
@@ -134,7 +123,7 @@ export default function RootLayout({
 }) {
 
   return (
-    <html lang="en" className={`${satoshi.variable} ${mono.variable} ${ui.variable}`}>
+    <html lang="en" className={`${satoshi.variable} ${mono.variable}`}>
       <body>
         {/*
          * Scroll-reveal animations render with inline `opacity:0` on the
