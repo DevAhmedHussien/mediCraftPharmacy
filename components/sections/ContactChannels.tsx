@@ -89,16 +89,14 @@ export function ContactChannels({
   );
 }
 
-/** The sitewide strip. Rendered by the site layout, above the footer. */
-export function ContactChannelsBand() {
-  return (
-    <section
-      aria-label="How to reach us"
-      className="border-t border-line bg-sand py-12 md:py-14"
-    >
-      <div className="container-x">
-        <ContactChannels />
-      </div>
-    </section>
-  );
-}
+/* `ContactChannelsBand` was removed with its last call site.
+ *
+ * It wrapped `ContactChannels` in a full-width band and the (site) layout
+ * rendered it under every page — directly above a footer that already
+ * carries the address and the phone number. Twenty-four pages each ended by
+ * saying how to reach the pharmacy twice.
+ *
+ * The component below stays: /contact renders it, and there the phone, the
+ * email and the address are the content of the page rather than furniture
+ * under it.
+ */
