@@ -81,13 +81,37 @@ export default function HomePage() {
               load rather than on scroll, and `/` has an 8 kB budget. */}
           <Glass
             as="dl"
-            className="absolute inset-x-5 bottom-5 grid grid-cols-2 gap-px overflow-hidden rounded-[20px] shadow-float motion-safe:animate-[reveal-up-sm_600ms_cubic-bezier(0.22,1,0.36,1)_200ms_both] lg:grid-cols-4"
+            /* THE PLATE SHRINKS, IT DOES NOT DISAPPEAR.
+            
+               At 375 this was four cells of 22px figures with 12.5px notes
+               under them, inset 20px from each edge of a photograph — the
+               notes wrapped to three lines and the plate covered most of the
+               vial. Hiding it on mobile was the other option and it is the
+               wrong one: these four facts are the page's only hard claims
+               about scope and licensure, and a phone is where most people
+               will read them.
+            
+               So everything scales with the viewport instead. Inset drops to
+               10px, the figure runs 15px → 22px, the note 11px → 12.5px, and
+               the note itself is hidden only under 380px, where there is
+               genuinely no room for a third line and the figure above it
+               already carries the fact. */
+            className="absolute inset-x-2.5 bottom-2.5 grid grid-cols-2 gap-px overflow-hidden rounded-2xl shadow-float motion-safe:animate-[reveal-up-sm_600ms_cubic-bezier(0.22,1,0.36,1)_200ms_both] sm:inset-x-5 sm:bottom-5 sm:rounded-[20px] lg:grid-cols-4"
           >
             {hero.spec.fields.map((f) => (
-              <div key={f.field} className="flex flex-col gap-1 bg-white/35 px-[18px] py-4 text-left">
-                <dt className="font-mono text-[10.5px] uppercase tracking-[0.1em] text-ink-soft">{f.field}</dt>
-                <dd className="text-[22px] font-medium leading-tight tracking-[-0.02em]">{f.value}</dd>
-                <dd className="text-[12.5px] text-ink-soft">{f.note}</dd>
+              <div
+                key={f.field}
+                className="flex flex-col gap-0.5 bg-white/35 px-3 py-2.5 text-left sm:gap-1 sm:px-[18px] sm:py-4"
+              >
+                <dt className="font-mono text-[9px] uppercase tracking-[0.08em] text-ink-soft sm:text-[10.5px] sm:tracking-[0.1em]">
+                  {f.field}
+                </dt>
+                <dd className="text-[0.9375rem] font-medium leading-tight tracking-[-0.02em] sm:text-[1.375rem]">
+                  {f.value}
+                </dd>
+                <dd className="hidden text-[11px] leading-snug text-ink-soft min-[380px]:block sm:text-[12.5px]">
+                  {f.note}
+                </dd>
               </div>
             ))}
           </Glass>
@@ -154,7 +178,13 @@ export default function HomePage() {
         <ul className="reveal-group grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
           {areas.map((a) => (
             <li key={a.href}>
-              <Link href={a.href} className="group relative block aspect-[3/4] overflow-hidden rounded-card bg-stone">
+              {/* `.reveal-media` settles the packshot out of a 1.05 scale as
+                  the tile enters. The frame does not move — it clips — so
+                  the grid never reflows and CLS stays at 0. */}
+              <Link
+                href={a.href}
+                className="reveal-media group relative block aspect-[3/4] overflow-hidden rounded-card bg-stone"
+              >
                 <Image
                   src={`/images/site/mc-area-${a.href.split("/").pop()}-4x3-2x.webp`}
                   alt=""
