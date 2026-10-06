@@ -248,7 +248,7 @@ export function TrafficChart({
         {hover !== null && active && (
           <div
             role="status"
-            className="pointer-events-none absolute top-2 z-10 min-w-[10rem] -translate-x-1/2 rounded-[0.5rem] border border-[color:var(--admin-border-strong)] bg-white px-3 py-2"
+            className="pointer-events-none absolute top-2 z-10 min-w-[10rem] -translate-x-1/2 rounded-[0.75rem] border border-[color:var(--admin-border-strong)] bg-white px-3 py-2"
             style={{
               left: `${Math.min(88, Math.max(12, ((x(hover) / W) * 100)))}%`,
             }}
@@ -280,7 +280,7 @@ export function TrafficChart({
         <summary className="cursor-pointer text-caption text-ink-muted hover:text-brand-600">
           View as table
         </summary>
-        <div className="mt-3 max-h-64 overflow-auto rounded-[0.5rem] border border-line">
+        <div className="mt-3 max-h-64 overflow-auto rounded-[0.75rem] border border-hair">
           <table className="w-full text-caption">
             <thead className="sticky top-0 bg-sand">
               <tr>

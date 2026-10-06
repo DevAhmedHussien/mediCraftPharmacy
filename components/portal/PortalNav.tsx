@@ -22,7 +22,7 @@ export function PortalNav({ status }: { status: PartnerStatus }) {
   const pathname = usePathname();
 
   return (
-    <nav aria-label="Your account" className="space-y-5">
+    <nav aria-label="Your account" className="flex flex-col gap-4">
       {PORTAL_NAV_GROUPS.map((group) => {
         const visible = group.items.filter((item) => {
           if (item.verifiedOnly) return status === PARTNER_STATUS.VERIFIED;
@@ -32,11 +32,14 @@ export function PortalNav({ status }: { status: PartnerStatus }) {
         if (visible.length === 0) return null;
 
         return (
-          <div key={group.heading}>
-            <p className="px-3 pb-1.5 text-[0.625rem] font-semibold uppercase tracking-[0.12em] text-[color:var(--admin-ink-50)]">
+          <div key={group.heading} className="flex flex-col gap-0.5">
+            {/* Mono, not a bolded sans — the reference sets every structural
+                micro-label in the mono register, which is what tells a group
+                heading apart from a nav item at the same size. */}
+            <p className="px-2.5 pb-1.5 font-mono text-[0.65625rem] uppercase tracking-eyebrow text-[color:var(--admin-ink-50)]">
               {group.heading}
             </p>
-            <ul className="space-y-px">
+            <ul className="flex flex-col gap-0.5">
               {visible.map((item) => {
                 // `/portal` would otherwise match every child route.
                 const active = item.exact

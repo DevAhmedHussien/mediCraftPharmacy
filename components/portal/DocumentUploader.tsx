@@ -135,7 +135,7 @@ export function DocumentRow({
   }
 
   return (
-    <div className="rounded-tile border border-line bg-white p-5">
+    <div className="rounded-card border border-hair-soft bg-white p-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
           <h3 className="flex items-center gap-2 text-meta font-bold text-ink">

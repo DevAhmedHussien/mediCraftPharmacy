@@ -53,7 +53,7 @@ export function PricingDecision({
 }) {
   if (accepted) {
     return (
-      <p className="flex items-center gap-2.5 rounded-tile border border-success-fg/25 bg-success-bg px-4 py-3 text-meta text-success-fg">
+      <p className="flex items-center gap-2.5 rounded-[14px] border border-success-fg/25 bg-success-bg px-4 py-3 text-meta text-success-fg">
         <CheckCircle2 className="size-4 shrink-0" strokeWidth={2.2} aria-hidden />
         You accepted this pricing. It is locked to your account.
       </p>
@@ -81,7 +81,7 @@ function ListPricingChoice({ selectedCount }: { selectedCount: number }) {
      not the gate. */
   if (selectedCount === 0) {
     return (
-      <div className="rounded-tile border border-dashed border-line bg-sand p-6">
+      <div className="rounded-card border border-dashed border-hair-strong p-6">
         <h2 className="text-[1.0625rem] font-bold text-ink">Choose your medications first</h2>
         <p className="mt-2 max-w-prose text-meta text-ink-soft">
           Tick the preparations your practice dispenses in the list above. We price what you
@@ -93,7 +93,7 @@ function ListPricingChoice({ selectedCount }: { selectedCount: number }) {
   }
 
   return (
-    <div className="rounded-tile border border-line p-6">
+    <div className="rounded-card border border-hair-soft p-6">
       <h2 className="text-[1.0625rem] font-bold text-ink">How would you like to proceed?</h2>
       <p className="mt-1.5 text-caption text-ink-muted">
         Based on the{" "}
@@ -138,7 +138,7 @@ function ListPricingChoice({ selectedCount }: { selectedCount: number }) {
             rows={4}
             required
             aria-invalid={Boolean(requestState.errors?.requestNotes)}
-            className="mt-3 w-full rounded-[0.5rem] border border-line bg-white px-3 py-2 text-meta text-ink placeholder:text-ink-muted focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+            className="mt-3 w-full rounded-[14px] border border-hair bg-white px-3 py-2 text-meta text-ink placeholder:text-ink-muted focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
             placeholder="We dispense around 40 GLP-1 vials a month and would like to discuss tiered pricing at that volume."
           />
           {requestState.errors?.requestNotes && (
@@ -176,7 +176,7 @@ function NegotiatedChoice({ versionId }: { versionId: string }) {
   );
 
   return (
-    <div className="rounded-tile border border-line p-6">
+    <div className="rounded-card border border-hair-soft p-6">
       <h2 className="text-[1.0625rem] font-bold text-ink">Does this work?</h2>
       <p className="mt-1 text-caption text-ink-muted">
         Accepting locks these prices to your account for the term of your agreement.
@@ -206,7 +206,7 @@ function NegotiatedChoice({ versionId }: { versionId: string }) {
             rows={4}
             required
             aria-invalid={Boolean(roundState.errors?.note)}
-            className="mt-3 w-full rounded-[0.5rem] border border-line bg-white px-3 py-2 text-meta text-ink placeholder:text-ink-muted focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+            className="mt-3 w-full rounded-[14px] border border-hair bg-white px-3 py-2 text-meta text-ink placeholder:text-ink-muted focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
             placeholder="The semaglutide lines work, but the peptide pricing is still above what we pay today."
           />
           {roundState.errors?.note && (

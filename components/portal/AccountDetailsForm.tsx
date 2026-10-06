@@ -156,7 +156,7 @@ export function AccountDetailsForm({
           }
         >
           {prescribers.fields.map((field, index) => (
-            <fieldset key={field.id} className="rounded-[0.6rem] border border-line p-5">
+            <fieldset key={field.id} className="rounded-card border border-hair-soft p-5">
               <legend className="px-2 font-mono text-label uppercase tracking-wide text-ink-muted">
                 Prescriber {index + 1}
               </legend>
@@ -254,7 +254,7 @@ export function AccountDetailsForm({
             <MaskedField<AccountDetailsValues> name="practice.fax" label="Practice fax" mask="phone" optional hint="Ten digits, US numbers only. Optional." />
           </div>
 
-          <fieldset className="rounded-[0.6rem] border border-line p-5">
+          <fieldset className="rounded-card border border-hair-soft p-5">
             <legend className="px-2 font-mono text-label uppercase tracking-wide text-ink-muted">
               Office contact
             </legend>
@@ -309,7 +309,7 @@ export function AccountDetailsForm({
           />
 
           {!billingSame && (
-            <fieldset className="rounded-[0.6rem] border border-line p-5">
+            <fieldset className="rounded-card border border-hair-soft p-5">
               <legend className="px-2 font-mono text-label uppercase tracking-wide text-ink-muted">
                 Billing address
               </legend>

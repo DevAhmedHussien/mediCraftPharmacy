@@ -52,7 +52,7 @@ export function AccountBar({
           href="/api/auth/signout"
           aria-label="Sign out"
           title="Sign out"
-          className="grid size-9 place-items-center rounded-[0.5rem] text-ink-soft transition-colors hover:bg-sand hover:text-ink"
+          className="grid size-9 place-items-center rounded-[0.625rem] text-ink-soft transition-colors hover:bg-white hover:text-ink"
         >
           <LogOut className="size-[1.05rem]" strokeWidth={2} aria-hidden />
         </Link>

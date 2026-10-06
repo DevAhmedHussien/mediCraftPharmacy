@@ -1408,6 +1408,7 @@ h3 {
     --admin-rail: #ffffff;
     --admin-rail-text: var(--admin-ink-70);
     --admin-border: #e3e3de;
+    --admin-border-soft: #ecece7;
     --admin-border-strong: #dadad4;
     /* The brand navy exactly, rather than a near-black that was almost it. */
     --admin-ink: #0d193e;
@@ -1502,20 +1503,42 @@ h3 {
    * Tiles that carry their own tint — the brand-coloured "next step" card, the
    * emerald success notes, the red reasons — keep their borders, because there
    * the border is what makes the tint legible rather than decoration. */
+  /* Portal tiles. The old rule hid the border and replaced it with a heavy
+     drop shadow, which is the one card treatment the reference never uses —
+     eight of them stacked down a step page read as eight floating dialogs.
+     A 24px radius, a hairline and the shared inset-white shadow instead, so
+     a portal tile and a console panel are the same object. */
   .portal .rounded-tile.border-line {
-    border-color: transparent;
+    border-color: var(--admin-border-soft);
+    border-radius: var(--admin-card-radius);
     background: #fff;
-    box-shadow: 0 4px 24px 0 rgb(16 31 77 / 0.08);
+    box-shadow: var(--admin-shadow);
   }
   .portal .rounded-tile.border-dashed {
     box-shadow: none;
   }
 
+  /* The console panel. A hairline AND the inset-white shadow, because the
+     reference draws both: the shadow is what makes the surface read as
+     raised, the border is what holds its edge where a white panel meets the
+     near-white page ground. With `border: 0` the two were indistinguishable
+     wherever a panel was wider than the shadow's spread, which on a 1180px
+     column is most of them. */
   .admin-panel {
     background: var(--admin-surface);
-    border: 0;
+    border: 1px solid var(--admin-border-soft);
     border-radius: var(--admin-card-radius);
     box-shadow: var(--admin-shadow);
+  }
+
+  /* The emphasis panel — one per screen, for the thing the partner is being
+     asked to do next. The gradient is the reference's; it is what separates
+     "act on this" from the panels merely reporting state around it. */
+  .admin-panel-lead {
+    background: linear-gradient(180deg, #ffffff 0%, #f1f3f8 100%);
+    border: 1px solid var(--admin-border-soft);
+    border-radius: 1.75rem;
+    box-shadow: inset 0 1px 0 #fff;
   }
 
   /* Identifiers line up when they are tabular and monospaced. Comparing two
@@ -1526,10 +1549,15 @@ h3 {
     letter-spacing: -0.01em;
   }
 
+  /* Mono at normal weight, not bold sans. Every structural micro-label in
+     the reference sits in the mono register — that is what distinguishes a
+     field label from a short value set at the same size, which bolding it
+     does not. */
   .admin-label {
-    font-size: 0.6875rem;
-    font-weight: 600;
-    letter-spacing: 0.06em;
+    font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.65625rem;
+    font-weight: 400;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--admin-ink-50);
   }
@@ -1631,20 +1659,31 @@ h3 {
     border-color: #c0553f;
   }
 
-  /* Rail navigation. */
+  /* Rail navigation. 14px in a 9/10 box with a 10px radius, as the reference
+     draws it — it was 13px in a 6/12 box, which packed ten items tight enough
+     that the group headings stopped separating them. */
   .admin-rail-link {
-    @apply flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-[0.8125rem] transition-colors;
+    @apply flex items-center gap-2.5 rounded-[0.625rem] px-2.5 py-[0.5625rem] text-[0.875rem] transition-colors duration-200;
     color: var(--admin-rail-text);
   }
+  @media (prefers-reduced-motion: reduce) {
+    .admin-rail-link {
+      transition: none;
+    }
+  }
   .admin-rail-link:hover {
-    background: var(--admin-bg);
+    background: rgb(255 255 255 / 0.7);
     color: var(--admin-ink);
   }
-  /* The active item carries the accent, which on a light rail is what the
-     white overlay used to do on a dark one. */
+  /* The current item is a solid white chip on the rail's translucent glass,
+     not a blue wash. The rail is already 62% white over the page ground, so a
+     pale-blue fill on it came out muddy and — being the same blue as the
+     accent text it carried — read as a disabled control rather than as the
+     page you are on. White against glass separates on surface, not on hue. */
   .admin-rail-link[aria-current="page"] {
-    background: #e8eefe;
-    color: var(--admin-accent);
-    font-weight: 600;
+    background: #ffffff;
+    color: var(--admin-ink);
+    font-weight: 500;
+    box-shadow: 0 1px 2px rgb(13 25 62 / 0.06);
   }
 }
