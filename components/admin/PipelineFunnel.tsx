@@ -90,13 +90,21 @@ export function PipelineFunnel({ counts }: { counts: Record<string, number> }) {
             <Link
               href={`/admin/partners?status=${stage.statuses[0]}`}
               className="group block"
-              aria-label={`${stage.count} in ${stage.label}`}
+              /* No `aria-label`. It read "{count} in {label}" while the
+                 visible text is "{label}" then "{count}" — the visible string
+                 is not contained in the accessible name, so the two disagree
+                 and voice control cannot address the link by what it says.
+                 The visible text IS the name now; the sr-only word below
+                 supplies the unit the sighted reader gets from context. */
             >
               <div className="flex items-baseline justify-between gap-3">
                 <span className="text-[0.8125rem] font-medium transition-colors group-hover:text-[color:var(--admin-accent)]">
                   {stage.label}
                 </span>
-                <span className="text-[0.8125rem] font-semibold tabular-nums">{stage.count}</span>
+                <span className="text-[0.8125rem] font-semibold tabular-nums">
+                  {stage.count}
+                  <span className="sr-only"> partners</span>
+                </span>
               </div>
 
               {/* A 4px bar against a track, rounded at the data end only — the

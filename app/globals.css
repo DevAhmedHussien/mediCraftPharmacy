@@ -310,8 +310,12 @@ h3 {
   .link-arrow {
     @apply inline-flex items-center gap-1.5 font-bold text-brand-600 transition-colors hover:text-brand-500;
   }
+  /* Another "on a navy band" leftover. cyan-300 is the artwork cyan
+     lightened for type on dark; on the one off-white ground the redesign
+     uses it measured under 2:1 on /products/[category]. cyan-700 is the step
+     that clears 4.5:1 on white, which is the whole reason it exists. */
   .link-arrow-invert {
-    @apply inline-flex items-center gap-1.5 font-bold text-cyan-300 transition-colors hover:text-cyan-200;
+    @apply inline-flex items-center gap-1.5 font-medium text-cyan-700 transition-colors hover:text-navy motion-reduce:transition-none;
   }
 
   /* ---------------------------------------------------------------------
@@ -502,17 +506,27 @@ h3 {
     @apply mt-1 text-meta text-ink-soft;
   }
   /* Inverted, for spec rails inside navy panels. */
+  /* `invert` used to mean "this spec list sits on a navy band". The redesign
+     has no navy bands — every surface is the one off-white ground — so these
+     rules were painting white-on-white: axe found `text-white/65` body copy
+     on /about and /quality at a contrast ratio no one could read, and the
+     only reason the headings were visible at all is that `text-white` on
+     #f7f7f5 still catches the eye as a smudge.
+     
+     The modifier is kept because `blocks.tsx` passes it and the pages that
+     use it do want a quieter list than the default. It now means quieter —
+     a softer rule and muted body — rather than reversed. */
   .spec-invert {
-    @apply border-white/10;
+    @apply border-hair-soft;
   }
   .spec-invert .spec-mark {
-    @apply text-cyan-300;
+    @apply text-cyan-700;
   }
   .spec-invert .spec-title {
-    @apply text-white;
+    @apply text-navy;
   }
   .spec-invert .spec-body {
-    @apply text-white/65;
+    @apply text-ink-soft;
   }
 
   /* ---------------------------------------------------------------------
@@ -1413,7 +1427,13 @@ h3 {
     /* The brand navy exactly, rather than a near-black that was almost it. */
     --admin-ink: #0d193e;
     --admin-ink-70: #4a5470;
-    --admin-ink-50: #78829a;
+    /* #636e89, which is the site's own `ink-muted` — not the #78829a this
+       was. Every micro-label in both consoles is set in it at 10.5px, and on
+       the rail's 62%-white glass that value measured 3.72:1, which axe
+       flagged sixteen times on one screen. #636e89 clears 4.92:1 there and
+       5.09:1 on white, and has the side effect that a muted label in the
+       console and one on the marketing site are finally the same grey. */
+    --admin-ink-50: #636e89;
     --admin-accent: #1b54fb;
 
     /* --- Status, as custom properties -------------------------------

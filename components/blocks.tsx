@@ -173,7 +173,13 @@ export function InfoCard({
 
   return (
     <div
-      className={cn("card", status ? "border-dashed opacity-80" : "card-hover", className)}
+      /* A dashed border marks the "not yet" card, not 80% opacity.
+         
+         `opacity-80` multiplies down everything inside it, which took the
+         cyan-700 meta line — a value chosen precisely because it clears
+         4.5:1 on white — below the threshold on /support. The dashed rule
+         says the same thing and says it to everyone. */
+      className={cn("card", status ? "border-dashed" : "card-hover", className)}
     >
       {inner}
     </div>

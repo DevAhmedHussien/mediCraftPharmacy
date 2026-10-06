@@ -89,12 +89,18 @@ export function ProductCarousel({
         </div>
       )}
 
+      {/* `role="region"` is on a wrapper, NOT on the <ul>.
+          
+          An explicit role REPLACES an element's implicit one, so putting it
+          on the list told assistive tech "this is a region" and took the
+          list semantics away — which left eight <li> elements with no list
+          to belong to, and no "8 items" announced when you tab into the
+          shelf. The region and the keyboard affordance belong to the
+          scroller; the list belongs to the list. */}
+      <div role="region" aria-label={label} tabIndex={0} className="focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-4">
       <ul
         ref={trackRef}
         onScroll={sync}
-        role="region"
-        aria-label={label}
-        tabIndex={0}
         /*
          * The negative margin lets slides bleed to the container edge while
          * the matching padding keeps the first and last slide aligned with the
@@ -108,10 +114,11 @@ export function ProductCarousel({
          * the container on both sides and the last visible slide was sliced
          * down its middle instead of stopping at the page edge.
          */
-        className="no-scrollbar -mx-5 flex snap-x snap-mandatory gap-4 scroll-pl-5 overflow-x-auto px-5 pb-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-4"
+        className="no-scrollbar -mx-5 flex snap-x snap-mandatory gap-4 scroll-pl-5 overflow-x-auto px-5 pb-2"
       >
         {children}
       </ul>
+      </div>
     </div>
   );
 }

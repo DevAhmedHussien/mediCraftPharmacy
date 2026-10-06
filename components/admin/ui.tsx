@@ -140,7 +140,29 @@ export function StatStrip({
         const urgent = stat.urgent && Number(stat.value) > 0;
         const body = (
           <>
-            <dt className="admin-label">{stat.label}</dt>
+            <dt className="admin-label">
+              {/* The link lives INSIDE the <dt> and stretches over the cell
+                  with a pseudo-element.
+                  
+                  It was a sibling of the <dt>/<dd> group, which axe flags:
+                  a <div> inside a <dl> may contain dt and dd and nothing
+                  else, so an <a> in there left assistive tech with a
+                  definition list whose groups are malformed — four labels
+                  and four numbers, unpaired. Inside the <dt> the markup is
+                  valid, the whole cell is still clickable, and the link's
+                  accessible name is the label rather than a number with no
+                  context. */}
+              {stat.href ? (
+                <Link
+                  href={stat.href}
+                  className="admin-focus rounded-[5px] after:absolute after:inset-0 after:rounded-[5px] after:content-['']"
+                >
+                  {stat.label}
+                </Link>
+              ) : (
+                stat.label
+              )}
+            </dt>
             <dd
               className={cn(
                 "mt-1 flex items-baseline gap-1.5 font-display text-[1.75rem] font-normal leading-none tabular-nums tracking-title",
@@ -173,18 +195,27 @@ export function StatStrip({
         );
 
         return (
+          /* The <dt> and <dd> are DIRECT children of this div, and the link
+             is an overlay on top of them.
+             
+             It used to be `dl > div > a > dt`, which axe flags twice — a <dl>
+             may only directly contain dt, dd, div, script or template, and a
+             <dt>/<dd> must be contained by a <dl>. With an <a> in between,
+             assistive tech sees a definition list with no definitions in it:
+             four labels and four numbers, unpaired.
+             
+             The stretched anchor keeps the whole cell clickable and keeps the
+             focus ring on the cell, which is what the block link was for. */
           <div
             key={stat.label}
-            className={cn("px-4 py-3", index > 0 && "sm:border-l")}
+            className={cn(
+              "relative px-4 py-3 transition-opacity",
+              stat.href && "hover:opacity-70 motion-reduce:transition-none",
+              index > 0 && "sm:border-l"
+            )}
             style={{ borderColor: "var(--admin-border)" }}
           >
-            {stat.href ? (
-              <Link href={stat.href} className="admin-focus block rounded-[5px] transition-opacity hover:opacity-70">
-                {body}
-              </Link>
-            ) : (
-              body
-            )}
+            {body}
           </div>
         );
       })}

@@ -21,7 +21,10 @@ export function LegalPage({
   return (
     <>
       <PageHero eyebrow="Legal" title={doc.title}>
-        <p className="mt-5 font-mono text-caption uppercase tracking-wider text-cyan-300">
+        {/* cyan-700, not cyan-300. The 300 step is the artwork cyan lightened for
+            type on navy; this header has been on the light ground since the
+            redesign, where it measured below 2:1. */}
+        <p className="mt-5 font-mono text-caption uppercase tracking-wider text-cyan-700">
           Effective {legal.effectiveDate}
         </p>
       </PageHero>
