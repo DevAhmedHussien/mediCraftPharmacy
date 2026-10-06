@@ -143,8 +143,16 @@ export function StatStrip({
             <dt className="admin-label">{stat.label}</dt>
             <dd
               className={cn(
-                "mt-1 flex items-baseline gap-1.5 text-[1.625rem] font-semibold leading-none tabular-nums tracking-[-0.02em]",
-                urgent && "text-[theme(colors.danger.fg)]"
+                "mt-1 flex items-baseline gap-1.5 font-display text-[1.75rem] font-normal leading-none tabular-nums tracking-title",
+                /* `warning`, not `danger`. Eleven documents waiting to be
+                   reviewed is a queue with work in it, which is the normal
+                   state of a queue — it is not a failure, and colouring it the
+                   same red the console uses for "agreement declined" and
+                   "suspended" taught operators to read that red as "there is
+                   work", which is exactly the wrong lesson for the day
+                   something actually breaks. The dot still marks it, and the
+                   screen-reader text still says "needs attention". */
+                urgent && "text-[theme(colors.warning.fg)]"
               )}
             >
               {urgent && (
@@ -260,12 +268,29 @@ export function Since({ date }: { date: Date | string }) {
    word, which is how a queue gets triaged at a glance. The WORD is what
    carries the meaning — the colour never does it alone.
    ------------------------------------------------------------------ */
+/* On the `success` / `warning` / `danger` / `info` token pairs, not ten
+   hardcoded hexes.
+   
+   `good` was #246848 on #e3f0e8 — a green, and the only green in the
+   application. The identity has no green; a green tick beside a cyan brand
+   mark is a third colour nobody chose, and on the partners table it sat four
+   pixels from a brand-blue pill in the next row. `success` is cyan-700, which
+   is a colour this brand actually owns.
+   
+   Each pair clears 4.5:1 both on its own chip and on the page ground
+   (success 5.41 / 5.60, warning 5.43 / 5.53, danger 5.75 / 6.13, info
+   5.07 / 5.28, neutral 6.50 / 7.18), so a pill reads whether it sits in a
+   white panel or directly on the page.
+   
+   The dot is the foreground colour rather than a lighter sibling: a dot that
+   is paler than its own label is a decoration, and the comment above this
+   block is explicit that the shape and position are doing triage work. */
 const TONES = {
-  neutral: { chip: "bg-[#eceff3] text-[#49536b]", dot: "#8a93a8" },
-  good: { chip: "bg-[#e3f0e8] text-[#246848]", dot: "#2f9163" },
-  warn: { chip: "bg-[#fbefd8] text-[#805c12]", dot: "#d79a1f" },
-  bad: { chip: "bg-[#fbe8e3] text-[#8f3526]", dot: "#c4553c" },
-  info: { chip: "bg-[#e6edfb] text-[#1f4190]", dot: "#3a6ae8" },
+  neutral: { chip: "bg-hair-soft text-ink-soft", dot: "#46536f" },
+  good: { chip: "bg-success-bg text-success-fg", dot: "#0b6e74" },
+  warn: { chip: "bg-warning-bg text-warning-fg", dot: "#8a5a00" },
+  bad: { chip: "bg-danger-bg text-danger-fg", dot: "#b42318" },
+  info: { chip: "bg-info-bg text-info-fg", dot: "#1b54fb" },
 } as const;
 
 export type Tone = keyof typeof TONES;
@@ -283,7 +308,7 @@ export function Pill({
   return (
     <span
       className={cn(
-        "inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-2 py-[0.1875rem] text-[0.6875rem] font-semibold leading-none",
+        "inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-[0.25rem] text-[0.6875rem] font-medium leading-none",
         TONES[tone].chip
       )}
     >
@@ -417,7 +442,7 @@ export function RowAction({
   const className = cn(
     "admin-focus inline-flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors",
     tone === "danger"
-      ? "text-[color:var(--admin-ink-50)] hover:bg-[#fbe8e3] hover:text-[#8f3526]"
+      ? "text-[color:var(--admin-ink-50)] hover:bg-danger-bg hover:text-danger-fg"
       : "text-[color:var(--admin-ink-50)] hover:bg-[color:var(--admin-bg)] hover:text-[color:var(--admin-ink)]"
   );
 

@@ -110,11 +110,15 @@ export function PipelineFunnel({ counts }: { counts: Record<string, number> }) {
                   className="h-full rounded-r-full transition-[width] duration-500"
                   style={{
                     width: `${Math.round((stage.count / scale) * 100)}%`,
+                    /* `--status-success-fg` is the identity's cyan-700, not a
+                       green. The hardcoded #2f855a was the only green in the
+                       application, and it sat four pixels from the brand blue
+                       on the same chart — a third colour nobody chose. */
                     background:
                       stage.label === "Closed"
                         ? "var(--admin-ink-50)"
                         : stage.label === "Verified"
-                          ? "#2f855a"
+                          ? "var(--status-success-fg)"
                           : "var(--admin-accent)",
                   }}
                 />
