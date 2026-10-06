@@ -71,7 +71,7 @@ export default function QualityPage() {
                 </p>
                 <Link
                   href={quality.sops.panel.cta.href}
-                  className="btn-accent mt-7 inline-flex"
+                  className="btn-pill mt-7"
                 >
                   {quality.sops.panel.cta.label} <span aria-hidden>→</span>
                 </Link>

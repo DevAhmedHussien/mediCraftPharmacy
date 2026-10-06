@@ -88,7 +88,7 @@ export default function ContactPage() {
                 <p className="mt-3 text-meta text-white/70 text-pretty">
                   {contact.providerQuickStart.body}
                 </p>
-                <Link href="/providers#apply" className="btn-accent mt-6 inline-flex">
+                <Link href="/providers#apply" className="btn-pill mt-6">
                   {contact.providerQuickStart.cta} <span aria-hidden>→</span>
                 </Link>
               </div>

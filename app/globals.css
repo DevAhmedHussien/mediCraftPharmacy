@@ -106,14 +106,26 @@ h3 {
   }
   /* Vertical rhythm. One class per band so section padding can never be
      fought over by two competing selectors. */
+  /* 96px mobile / 160px desktop, per the handoff's section rhythm. The old
+     64/96 was tuned for a page that separated sections with a background
+     change; with one continuous ground, space is the only separator and it
+     has to be bigger to do the job. */
   .section {
-    @apply py-16 md:py-24;
+    @apply py-24 lg:py-40;
   }
   .section-tight {
     @apply py-12 md:py-16;
   }
+  /* The alternating band is gone.
+     
+     White sections alternating with a pale blue tint was the single most
+     template-like thing about the old site, and the redesign replaces it with
+     one continuous `paper` ground and generous space between sections. The
+     class stays — eleven pages apply it — and now does nothing, so a band
+     left in markup simply reads as the page it sits on rather than as a
+     stripe the new design never had. */
   .band {
-    @apply bg-sand;
+    @apply bg-transparent;
   }
   .band-navy {
     @apply bg-navy text-white;
@@ -128,18 +140,21 @@ h3 {
      structural marker is what ties the page back to the identity, and it is
      the one ornament the system allows itself.
      ------------------------------------------------------------------ */
+  /* Plex Mono, tracked out, no rule.
+     
+     The cyan dash that used to sit before every eyebrow was the logo's mouth
+     ratio held exactly — a nice idea, and it put a coloured mark in front of
+     forty headings. The redesign's eyebrow is the mono label from the hero
+     spec plate: the typeface change alone is what separates it from the
+     prose, so nothing else has to. */
   .eyebrow {
-    @apply inline-flex items-center gap-2.5 text-label font-medium uppercase text-cyan-700;
+    @apply inline-block font-mono text-xs font-normal uppercase tracking-eyebrow text-brand-500;
   }
-  .eyebrow::before {
-    content: "";
-    /* 18×5 is the logo's mouth ratio (rx 25.33 / ry 4.55) held exactly. */
-    @apply block h-[5px] w-[18px] shrink-0 rounded-full bg-cyan-400;
-  }
+
   /* On navy the accessible cyan is too dark — use the artwork value. */
   .band-navy .eyebrow,
   .eyebrow-invert {
-    @apply text-cyan-300;
+    @apply text-cyan-400;
   }
 
   /*
@@ -171,11 +186,20 @@ h3 {
    *
    * 700 is still unmistakably a heading at 36–46px. Black is now spent in one
    * place: the home page headline. */
+  /* Satoshi 400, large, pulled in hard.
+     
+     This was Lato Bold. The redesign sets the whole page in one family at
+     regular weight — an 88px hero at 400 tracked to -0.045em — and a bold
+     section heading underneath it reads as a different site. Size and
+     tracking do the work that weight used to.
+     
+     `clamp` rather than a `md:` step, so the heading scales continuously
+     instead of jumping at one breakpoint. */
   .section-title {
-    @apply font-display text-display-md font-bold tracking-tight text-ink md:text-display-lg;
+    @apply font-display text-[clamp(2rem,4.2vw,3.25rem)] font-normal leading-[1.08] tracking-title text-navy;
   }
   .section-title-sm {
-    @apply font-display text-display-sm font-bold tracking-tight text-ink md:text-display-md;
+    @apply font-display text-[clamp(1.6rem,3vw,2.25rem)] font-normal leading-[1.12] tracking-title text-navy;
   }
   .band-navy .section-title,
   .band-navy .section-title-sm {
@@ -209,8 +233,25 @@ h3 {
   }
   /* The cyan CTA — used on navy, where it is the highest-contrast thing
      available. Navy type on cyan, never white. */
+  /* Cyan on navy, and ONLY on navy — the identity reserves it as a fill, and
+     at 4.4:1 against white it is the one brand colour that cannot carry text
+     on a light ground.
+     
+     `.band-navy` is still navy, so CustodyBand and the footer keep using
+     this correctly. The three marketing pages that put it on a light panel
+     now use `.btn-pill` instead; this stays for the dark grounds. */
   .btn-accent {
     @apply btn bg-cyan-400 text-navy hover:bg-cyan-300 active:translate-y-px;
+  }
+  /* The redesign's solid button: navy, pill, going to brand blue on hover.
+     One shape for every call to action outside a navy band. */
+  .btn-pill {
+    @apply inline-flex items-center gap-2 rounded-full bg-navy px-6 py-[15px] text-[15px] font-medium text-white transition-colors duration-200 hover:bg-brand-500 active:translate-y-px motion-reduce:transition-none;
+    @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500;
+  }
+  .btn-pill-ghost {
+    @apply inline-flex items-center gap-2 rounded-full border border-hair bg-white/70 px-6 py-[15px] text-[15px] font-medium text-navy transition-colors duration-200 hover:bg-white active:translate-y-px motion-reduce:transition-none;
+    @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500;
   }
   .btn-outline {
     @apply btn border-[1.5px] border-ink/20 bg-transparent text-ink hover:border-ink hover:bg-ink hover:text-white;
@@ -251,8 +292,14 @@ h3 {
      What is left is a border that deepens on hover, which is enough to say
      "this is clickable" without the page appearing to breathe.
      ------------------------------------------------------------------ */
+  /* 24px radius, hairline, translucent white — the redesign's card.
+     
+     `bg-white/70` rather than solid: on the `paper` ground the slight
+     translucency is what makes a card read as sitting ON the page rather
+     than being a hole cut in it, and it is the same surface the glass
+     primitives use at a lower blur. */
   .card {
-    @apply relative flex flex-col overflow-hidden rounded-tile border border-line bg-white p-7 transition-colors duration-200;
+    @apply relative flex flex-col overflow-hidden rounded-card border border-hair-soft bg-white/70 p-7 transition-colors duration-200;
   }
   /* Hover is a faint brand tint on the border, not a dark outline. A near
      black rule appearing around a card as the pointer crosses it is the
@@ -353,22 +400,29 @@ h3 {
   .panel-navy :is(.border-white\/10, .border-white\/15, .border-white\/20) {
     @apply border-brand-100;
   }
+  /* The eyebrow treatment, as a pill. Mono, tracked out, hairline border —
+     the bordered brand-blue chip read as a button nobody could press. */
   .panel-badge {
-    @apply mb-5 inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white px-3.5 py-1.5 text-label font-semibold uppercase text-brand-700;
+    @apply mb-5 inline-flex items-center gap-2 rounded-full border border-hair bg-white/70 px-3.5 py-1.5 font-mono text-[10.5px] uppercase tracking-eyebrow text-ink-muted;
   }
+  /* 400, navy. Was Lato Black in brand blue — two signals (weight and
+     colour) doing the job the redesign gives to size alone. */
   .panel-title {
-    @apply font-display text-display-sm font-black leading-[1.15] tracking-tight text-ink md:text-[2rem];
+    @apply font-display text-[clamp(1.5rem,2.6vw,2rem)] font-normal leading-[1.12] tracking-title text-navy;
   }
 
   /* Metric grid inside the panel. */
   .metric {
-    @apply rounded-lg border border-brand-100 bg-white p-4;
+    @apply rounded-[14px] border border-hair-soft bg-white/70 p-4;
   }
+  /* Navy at 500, not brand-blue at 900. On a page where the only other blue
+     is the hero's accent half-sentence, four black-weight blue figures in a
+     panel were the loudest thing on the screen. */
   .metric-value {
-    @apply text-[1.5rem] font-black leading-none text-brand-600;
+    @apply text-[1.375rem] font-medium leading-none tracking-[-0.02em] text-navy;
   }
   .metric-label {
-    @apply mt-1.5 block text-caption leading-snug text-ink-muted;
+    @apply mt-1.5 block font-mono text-[10.5px] uppercase tracking-[0.08em] leading-snug text-ink-muted;
   }
 
   /* ---------------------------------------------------------------------
@@ -387,8 +441,11 @@ h3 {
   .spec-mark {
     @apply mt-0.5 shrink-0 font-mono text-caption font-semibold uppercase tracking-wider text-cyan-700;
   }
+  /* Navy medium. The mono mark beside it is already brand blue; making the
+     title blue and bold too meant a ruled list of regulatory facts read as a
+     list of links. */
   .spec-title {
-    @apply text-meta font-bold text-brand-600;
+    @apply text-[15px] font-medium text-navy;
   }
   .spec-body {
     @apply mt-1 text-meta text-ink-soft;
@@ -447,10 +504,10 @@ h3 {
     box-shadow: 0 0 0 2px theme("colors.brand.200");
   }
   .timeline-year {
-    @apply mb-1 block font-mono text-caption font-bold uppercase tracking-[0.12em] text-brand-600;
+    @apply font-mono text-[10.5px] uppercase tracking-eyebrow text-ink-muted;
   }
   .timeline-title {
-    @apply mb-1.5 text-[1.0625rem] font-bold text-brand-600;
+    @apply text-[1.0625rem] font-medium leading-snug text-navy;
   }
 
   /* ---------------------------------------------------------------------

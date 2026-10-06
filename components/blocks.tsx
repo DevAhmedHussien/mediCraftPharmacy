@@ -512,9 +512,14 @@ export function ClosingCta({
   secondary?: { label: string; href: string };
 }) {
   return (
-    <section className="border-t border-line bg-sand section">
-      <div className="container-x text-center">
-        <h2 className="mx-auto max-w-3xl text-display-md font-bold tracking-tight text-ink text-balance md:text-display-lg">
+    /* The handoff's closing panel: a rounded card on the paper ground, white
+       falling to #f1f3f8, rather than a full-bleed sand band with a rule
+       above it. The band was the last piece of the alternating-stripe rhythm
+       the redesign removes. */
+    <section className="section">
+      <div className="mx-auto w-full max-w-[1120px] px-5">
+        <div className="flex flex-col items-center gap-5 rounded-hero border border-hair-soft bg-gradient-to-b from-white to-[#f1f3f8] px-6 py-[clamp(2.5rem,6vw,5.5rem)] text-center">
+        <h2 className="mx-auto max-w-3xl font-display text-[clamp(2.1rem,4.6vw,3.6rem)] font-normal leading-[1.06] tracking-display text-navy text-balance">
           {title}
         </h2>
         <p className="mx-auto mt-5 max-w-xl text-intro text-ink-soft text-pretty">{body}</p>
@@ -522,14 +527,21 @@ export function ClosingCta({
           {/* No appended arrow. "Open a Provider Account →" is the glyph
               doing nothing the verb has not already done, and it is on every
               generated page on the internet. The button is a button. */}
-          <Link href={primary.href} className="btn-primary btn-lg">
+          <Link
+            href={primary.href}
+            className="inline-flex items-center rounded-full bg-navy px-6 py-[15px] text-[15px] font-medium text-white transition-colors duration-200 hover:bg-brand-500 motion-reduce:transition-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
+          >
             {primary.label}
           </Link>
           {secondary && (
-            <Link href={secondary.href} className="btn-outline btn-lg">
+            <Link
+              href={secondary.href}
+              className="inline-flex items-center rounded-full border border-hair bg-white/70 px-6 py-[15px] text-[15px] font-medium text-navy transition-colors duration-200 hover:bg-white motion-reduce:transition-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
+            >
               {secondary.label}
             </Link>
           )}
+        </div>
         </div>
       </div>
     </section>
@@ -560,17 +572,26 @@ export function PageHero({
   children?: ReactNode;
 }) {
   return (
-    <section className="border-b border-line bg-white">
-      <div className="container-x">
+    /* No bottom rule and no white panel.
+       
+       The page sits on `paper` now, and a full-width hairline under every
+       interior header drew a line across thirteen pages that the home page
+       does not have. The space below it separates the header perfectly well.
+       
+       Container is 1120px to match the home page and the nav pill; the old
+       `container-x` is wider, so headers and body copy were on two different
+       measures. */
+    <section>
+      <div className="mx-auto w-full max-w-[1120px] px-5">
         <div
           className={cn(
-            "grid items-center gap-10 py-12 md:py-16 lg:py-20",
+            "grid items-center gap-10 pb-4 pt-14 md:pt-20 lg:pt-24",
             media && "lg:grid-cols-12 lg:gap-12"
           )}
         >
           <div className={cn(media ? "lg:col-span-7" : "max-w-3xl")}>
             {eyebrow && <p className="eyebrow">{eyebrow}</p>}
-            <h1 className="mt-4 text-display-md font-black tracking-tight text-ink text-balance md:text-display-lg">
+            <h1 className="mt-4 font-display text-[clamp(2.4rem,5.2vw,4rem)] font-normal leading-[1.04] tracking-display text-navy text-balance">
               {title}
             </h1>
             {lead && (
@@ -589,7 +610,7 @@ export function PageHero({
                * of them sits on a clean sweep — so on a white page they need
                * an edge to read as a photograph rather than a stray panel.
                * BrandFigure's own rule, applied here for the same reason. */}
-              <figure className="overflow-hidden rounded-tile border border-line">
+              <figure className="overflow-hidden rounded-card border border-hair-soft">
                 <Image
                   src={media.src}
                   alt={media.alt}
