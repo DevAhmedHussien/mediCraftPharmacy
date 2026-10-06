@@ -58,18 +58,24 @@ export default async function LoginPage({
      * something to scroll past before reaching the two fields you came for.
      * It also means the image is never fetched on mobile at all.
      */
-    <div className="grid min-h-screen lg:grid-cols-2">
+    /* On `paper`, like everything else. The form sat on pure white and the
+       panel beside it on the old sand tint, neither of which the redesign
+       has — signing in looked like a different product, which is exactly
+       what the console's token change was about. */
+    <div className="grid min-h-screen bg-paper lg:grid-cols-2">
       {/* ---- The form ---- */}
-      <div className="flex items-center justify-center bg-white px-5 py-16 sm:px-10">
+      <div className="flex items-center justify-center px-5 py-16 sm:px-10">
         <div className="w-full max-w-[26rem]">
           <Link href="/" className="mb-10 block w-fit">
             <Logo className="h-9 w-auto" />
           </Link>
 
-          <h1 className="text-[1.75rem] font-black leading-tight tracking-tight text-ink">
+          {/* Satoshi 400, navy, tracked in — the display treatment the rest
+              of the site uses. It was Lato Black in `text-ink`. */}
+          <h1 className="font-display text-[clamp(1.9rem,3.4vw,2.4rem)] font-normal leading-[1.1] tracking-title text-navy">
             Sign in
           </h1>
-          <p className="mt-2.5 text-meta text-ink-soft">
+          <p className="mt-3 text-[15px] leading-relaxed text-ink-soft">
             Staff and partner access to the MediCraft portal.
           </p>
 
@@ -77,7 +83,7 @@ export default async function LoginPage({
 
           <p className="mt-8 text-caption text-ink-muted">
             Not a partner yet?{" "}
-            <Link href="/providers" className="font-medium text-brand-600 hover:underline">
+            <Link href="/providers" className="font-medium text-brand-500 hover:text-navy">
               Apply for an account
             </Link>
           </p>
@@ -92,9 +98,9 @@ export default async function LoginPage({
           half-screen box crops the cap and the glass shelf it is standing on.
           Contained in a card, the shot keeps its proportions and the white of
           the sweep reads as the card itself. */}
-      <div className="relative hidden items-center justify-center bg-sand p-12 lg:flex">
+      <div className="relative hidden items-center justify-center p-12 lg:flex">
         <figure className="w-full max-w-[30rem]">
-          <div className="overflow-hidden rounded-tile border border-line bg-white p-6 shadow-card">
+          <div className="overflow-hidden rounded-hero border border-hair-soft bg-white/70 p-6 shadow-glass">
             <Image
               src="/images/brand/vial-clear-glass-shelf.webp"
               alt="A MediCraft semaglutide vial on a glass shelf"

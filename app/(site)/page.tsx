@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
-import { Card, Eyebrow, Glass, PillLink, SectionTitle } from "@/components/ui/glass";
+import { Card, Eyebrow, Glass, SectionTitle } from "@/components/ui/glass";
+import { Button } from "@/components/ui/button";
 import { hero, providers, quality } from "@/lib/content";
 import { site, telHref } from "@/lib/site";
 import { pageMetadata } from "@/lib/seo";
@@ -42,8 +43,14 @@ export default function HomePage() {
         </h1>
         <p className="max-w-[600px] text-lg leading-[1.65] text-ink-soft text-pretty">{hero.lead}</p>
         <div className="mt-2 flex flex-wrap justify-center gap-3">
-          <PillLink href={hero.actions.primary.href}>{hero.actions.primary.label}</PillLink>
-          <PillLink href={hero.actions.secondary.href} variant="ghost">{hero.actions.secondary.label}</PillLink>
+          {/* The one Button, as a link. `asChild` passes the styling to
+              next/link rather than nesting an <a> inside a <button>. */}
+          <Button asChild>
+            <Link href={hero.actions.primary.href}>{hero.actions.primary.label}</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link href={hero.actions.secondary.href}>{hero.actions.secondary.label}</Link>
+          </Button>
         </div>
       </section>
 
@@ -176,8 +183,12 @@ export default function HomePage() {
             Join the providers who trust MediCraft to craft the precision compounds their patients need.
           </p>
           <div className="mt-1.5 flex flex-wrap justify-center gap-3">
-            <PillLink href="/work-with-us">Open a Provider Account</PillLink>
-            <PillLink href="/contact" variant="ghost">Request a Formulary</PillLink>
+            <Button asChild>
+              <Link href="/work-with-us">Open a Provider Account</Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/contact">Request a Formulary</Link>
+            </Button>
           </div>
           {tel && (
             <a href={tel} className="mt-1.5 font-mono text-[13px] text-ink-soft hover:text-navy">

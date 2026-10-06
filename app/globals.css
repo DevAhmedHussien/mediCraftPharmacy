@@ -225,45 +225,72 @@ h3 {
      consumer; this audience is prescribers signing their name to a
      compounder's quality.
      ------------------------------------------------------------------ */
+  /* =====================================================================
+     ONE BUTTON SYSTEM.
+
+     There were four: `.btn-*` here, `.btn-pill*` added during the redesign,
+     `PillLink` in the glass primitives, and `.admin-btn*` in the console.
+     Four shapes for one idea is how a site ends up with a 8px-radius button
+     next to a pill on the same screen.
+
+     The redesign makes every button a pill, so that is the base — and
+     `btn-primary` / `btn-outline` simply ARE the pill now, which is why the
+     separate `.btn-pill` classes are gone rather than kept alongside. Every
+     call site that already said `btn-primary` moved with them.
+
+     Weight is 500, not 700. The page is Satoshi 400 throughout; a bold
+     button against a regular 88px headline is the button shouting.
+
+     `components/ui/button.tsx` is the typed contract over these, and is the
+     only thing application code should reach for. These classes exist so the
+     colour of a MediCraft button is decided in one file, not in a cva.
+     ===================================================================== */
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-5 py-3 text-meta font-bold transition duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2;
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-[15px] text-[15px] font-medium transition-colors duration-200 motion-reduce:transition-none;
+    @apply focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500;
+    /* WCAG 2.5.5: a 44px target on touch, without changing how it looks on a
+       pointer device — the padding is already above 44 at md and lg. */
+    @apply max-sm:min-h-11;
   }
+  /* The solid call to action: navy, going to brand blue on hover. */
   .btn-primary {
-    @apply btn bg-brand-500 text-white hover:bg-brand-600 active:translate-y-px;
+    @apply btn bg-navy text-white hover:bg-brand-500 active:translate-y-px;
   }
-  /* The cyan CTA — used on navy, where it is the highest-contrast thing
-     available. Navy type on cyan, never white. */
-  /* Cyan on navy, and ONLY on navy — the identity reserves it as a fill, and
-     at 4.4:1 against white it is the one brand colour that cannot carry text
-     on a light ground.
-     
-     `.band-navy` is still navy, so CustodyBand and the footer keep using
-     this correctly. The three marketing pages that put it on a light panel
-     now use `.btn-pill` instead; this stays for the dark grounds. */
+  /* The quiet one beside it. Hairline on translucent white, so it reads as a
+     surface on `paper` rather than a hole. */
+  .btn-outline {
+    @apply btn border border-hair bg-white/70 text-navy hover:bg-white active:translate-y-px;
+  }
+  /* Cyan on navy, and ONLY on navy — the identity reserves cyan as a fill,
+     and at 4.4:1 against white it is the one brand colour that cannot carry
+     text on a light ground. Correct inside `.band-navy`; wrong anywhere the
+     page ground shows through. */
   .btn-accent {
     @apply btn bg-cyan-400 text-navy hover:bg-cyan-300 active:translate-y-px;
   }
-  /* The redesign's solid button: navy, pill, going to brand blue on hover.
-     One shape for every call to action outside a navy band. */
-  .btn-pill {
-    @apply inline-flex items-center gap-2 rounded-full bg-navy px-6 py-[15px] text-[15px] font-medium text-white transition-colors duration-200 hover:bg-brand-500 active:translate-y-px motion-reduce:transition-none;
-    @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500;
-  }
-  .btn-pill-ghost {
-    @apply inline-flex items-center gap-2 rounded-full border border-hair bg-white/70 px-6 py-[15px] text-[15px] font-medium text-navy transition-colors duration-200 hover:bg-white active:translate-y-px motion-reduce:transition-none;
-    @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500;
-  }
-  .btn-outline {
-    @apply btn border-[1.5px] border-ink/20 bg-transparent text-ink hover:border-ink hover:bg-ink hover:text-white;
-  }
   .btn-outline-invert {
-    @apply btn border-[1.5px] border-white/35 bg-transparent text-white hover:border-white hover:bg-white hover:text-navy;
+    @apply btn border border-white/35 bg-transparent text-white hover:bg-white hover:text-navy;
+  }
+  /* Secondary and destructive complete the set the Button component exposes. */
+  .btn-secondary {
+    @apply btn bg-brand-50 text-brand-700 hover:bg-brand-100 active:translate-y-px;
+  }
+  .btn-ghost {
+    @apply btn bg-transparent text-ink-soft hover:bg-white/70 hover:text-navy active:translate-y-px;
+  }
+  .btn-destructive {
+    @apply btn bg-red-600 text-white hover:bg-red-700 active:translate-y-px;
   }
   .btn-sm {
-    @apply px-4 py-2 text-caption;
+    @apply px-[18px] py-2.5 text-[14px];
   }
   .btn-lg {
-    @apply px-7 py-3.5 text-body;
+    @apply px-7 py-4 text-base;
+  }
+  /* Square, for a lone icon — `btn`'s horizontal padding is sized for a word
+     and leaves a visibly oblong target around a 16px glyph. */
+  .btn-icon {
+    @apply size-11 shrink-0 gap-0 p-0;
   }
 
   .link-arrow {
@@ -1470,20 +1497,35 @@ h3 {
      The marketing .btn-* classes are 44px tall with a 1rem label, sized for a
      thumb on a phone. An operator clicks with a mouse and needs six controls
      in a toolbar, so these are 32px with a 0.8125rem label. */
+  /* The console's buttons are the site's buttons, at console density.
+     
+     They were 8px-radius rectangles while every button on the public site
+     became a pill — two shapes for one idea, in one application. The radius
+     and the hover behaviour now match; only the padding and type size differ,
+     because a table row with four actions in it cannot carry 15px type and
+     15px of vertical padding without becoming a form.
+     
+     Still their own classes rather than `.btn-sm`: the console's buttons are
+     coloured from the `--admin-*` variables so the whole console can be
+     repointed from one block, which is how the dashboard was restyled at
+     all. */
   .admin-btn {
-    @apply inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-[0.8125rem] font-medium transition-colors;
+    @apply inline-flex shrink-0 items-center justify-center gap-1.5 rounded-full px-3.5 py-1.5 text-[0.8125rem] font-medium transition-colors duration-200 motion-reduce:transition-none;
     @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1;
     --tw-ring-color: var(--admin-accent);
   }
   .admin-btn:disabled {
     @apply cursor-not-allowed opacity-50;
   }
+  /* Navy going to brand blue, the same move as `.btn-primary`. It was brand
+     blue going darker, which made the console's primary and the site's
+     primary two different colours doing the same job. */
   .admin-btn-primary {
-    background: var(--admin-accent);
+    background: var(--admin-ink);
     color: #fff;
   }
   .admin-btn-primary:hover:not(:disabled) {
-    background: #1544d4;
+    background: var(--admin-accent);
   }
   .admin-btn-secondary {
     background: var(--admin-surface);

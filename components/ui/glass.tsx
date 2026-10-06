@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 import { cn } from "@/lib/utils";
 
 /**
@@ -52,43 +50,98 @@ export function SectionTitle({ id, children, className }: { id?: string; childre
   );
 }
 
-export function PillLink({
-  href,
-  variant = "solid",
+/* `PillLink` was here and is gone.
+ *
+ * It was a second button: its own padding, its own radius, its own hover and
+ * its own focus ring, duplicating `components/ui/button.tsx` — which already
+ * does all of that, plus loading, icon slots and a disabled state it never
+ * had. Two button components is how a site ends up with two button shapes.
+ *
+ * Every call site is `<Button asChild><Link …/></Button>`, which keeps
+ * next/link's client-side navigation and avoids the invalid <a>-inside-
+ * <button> nesting that `asChild` exists to prevent.
+ */
+
+/* ===========================================================================
+   The three marks that repeat everywhere in the handoff.
+
+   Pulled out because each appears in at least four places across the two
+   reference screens, in markup that is identical apart from the words:
+
+     MonoLabel  — portal nav group headings, the hero spec plate's field
+                  names, metric labels, the tracker's phase headings
+     BadgePill  — the footer's accreditation row, where the dashed border is
+                  the honesty rule rendered as a border-style
+     SurfaceCard— the contact card in the portal sidebar, the custody cards,
+                  the tracker panel
+
+   Writing them four times each is how the "In Progress" dashed border ends up
+   solid in one of the four.
+   ========================================================================= */
+
+/** Plex Mono, 10.5px, tracked out. The handoff's label register. */
+export function MonoLabel({
   children,
+  className,
+  as: Tag = "span",
 }: {
-  href: string;
-  variant?: "solid" | "ghost" | "light";
   children: React.ReactNode;
+  className?: string;
+  as?: "span" | "p" | "dt" | "div";
 }) {
-  const styles = {
-    solid: "bg-navy text-white hover:bg-brand-500",
-    ghost: "border border-hair bg-white/70 text-navy hover:bg-white",
-    light: "bg-white text-navy hover:bg-brand-50",
-  }[variant];
-  /* next/link for internal hrefs, a plain anchor for tel:/mailto:/external.
-     The handoff wrote this as a bare <a>, which works but drops client-side
-     navigation on every CTA — the whole marketing site would do a full
-     document load on "Open an account". `Link` on a tel: href is the mirror
-     mistake: it tries to route it. */
-  const className = cn(
-    "inline-flex items-center rounded-full px-6 py-[15px] text-[15px] font-medium transition-colors duration-200",
-    "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500",
-    "motion-reduce:transition-none",
-    styles
-  );
-
-  if (!href.startsWith("/")) {
-    return (
-      <a href={href} className={className}>
-        {children}
-      </a>
-    );
-  }
-
   return (
-    <Link href={href} className={className}>
+    <Tag
+      className={cn(
+        "font-mono text-[10.5px] font-normal uppercase tracking-eyebrow text-ink-muted",
+        className
+      )}
+    >
       {children}
-    </Link>
+    </Tag>
+  );
+}
+
+/**
+ * An outlined mono pill. `pending` dashes the border.
+ *
+ * THE DASH IS THE HONESTY RULE, NOT DECORATION. PCAB accreditation and
+ * LegitScript certification are being pursued and not held, and the handoff
+ * asks for a dashed border on exactly those two. A solid pill beside four
+ * real credentials reads as a fifth credential held — so the label must also
+ * still say "In Progress" in words, because a border style carries nothing to
+ * a screen reader or a monochrome print.
+ */
+export function BadgePill({
+  children,
+  pending,
+  className,
+}: {
+  children: React.ReactNode;
+  pending?: boolean;
+  className?: string;
+}) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center rounded-full border px-3 py-1.5 font-mono text-[11px] tracking-[0.04em] text-ink-soft",
+        pending ? "border-dashed border-hair-strong" : "border-solid border-hair-strong",
+        className
+      )}
+    >
+      {children}
+    </span>
+  );
+}
+
+/** The quiet surface: hairline, translucent white, 16px radius. */
+export function SurfaceCard({
+  className,
+  ...rest
+}: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      className={cn("rounded-2xl border border-hair-soft bg-white/70 p-3.5", className)}
+      {...rest}
+    />
   );
 }

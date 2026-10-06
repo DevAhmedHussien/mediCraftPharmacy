@@ -274,7 +274,10 @@ function NavGroup({
 
       <div
         className={cn(
-          "absolute left-0 top-full w-[22rem] overflow-hidden rounded-tile border border-line bg-white transition-opacity duration-150",
+          /* The same glass surface as the pill it hangs from. It was a plain
+             white rectangle with a 14px radius — the one piece of the header
+             that still looked like the old design. */
+          "absolute left-0 top-full mt-2 w-[22rem] overflow-hidden rounded-card border border-white/90 bg-white/[0.72] shadow-glass backdrop-blur-xl backdrop-saturate-150 transition-opacity duration-150",
           open ? "opacity-100" : "pointer-events-none opacity-0"
         )}
         hidden={!open}
@@ -285,7 +288,7 @@ function NavGroup({
               <Link
                 href={child.href}
                 onClick={onClose}
-                className="block rounded-[0.5rem] px-3 py-2.5 transition-colors hover:bg-sand"
+                className="block rounded-xl px-3 py-2.5 transition-colors hover:bg-white/80"
               >
                 <span className="block text-meta font-semibold text-ink">{child.label}</span>
                 <span className="mt-0.5 block text-caption text-ink-muted">{child.blurb}</span>
@@ -346,7 +349,11 @@ function MegaPanel({
         open ? "visible opacity-100" : "invisible opacity-0"
       )}
     >
-      <div className="border-b border-line bg-white">
+      {/* The mega-panel, as a glass sheet rather than a white band with a
+          rule under it. It sits below a floating pill now, so a full-bleed
+          bar with a hard bottom border read as a second header. */}
+      <div className="mx-auto w-full max-w-[1120px] px-5">
+        <div className="overflow-hidden rounded-card border border-white/90 bg-white/[0.72] shadow-glass backdrop-blur-xl backdrop-saturate-150">
         <div className="container-x grid gap-10 py-9 lg:grid-cols-[1.6fr_1fr]">
           <div>
             <p className="eyebrow">Shop by category</p>
@@ -359,7 +366,7 @@ function MegaPanel({
                     key={c.slug}
                     href={`/products/${c.slug}`}
                     onClick={onNavigate}
-                    className="group/item flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors hover:bg-sand focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+                    className="group/item flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-white/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
                   >
                     {/* A rule, not a thumbnail.
                         Eleven packshots in a menu is eleven images fetched to
@@ -386,7 +393,7 @@ function MegaPanel({
               })}
             </div>
 
-            <div className="mt-7 flex flex-wrap items-center gap-x-8 gap-y-3 border-t border-line pt-5">
+            <div className="mt-7 flex flex-wrap items-center gap-x-8 gap-y-3 border-t border-hair pt-5">
               <Link href="/products" className="link-arrow text-meta">
                 View the full formulary
                 <ArrowRight className="h-4 w-4" strokeWidth={2} />
@@ -401,7 +408,7 @@ function MegaPanel({
               The panel used to carry a product square the size of the menu's
               whole right-hand column — a lot of weight for decoration beside a
               list someone opened to navigate. */}
-          <div className="hidden self-start rounded-tile border border-line bg-sand p-6 lg:block">
+          <div className="hidden self-start rounded-card border border-hair-soft bg-white/70 p-6 lg:block">
             <p className="text-[1.0625rem] font-bold leading-snug text-ink text-balance">
               Request the current formulary for your specialty
             </p>
@@ -413,6 +420,7 @@ function MegaPanel({
               <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.2} />
             </Link>
           </div>
+        </div>
         </div>
       </div>
     </div>
