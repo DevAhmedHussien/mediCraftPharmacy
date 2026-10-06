@@ -172,7 +172,7 @@ export function PermissionGrid({
           <label
             key={permission.value}
             htmlFor={`${idPrefix}-${permission.value}`}
-            className="flex cursor-pointer items-start gap-2.5 rounded-[5px] border px-3 py-2.5"
+            className="flex cursor-pointer items-start gap-2.5 rounded-2xl border px-3 py-2.5"
             style={{ borderColor: "var(--admin-border)" }}
           >
             <input

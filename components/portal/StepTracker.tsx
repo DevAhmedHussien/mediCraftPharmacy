@@ -270,7 +270,7 @@ function StepRow({
       {reachable ? (
         <Link
           href={step.href!}
-          className="block rounded-[5px] transition-opacity hover:opacity-70 focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--admin-accent)]"
+          className="block rounded-xl transition-opacity hover:opacity-70 focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--admin-accent)]"
         >
           {body}
         </Link>

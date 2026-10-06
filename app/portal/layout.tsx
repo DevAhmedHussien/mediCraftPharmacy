@@ -149,7 +149,7 @@ export default async function PortalLayout({ children }: { children: ReactNode }
         <main
           id="portal-main"
           tabIndex={-1}
-          className="min-w-0 flex-1 p-4 md:p-6 lg:max-w-[1180px] lg:py-8 lg:pb-16 lg:pl-6 lg:pr-10"
+          className="min-w-0 flex-1 p-4 md:p-6 lg:max-w-[1180px] lg:pb-24 lg:pl-6 lg:pr-10 lg:pt-8"
         >
           {/* The desktop identity chip. Mirrors the mobile header above
               rather than duplicating it — only one of the two is ever in the

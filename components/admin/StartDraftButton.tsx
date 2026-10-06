@@ -26,7 +26,7 @@ export function StartDraftButton({
     <Panel title={revision ? "Revise the pricing" : "Negotiated pricing"}>
       {revision && applicantNote && (
         <blockquote
-          className="mb-4 rounded-[5px] border-l-2 py-2 pl-3 text-[0.8125rem] leading-relaxed text-[color:var(--admin-ink-70)]"
+          className="mb-4 rounded-r-[14px] border-l-2 py-2 pl-3 text-[0.8125rem] leading-relaxed text-[color:var(--admin-ink-70)]"
           style={{ borderColor: "var(--admin-accent)", background: "var(--status-info-bg)" }}
         >
           {applicantNote}

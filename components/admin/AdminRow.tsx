@@ -81,7 +81,7 @@ export function AdminRow({
 
   return (
     <div
-      className="rounded-[5px] border p-4"
+      className="rounded-2xl border p-4"
       style={{
         borderColor: "var(--admin-border)",
         // A switched-off account stays legible but stops competing for

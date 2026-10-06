@@ -1403,7 +1403,18 @@ h3 {
        same reason: two neutral ramps in one application is what made the
        console and the site look like separate codebases. */
     --admin-bg: #f7f7f5;
-    --admin-surface: #ffffff;
+    /* 70% white, not solid. The reference draws every content panel as
+       `rgba(255,255,255,.7)` over the page ground — the same translucency the
+       rail uses, one step less frosted. Solid white made the console read as
+       a different application from the site sitting behind the same glass
+       header, and it is what made the dashboard look like a white box
+       dropped on a warm page. */
+    --admin-surface: rgb(255 255 255 / 0.7);
+    /* The rule INSIDE a panel. Lighter than `--admin-border`, which separates
+       a panel from the page; this one only separates a row from the row
+       above it, and at a panel's full width the heavier grey reads as a
+       stack of boxes rather than as a list. */
+    --admin-row-rule: #f0f0ec;
     /* 24px, matching `rounded-card`. It was 14px — the old marketing `tile`
        radius — and the redesign moved cards to 24px, so holding 14 here
        would recreate the mismatch that comment was written to fix. */
@@ -1531,8 +1542,10 @@ h3 {
   .portal .rounded-tile.border-line {
     border-color: var(--admin-border-soft);
     border-radius: var(--admin-card-radius);
-    background: #fff;
-    box-shadow: var(--admin-shadow);
+    /* The same 70% white every other panel in both consoles is on. Solid
+       white here left the portal's tiles reading as a different material
+       from the panels beside them. */
+    background: var(--admin-surface);
   }
   .portal .rounded-tile.border-dashed {
     box-shadow: none;
@@ -1544,11 +1557,15 @@ h3 {
      near-white page ground. With `border: 0` the two were indistinguishable
      wherever a panel was wider than the shadow's spread, which on a 1180px
      column is most of them. */
+  /* A hairline and nothing else. The reference gives content panels no
+     shadow at all — the translucency is what lifts them off the ground, and
+     a drop shadow under every one of six stacked panels is what made the
+     overview read as a pile of floating dialogs. The rail keeps its shadow,
+     because the rail genuinely does float over the content. */
   .admin-panel {
     background: var(--admin-surface);
     border: 1px solid var(--admin-border-soft);
     border-radius: var(--admin-card-radius);
-    box-shadow: var(--admin-shadow);
   }
 
   /* The emphasis panel — one per screen, for the thing the partner is being
@@ -1582,12 +1599,83 @@ h3 {
     color: var(--admin-ink-50);
   }
 
+  /* The console's filter chip.
+     
+     A pill, like every other chip, pill and button in this application. These
+     were 5px-radius rectangles — the one place left where a control was
+     drawn as a box while the site around it was drawn as a pill, which is
+     exactly the sort of detail that makes a console feel bolted on rather
+     than part of the product.
+     
+     Selected is navy, not a pale blue wash with blue text. Blue is what every
+     link in a table of links already is; a blue chip in a rail of chips read
+     as the one you could click rather than the one you had. */
+  .admin-chip {
+    @apply inline-flex items-center whitespace-nowrap rounded-full border px-3.5 py-2 text-[0.78125rem] font-medium transition-colors duration-200;
+    border-color: var(--admin-border);
+    background: var(--admin-surface);
+    color: var(--admin-ink-70);
+  }
+  .admin-chip:hover {
+    border-color: var(--admin-border-strong);
+    color: var(--admin-ink);
+  }
+  .admin-chip[aria-current="page"],
+  .admin-chip[aria-pressed="true"] {
+    border-color: var(--admin-ink);
+    background: var(--admin-ink);
+    color: #fff;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .admin-chip {
+      transition: none;
+    }
+  }
+
   .admin-row {
-    border-bottom: 1px solid var(--admin-border);
+    border-bottom: 1px solid var(--admin-row-rule);
     transition: background-color 120ms ease;
   }
   .admin-row:hover {
-    background: #f6f9fd;
+    background: rgb(255 255 255 / 0.75);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    /* The console's filter chip.
+     
+     A pill, like every other chip, pill and button in this application. These
+     were 5px-radius rectangles — the one place left where a control was
+     drawn as a box while the site around it was drawn as a pill, which is
+     exactly the sort of detail that makes a console feel bolted on rather
+     than part of the product.
+     
+     Selected is navy, not a pale blue wash with blue text. Blue is what every
+     link in a table of links already is; a blue chip in a rail of chips read
+     as the one you could click rather than the one you had. */
+  .admin-chip {
+    @apply inline-flex items-center whitespace-nowrap rounded-full border px-3.5 py-2 text-[0.78125rem] font-medium transition-colors duration-200;
+    border-color: var(--admin-border);
+    background: var(--admin-surface);
+    color: var(--admin-ink-70);
+  }
+  .admin-chip:hover {
+    border-color: var(--admin-border-strong);
+    color: var(--admin-ink);
+  }
+  .admin-chip[aria-current="page"],
+  .admin-chip[aria-pressed="true"] {
+    border-color: var(--admin-ink);
+    background: var(--admin-ink);
+    color: #fff;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .admin-chip {
+      transition: none;
+    }
+  }
+
+  .admin-row {
+      transition: none;
+    }
   }
   .admin-row:last-child {
     border-bottom: 0;

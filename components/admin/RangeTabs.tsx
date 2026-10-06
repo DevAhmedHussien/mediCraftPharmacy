@@ -13,9 +13,12 @@ const RANGES = [7, 30, 90] as const;
  */
 export function RangeTabs({ current }: { current: number }) {
   return (
+    /* A pill track with a pill thumb, like the sign-in method switch and
+       every other segmented control in the application. It was a 5px box
+       holding 3px boxes. */
     <div
-      className="inline-flex rounded-[5px] border p-0.5"
-      style={{ borderColor: "var(--admin-border-strong)", background: "var(--admin-surface)" }}
+      className="inline-flex gap-0.5 rounded-full border p-1"
+      style={{ borderColor: "var(--admin-border)", background: "var(--admin-surface)" }}
     >
       {RANGES.map((range) => (
         <Link
@@ -24,9 +27,9 @@ export function RangeTabs({ current }: { current: number }) {
           scroll={false}
           aria-current={range === current ? "true" : undefined}
           className={cn(
-            "rounded-[3px] px-2.5 py-1 text-[0.8125rem] font-medium transition-colors",
+            "rounded-full px-3 py-1.5 text-[0.78125rem] font-medium transition-colors duration-200 motion-reduce:transition-none",
             range === current
-              ? "bg-[color:var(--admin-accent)] text-white"
+              ? "bg-[color:var(--admin-ink)] text-white"
               : "text-[color:var(--admin-ink-70)] hover:text-[color:var(--admin-ink)]"
           )}
         >

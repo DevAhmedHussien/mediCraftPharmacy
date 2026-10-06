@@ -71,7 +71,11 @@ export default async function AdminLayout({ children }: { children: ReactNode })
             <Link href="/admin" aria-label="MediCraft admin">
               <Logo className="h-7 w-auto" animate="none" />
             </Link>
-            <span className="rounded-full bg-[theme(colors.info.bg)] px-2 py-0.5 font-mono text-[0.625rem] uppercase tracking-eyebrow text-[color:var(--admin-accent)]">
+            {/* A bordered mono chip, as the reference draws it — not a
+                filled blue pill. Filled blue is what the console uses for
+                things you act on; this is a label saying which of the two
+                consoles you are in, and it should sit back. */}
+            <span className="rounded border border-[color:var(--admin-border)] px-1.5 py-0.5 font-mono text-[0.625rem] uppercase tracking-eyebrow text-[color:var(--admin-ink-50)]">
               Admin
             </span>
           </div>
@@ -124,7 +128,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
         <main
           id="admin-main"
           tabIndex={-1}
-          className="min-w-0 flex-1 p-4 md:p-6 lg:py-8 lg:pb-16 lg:pl-6 lg:pr-10"
+          className="min-w-0 flex-1 p-4 md:p-6 lg:pb-24 lg:pl-6 lg:pr-10 lg:pt-8"
         >
           {/* The desktop identity chip. Mirrors the mobile header above
               rather than duplicating it — only one of the two is ever in the
@@ -141,7 +145,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
               }
             />
           </div>
-          <div className="w-full max-w-[86rem]">{children}</div>
+          <div className="flex w-full max-w-[86rem] flex-col gap-5">{children}</div>
         </main>
       </div>
     </div>

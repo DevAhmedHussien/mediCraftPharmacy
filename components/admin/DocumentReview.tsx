@@ -108,7 +108,7 @@ function Row({
     });
 
   return (
-    <div className="rounded-[5px] border p-3" style={{ borderColor: "var(--admin-border)" }}>
+    <div className="rounded-2xl border p-3" style={{ borderColor: "var(--admin-border)" }}>
       <div className="flex flex-wrap items-center gap-3">
         <StatusBadge kind="document" status={document.status} />
 

@@ -132,30 +132,52 @@ export function StatStrip({
   }>;
 }) {
   return (
+    /* FOUR CARDS, not one panel with dividers.
+    
+       The reference lays these out as discrete 22px cards in an `auto-fit`
+       grid at a 220px floor. A single divided strip is the dashboard cliché
+       and it behaves badly: at the breakpoint where four columns become two,
+       the `divide-y`/`divide-x` rules disagree about which edges exist and
+       you get stray hairlines hanging off the ends. Separate cards reflow
+       with no rules to get wrong. */
     <dl
-      className="admin-panel grid divide-y sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4"
-      style={{ borderColor: "var(--admin-border)" }}
+      className="grid gap-4"
+      style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 13.75rem), 1fr))" }}
     >
-      {stats.map((stat, index) => {
+      {stats.map((stat) => {
         const urgent = stat.urgent && Number(stat.value) > 0;
-        const body = (
-          <>
-            <dt className="admin-label">
-              {/* The link lives INSIDE the <dt> and stretches over the cell
-                  with a pseudo-element.
-                  
-                  It was a sibling of the <dt>/<dd> group, which axe flags:
-                  a <div> inside a <dl> may contain dt and dd and nothing
-                  else, so an <a> in there left assistive tech with a
-                  definition list whose groups are malformed — four labels
-                  and four numbers, unpaired. Inside the <dt> the markup is
-                  valid, the whole cell is still clickable, and the link's
-                  accessible name is the label rather than a number with no
-                  context. */}
+
+        return (
+          /* The <dt> and <dd> are DIRECT children of this div, and the link
+             is inside the <dt>, stretched over the card by a pseudo-element.
+             
+             It used to be `dl > div > a > dt`, which axe flags twice: a <dl>
+             may only directly contain dt, dd, div, script or template, and a
+             <dt>/<dd> must be contained by a <dl>. With an <a> in between,
+             assistive tech saw a definition list with no definitions in it —
+             four labels and four numbers, unpaired. */
+          <div
+            key={stat.label}
+            className={cn(
+              "admin-panel relative flex flex-col gap-2 p-[1.375rem] transition-colors duration-200 motion-reduce:transition-none",
+              stat.href && "hover:bg-white"
+            )}
+            style={{ borderRadius: "1.375rem" }}
+          >
+            <dt className="admin-label flex items-center gap-1.5">
+              {/* The dot marks the card that wants attention. The reference
+                  gives every stat one; here only the urgent ones get it,
+                  because a dot on all four marks nothing. */}
+              {urgent && (
+                <span
+                  aria-hidden
+                  className="size-1.5 shrink-0 rounded-full bg-[theme(colors.warning.fg)]"
+                />
+              )}
               {stat.href ? (
                 <Link
                   href={stat.href}
-                  className="admin-focus rounded-[5px] after:absolute after:inset-0 after:rounded-[5px] after:content-['']"
+                  className="admin-focus rounded-xl after:absolute after:inset-0 after:rounded-[1.375rem] after:content-['']"
                 >
                   {stat.label}
                 </Link>
@@ -163,59 +185,28 @@ export function StatStrip({
                 stat.label
               )}
             </dt>
+
             <dd
               className={cn(
-                "mt-1 flex items-baseline gap-1.5 font-display text-[1.75rem] font-normal leading-none tabular-nums tracking-title",
-                /* `warning`, not `danger`. Eleven documents waiting to be
-                   reviewed is a queue with work in it, which is the normal
-                   state of a queue — it is not a failure, and colouring it the
-                   same red the console uses for "agreement declined" and
-                   "suspended" taught operators to read that red as "there is
-                   work", which is exactly the wrong lesson for the day
-                   something actually breaks. The dot still marks it, and the
-                   screen-reader text still says "needs attention". */
-                urgent && "text-[theme(colors.warning.fg)]"
+                "font-display text-[2.25rem] font-normal leading-none tabular-nums tracking-display",
+                /* `warning`, not `danger`. A queue with eleven things in it
+                   is a queue doing its job — it is not a failure, and
+                   colouring it the same red the console uses for "agreement
+                   declined" and "suspended" taught operators to read that
+                   red as "there is work", which is exactly the wrong lesson
+                   for the day something actually breaks. */
+                urgent ? "text-[theme(colors.warning.fg)]" : "text-[color:var(--admin-ink)]"
               )}
             >
-              {urgent && (
-                <span
-                  aria-hidden
-                  className="size-1.5 shrink-0 self-center rounded-full bg-current"
-                />
-              )}
               {stat.value}
               {urgent && <span className="sr-only">, needs attention</span>}
             </dd>
+
             {stat.detail && (
-              <dd className="mt-1 text-[0.75rem] text-[color:var(--admin-ink-50)]">
+              <dd className="text-[0.78125rem] text-[color:var(--admin-ink-50)]">
                 {stat.detail}
               </dd>
             )}
-          </>
-        );
-
-        return (
-          /* The <dt> and <dd> are DIRECT children of this div, and the link
-             is an overlay on top of them.
-             
-             It used to be `dl > div > a > dt`, which axe flags twice — a <dl>
-             may only directly contain dt, dd, div, script or template, and a
-             <dt>/<dd> must be contained by a <dl>. With an <a> in between,
-             assistive tech sees a definition list with no definitions in it:
-             four labels and four numbers, unpaired.
-             
-             The stretched anchor keeps the whole cell clickable and keeps the
-             focus ring on the cell, which is what the block link was for. */
-          <div
-            key={stat.label}
-            className={cn(
-              "relative px-4 py-3 transition-opacity",
-              stat.href && "hover:opacity-70 motion-reduce:transition-none",
-              index > 0 && "sm:border-l"
-            )}
-            style={{ borderColor: "var(--admin-border)" }}
-          >
-            {body}
           </div>
         );
       })}
@@ -522,21 +513,36 @@ export function EmptyState({
   title,
   description,
   action,
+  bordered,
   className,
 }: {
   icon?: LucideIcon;
   title: string;
   description: string;
   action?: { label: string; href: string };
+  /** Draws the dashed edge, for the rare case this is not inside a Panel. */
+  bordered?: boolean;
   className?: string;
 }) {
   return (
     <div
       className={cn(
-        "flex flex-col items-start gap-3 rounded-[6px] border border-dashed px-6 py-10",
+        /* No border and no box.
+        
+           This almost always renders INSIDE a Panel — "the queue is clear"
+           sits in the "Needs you" panel — and a dashed 6px box inside a 24px
+           card is two containers saying one thing, with the inner one drawn
+           in the style the rest of the console stopped using. It also forced
+           a 100px-tall dashed rectangle onto the screen whose only message
+           is that there is nothing to look at.
+           
+           `bordered` is there for the handful of places this stands alone on
+           the page ground and does need an edge. */
+        "flex flex-col items-start gap-3 py-2",
+        bordered && "rounded-card border border-dashed px-6 py-10",
         className
       )}
-      style={{ borderColor: "var(--admin-border-strong)" }}
+      style={bordered ? { borderColor: "var(--admin-border-strong)" } : undefined}
     >
       {Icon && (
         <Icon className="size-6 text-[color:var(--admin-ink-50)]" strokeWidth={1.5} aria-hidden />

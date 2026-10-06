@@ -84,57 +84,61 @@ export function PipelineFunnel({ counts }: { counts: Record<string, number> }) {
       title="Pipeline"
       description={`${live} in flight across ${STEPS.length} applicant steps.`}
     >
-      <ul className="space-y-2.5">
-        {stages.map((stage) => (
-          <li key={stage.label}>
-            <Link
-              href={`/admin/partners?status=${stage.statuses[0]}`}
-              className="group block"
-              /* No `aria-label`. It read "{count} in {label}" while the
-                 visible text is "{label}" then "{count}" — the visible string
-                 is not contained in the accessible name, so the two disagree
-                 and voice control cannot address the link by what it says.
-                 The visible text IS the name now; the sr-only word below
-                 supplies the unit the sighted reader gets from context. */
-            >
-              <div className="flex items-baseline justify-between gap-3">
-                <span className="text-[0.8125rem] font-medium transition-colors group-hover:text-[color:var(--admin-accent)]">
-                  {stage.label}
-                </span>
-                <span className="text-[0.8125rem] font-semibold tabular-nums">
+      {/* COLUMNS, not six full-width rows.
+      
+          The reference draws this as a short column chart — one 96px well
+          per stage, filled from the bottom. Six stacked horizontal bars took
+          four hundred pixels to say what a hundred says, and a bar spanning
+          the full width of a 1180px panel encodes its value in a length no
+          one can judge against the five below it. Side by side the
+          comparison is the shape, which is the whole point of a funnel. */}
+      <ol className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+        {stages.map((stage) => {
+          const pct = Math.round((stage.count / scale) * 100);
+          const fill =
+            stage.label === "Closed"
+              ? "var(--admin-ink-50)"
+              : stage.label === "Verified"
+                ? /* cyan-700, the identity's `success`. The hardcoded #2f855a
+                     here was the only green in the application, and it sat
+                     four pixels from the brand blue on the same chart. */
+                  "var(--status-success-fg)"
+                : "var(--admin-accent)";
+
+          return (
+            <li key={stage.label}>
+              <Link href={`/admin/partners?status=${stage.statuses[0]}`} className="group flex flex-col gap-2">
+                {/* The well is a shape, not data — the count below it is the
+                    accessible value, so this is hidden rather than labelled
+                    twice. */}
+                <div
+                  aria-hidden
+                  className="flex h-24 items-end overflow-hidden rounded-[0.875rem]"
+                  style={{ background: "#f1f3f8" }}
+                >
+                  <div
+                    className="w-full transition-[height] duration-500 motion-reduce:transition-none"
+                    style={{
+                      /* A floor of 3px so a stage with nobody in it still
+                         draws a baseline. A well with literally nothing in it
+                         reads as a rendering failure rather than as zero. */
+                      height: stage.count === 0 ? "3px" : `${Math.max(pct, 8)}%`,
+                      background: stage.count === 0 ? "var(--admin-border-strong)" : fill,
+                    }}
+                  />
+                </div>
+                <span className="font-display text-[1.125rem] font-normal leading-none tabular-nums">
                   {stage.count}
                   <span className="sr-only"> partners</span>
                 </span>
-              </div>
-
-              {/* A 4px bar against a track, rounded at the data end only — the
-                  baseline stays square so zero reads as zero. */}
-              <div
-                className="mt-1.5 h-1 w-full overflow-hidden rounded-full"
-                style={{ background: "var(--admin-border)" }}
-                aria-hidden
-              >
-                <div
-                  className="h-full rounded-r-full transition-[width] duration-500"
-                  style={{
-                    width: `${Math.round((stage.count / scale) * 100)}%`,
-                    /* `--status-success-fg` is the identity's cyan-700, not a
-                       green. The hardcoded #2f855a was the only green in the
-                       application, and it sat four pixels from the brand blue
-                       on the same chart — a third colour nobody chose. */
-                    background:
-                      stage.label === "Closed"
-                        ? "var(--admin-ink-50)"
-                        : stage.label === "Verified"
-                          ? "var(--status-success-fg)"
-                          : "var(--admin-accent)",
-                  }}
-                />
-              </div>
-            </Link>
-          </li>
-        ))}
-      </ul>
+                <span className="text-[0.75rem] leading-tight text-[color:var(--admin-ink-70)] transition-colors group-hover:text-[color:var(--admin-accent)] motion-reduce:transition-none">
+                  {stage.label}
+                </span>
+              </Link>
+            </li>
+          );
+        })}
+      </ol>
     </Panel>
   );
 }

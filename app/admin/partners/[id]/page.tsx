@@ -343,7 +343,7 @@ export default async function PartnerDetailPage({ params }: { params: { id: stri
                 {application.prescribers.map((prescriber) => (
                   <div
                     key={prescriber.id}
-                    className="rounded-[5px] border p-3"
+                    className="rounded-2xl border p-3"
                     style={{ borderColor: "var(--admin-border)" }}
                   >
                     <p className="text-[0.8125rem] font-semibold">{prescriber.name}</p>

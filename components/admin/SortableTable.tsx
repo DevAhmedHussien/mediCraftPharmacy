@@ -103,7 +103,12 @@ export function SortableTable<T>({
 
       <div className="admin-panel overflow-x-auto">
         <table className="w-full border-collapse text-[0.8125rem]">
-          <thead style={{ borderBottom: "1px solid var(--admin-border)" }}>
+          {/* No fill and no heavy rule under the head. The reference sets
+              the header row in the mono micro-label register on a
+              transparent ground, with the first body row's own top rule
+              doing the separating — a filled, ruled header band is the
+              spreadsheet look the rest of this redesign moved away from. */}
+          <thead style={{ borderBottom: "1px solid var(--admin-row-rule)" }}>
             {table.getHeaderGroups().map((group) => (
               <tr key={group.id}>
                 {group.headers.map((header) => {
@@ -120,7 +125,7 @@ export function SortableTable<T>({
                         !sorted ? undefined : sorted === "asc" ? "ascending" : "descending"
                       }
                       className={cn(
-                        "admin-label whitespace-nowrap px-4 py-2 text-left font-semibold",
+                        "admin-label whitespace-nowrap px-[1.375rem] py-3 text-left",
                         header.column.columnDef.meta?.align === "right" && "text-right"
                       )}
                     >
@@ -152,7 +157,7 @@ export function SortableTable<T>({
           <tbody>
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={columns.length} className="px-4 py-8 text-center text-[color:var(--admin-ink-50)]">
+                <td colSpan={columns.length} className="px-[1.375rem] py-10 text-center text-[color:var(--admin-ink-50)]">
                   {globalFilter
                     ? `Nothing on this page matches “${globalFilter}”.`
                     : emptyMessage}
@@ -165,7 +170,12 @@ export function SortableTable<T>({
                     <td
                       key={cell.id}
                       className={cn(
-                        "px-4 py-2.5 align-middle",
+                        /* 22px gutters and a 60px row, matching the
+                           reference. The 16/10 cell put five rows in the
+                           height the reference gives three, which is dense
+                           enough that the status pills in adjacent rows
+                           start to touch. */
+                        "h-[3.75rem] px-[1.375rem] align-middle",
                         cell.column.columnDef.meta?.align === "right" && "text-right"
                       )}
                     >
