@@ -97,8 +97,18 @@ h3 {
   /* ---------------------------------------------------------------------
      Layout shell
      ------------------------------------------------------------------ */
+  /* 1120px, flat 20px gutters — the reference's measure, and the one the nav
+     pill, the hero and PageHeader already use.
+     
+     It was max-w-[1280px] with px-5/sm:px-8/lg:px-10, so every section built
+     on `container-x` sat 160px wider than the header floating above it and
+     the gutters stepped at two breakpoints the design does not have. Nothing
+     lined up vertically: the nav pill's left edge and the first paragraph's
+     left edge were 30px apart on a desktop.
+     
+     One class, 41 call sites across 19 files. */
   .container-x {
-    @apply mx-auto w-full max-w-[1280px] px-5 sm:px-8 lg:px-10;
+    @apply mx-auto w-full max-w-[1120px] px-5;
   }
   /* Reading measure — long-form regulatory prose stays under ~72 characters. */
   .container-narrow {
@@ -106,12 +116,16 @@ h3 {
   }
   /* Vertical rhythm. One class per band so section padding can never be
      fought over by two competing selectors. */
-  /* 96px mobile / 160px desktop, per the handoff's section rhythm. The old
-     64/96 was tuned for a page that separated sections with a background
-     change; with one continuous ground, space is the only separator and it
-     has to be bigger to do the job. */
+  /* 80px mobile / 112px desktop.
+     
+     The home page is 96/160 and keeps it — it sets its own rhythm with a
+     local constant, because a landing page can afford that much air between
+     a hero and the first claim. Interior pages cannot: they open with a
+     PageHeader that already carries 96px of top padding, so a 160px section
+     on top of it put 256px of nothing between the lead paragraph and the
+     content it introduces. The references use 72-120px on interior screens. */
   .section {
-    @apply py-24 lg:py-40;
+    @apply py-20 lg:py-28;
   }
   .section-tight {
     @apply py-12 md:py-16;
