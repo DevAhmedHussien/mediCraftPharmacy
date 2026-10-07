@@ -364,7 +364,21 @@ export function DataTable({
   caption?: string;
 }) {
   return (
-    <div className="overflow-x-auto">
+    /* Focusable always; a named REGION only when there is a name to give it.
+    
+       `tabIndex` is what `scrollable-region-focusable` actually wants — a
+       scroll container a keyboard can enter. The region role was my addition
+       on top, and with a hardcoded label it made every table on a page an
+       identically-named landmark: axe flags that as `landmark-unique`, and
+       "Data table, Data table" is worse for a screen-reader user than no
+       landmark at all. The caption is the table's own description, so where
+       one exists it names the region and where it does not, the role is
+       simply omitted. */
+    <div
+      tabIndex={0}
+      {...(caption ? { role: "region", "aria-label": caption } : {})}
+      className="overflow-x-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--admin-accent)]"
+    >
       <table className="w-full border-collapse text-[0.8125rem]">
         {caption && <caption className="sr-only">{caption}</caption>}
         <thead>

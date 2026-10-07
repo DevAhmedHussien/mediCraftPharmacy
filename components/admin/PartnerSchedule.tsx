@@ -64,7 +64,13 @@ export function PartnerSchedule({ lines }: { lines: ScheduleLine[] }) {
           empty schedule here means one of those did not happen.
         </p>
       ) : (
-        <div className="overflow-x-auto rounded-2xl border" style={{ borderColor: "var(--admin-border)" }}>
+        <div
+          tabIndex={0}
+          role="region"
+          aria-label="Negotiated price schedule"
+          className="overflow-x-auto rounded-2xl border focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--admin-accent)]"
+          style={{ borderColor: "var(--admin-border)" }}
+        >
           <table className="w-full min-w-[34rem] border-collapse text-left text-[0.8125rem]">
             <thead>
               <tr style={{ background: "var(--admin-bg)" }}>

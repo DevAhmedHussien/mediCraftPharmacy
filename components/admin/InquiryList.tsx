@@ -53,7 +53,7 @@ export function InquiryList({ rows }: { rows: InquiryRow[] }) {
   return (
     <>
       <DataTable
-        head={["Received", "Type", "From", "Status", ""]}
+        head={["Received", "Type", "From", "Status", <span key="actions" className="sr-only">Actions</span>]}
         empty={rows.length === 0 ? "Nothing submitted yet." : undefined}
       >
         {rows.map((row) => (

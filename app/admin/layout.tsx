@@ -110,7 +110,15 @@ export default async function AdminLayout({ children }: { children: ReactNode })
         </header>
 
         {/* The rail is desktop-only; on a tablet the sections sit here. */}
-        <div className="border-b border-hair-soft px-4 py-2 lg:hidden">
+                {/* A `nav`, not a bare div.
+        
+            axe flags any content outside a landmark as `region`, and this
+            strip — the whole of the portal's navigation below `lg` — was a
+            plain wrapper. Seventeen violations across the portal and the
+            console came from these two elements. A screen-reader user
+            jumping by landmark skipped straight past the only navigation the
+            mobile layout has. */}
+        <nav aria-label="Console sections" className="border-b border-hair-soft px-4 py-2 lg:hidden">
           <div className="no-scrollbar -mx-1 flex gap-1 overflow-x-auto">
             {visibleAdminLinks(session.user.role, session.user.permissions).map((item) => (
               <Link
@@ -123,7 +131,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
               </Link>
             ))}
           </div>
-        </div>
+        </nav>
 
         <main
           id="admin-main"

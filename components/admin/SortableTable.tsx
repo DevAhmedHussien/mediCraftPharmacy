@@ -101,7 +101,12 @@ export function SortableTable<T>({
         />
       </div>
 
-      <div className="admin-panel overflow-x-auto">
+      <div
+        tabIndex={0}
+        role="region"
+        aria-label={searchPlaceholder ?? "Results table"}
+        className="admin-panel overflow-x-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--admin-accent)]"
+      >
         <table className="w-full border-collapse text-[0.8125rem]">
           {/* No fill and no heavy rule under the head. The reference sets
               the header row in the mono micro-label register on a

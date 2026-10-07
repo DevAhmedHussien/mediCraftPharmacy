@@ -76,7 +76,7 @@ type CategoryRow = Awaited<ReturnType<typeof listCategories>>[number];
 
 function CategoryTable({ rows, canEdit }: { rows: CategoryRow[]; canEdit: boolean }) {
   return (
-    <DataTable head={["Category", "Slug", "Products", "Order", "Status", ""]}>
+    <DataTable head={["Category", "Slug", "Products", "Order", "Status", <span key="actions" className="sr-only">Actions</span>]}>
       {rows.map((category) => (
         <Row key={category.id}>
           <Cell>

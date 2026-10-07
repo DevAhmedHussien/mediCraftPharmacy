@@ -128,7 +128,15 @@ export default async function PortalLayout({ children }: { children: ReactNode }
         {/* The rail is desktop-only; below `lg` the sections sit here. Built
             from the same gated list, so a partner is never offered a tab on a
             phone that the rail would have hidden on a laptop. */}
-        <div className="border-b border-hair-soft px-4 py-2 lg:hidden">
+                {/* A `nav`, not a bare div.
+        
+            axe flags any content outside a landmark as `region`, and this
+            strip — the whole of the portal's navigation below `lg` — was a
+            plain wrapper. Seventeen violations across the portal and the
+            console came from these two elements. A screen-reader user
+            jumping by landmark skipped straight past the only navigation the
+            mobile layout has. */}
+        <nav aria-label="Your account sections" className="border-b border-hair-soft px-4 py-2 lg:hidden">
           <div className="no-scrollbar -mx-1 flex gap-1 overflow-x-auto">
             {visiblePortalLinks(status).map((item) => (
               <Link
@@ -141,7 +149,7 @@ export default async function PortalLayout({ children }: { children: ReactNode }
               </Link>
             ))}
           </div>
-        </div>
+        </nav>
 
         {/* Asymmetric on purpose, as the reference has it: 24px on the rail
             side because the rail's own 16px gutter already stands the content

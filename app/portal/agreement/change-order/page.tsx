@@ -87,7 +87,12 @@ export default async function ChangeOrderSigningPage() {
           What you are adding
         </h2>
 
-        <div className="mt-4 overflow-x-auto rounded-tile border border-line">
+        <div
+          tabIndex={0}
+          role="region"
+          aria-label="Change order lines"
+          className="mt-4 overflow-x-auto rounded-tile border border-line focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
+        >
           <table className="w-full min-w-[34rem] border-collapse text-left">
             <thead>
               <tr className="border-b border-line bg-sand">

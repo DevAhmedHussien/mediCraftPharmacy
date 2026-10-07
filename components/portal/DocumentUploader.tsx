@@ -138,7 +138,10 @@ export function DocumentRow({
     <div className="rounded-card border border-hair-soft bg-white p-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
-          <h3 className="flex items-center gap-2 text-meta font-bold text-ink">
+          {/* `h2`: each uploader is a top-level item under the page's h1,
+              with no section heading between, so an h3 took the outline from
+              level 1 to level 3. */}
+          <h2 className="flex items-center gap-2 text-meta font-bold text-ink">
             {satisfied ? (
               <CheckCircle2 className="size-4 shrink-0 text-success-fg" strokeWidth={2.4} aria-hidden />
             ) : (
@@ -155,7 +158,7 @@ export function DocumentRow({
             {!spec.required && (
               <span className="text-caption font-medium text-ink-muted">Optional</span>
             )}
-          </h3>
+          </h2>
           <p className="mt-1 max-w-prose text-caption text-ink-muted">{spec.blurb}</p>
           {/* The constraint, stated before it can be broken. */}
           <p className="mt-1.5 text-caption text-ink-muted">{DOCUMENT_RULE}</p>
