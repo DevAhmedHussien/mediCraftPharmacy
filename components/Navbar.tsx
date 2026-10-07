@@ -233,7 +233,6 @@ export function Navbar({
                 aria-expanded={openMenu === "products"}
                 aria-controls="nav-panel-products"
                 onClick={() => setOpenMenu(openMenu === "products" ? null : "products")}
-                onFocus={() => setOpenMenu("products")}
                 className={cn("nav-link flex items-center gap-1", productsActive && "nav-link-active")}
               >
                 Products
@@ -406,7 +405,14 @@ function NavGroup({
         aria-expanded={open}
         aria-controls={panelId}
         onClick={() => (open ? onClose() : onOpen())}
-        onFocus={onOpen}
+        /* No `onFocus={onOpen}`.
+        
+           Focus used to open the panel, which meant that by the time a
+           keyboard user pressed Enter the menu was already open and Enter
+           TOGGLED IT SHUT — they closed something they never knowingly
+           opened. Hover still opens it for a pointer; for a keyboard this is
+           now the ordinary disclosure pattern, where the button you activate
+           is the thing that opens. */
         className={cn("nav-link flex items-center gap-1", active && "nav-link-active")}
       >
         {item.label}

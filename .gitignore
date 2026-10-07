@@ -32,3 +32,8 @@ tsconfig.tsbuildinfo
 
 # Design references — mockups to recreate, not shipped code.
 design_handoff/
+
+# Playwright builds into its own dist dir so a running dev server is safe.
+/.next-e2e
+/test-results
+/playwright-report
