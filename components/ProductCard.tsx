@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { Product } from "@/lib/data";
+import type { FormularyProduct } from "@/lib/catalogue";
 
 /**
  * Formulary tile.
@@ -35,7 +35,11 @@ export function ProductCard({
   product: p,
   headingLevel = 3,
 }: {
-  product: Product;
+  /* The narrow shape, not the full catalogue entry. A full
+     `CatalogueProduct` still satisfies it structurally, so server-rendered
+     callers pass theirs unchanged — but the client boundary now carries
+     seven fields instead of the whole record. */
+  product: FormularyProduct;
   /**
    * Where this card sits in the page's outline.
    *

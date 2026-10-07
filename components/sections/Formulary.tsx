@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import type { FormularyProduct } from "@/lib/catalogue";
 import Link from "next/link";
 import { Icon } from "@/components/icons/set";
 import { ProductCard } from "@/components/ProductCard";
 import { formulary } from "@/lib/content";
-import type { Category, Product } from "@/lib/data";
+import type { Category } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
 /**
@@ -25,7 +26,7 @@ import { cn } from "@/lib/utils";
 export function Formulary({
   groups,
 }: {
-  groups: { category: Category; items: Product[] }[];
+  groups: { category: Category; items: FormularyProduct[] }[];
 }) {
   const [active, setActive] = useState("all");
 

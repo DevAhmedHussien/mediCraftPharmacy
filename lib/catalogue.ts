@@ -185,6 +185,38 @@ export const getProductsByCategory = cache(
 );
 
 /** Catalogue grouped by category, INCLUDING the empty ones. */
+/**
+ * What a product card actually needs.
+ *
+ * `/products` is a client component — it filters by category without a round
+ * trip — so everything handed to it is serialised into the HTML as RSC flight
+ * data. Passing the full `CatalogueProduct` sent `detail` with it: the
+ * description, prescriber directions, active and inactive ingredients and the
+ * spec table, for all 29 products, none of which the card renders. The page
+ * came to 249 kB of which 120 kB was that payload, and on throttled mobile
+ * the transfer alone was most of a 3.7 s first paint.
+ *
+ * Seven fields, which is what `ProductCard` reads.
+ */
+export type FormularyProduct = Pick<
+  CatalogueProduct,
+  "slug" | "name" | "category" | "categorySlug" | "doses" | "form" | "blurb" | "image"
+>;
+
+/** Narrow a catalogue entry to what crosses to the client. */
+export function toFormularyProduct(p: CatalogueProduct): FormularyProduct {
+  return {
+    slug: p.slug,
+    name: p.name,
+    category: p.category,
+    categorySlug: p.categorySlug,
+    doses: p.doses,
+    form: p.form,
+    blurb: p.blurb,
+    image: p.image,
+  };
+}
+
 export const getProductsGrouped = cache(
   async (): Promise<{ category: Category; items: CatalogueProduct[] }[]> => {
     const [categories, products] = await Promise.all([getCategories(), getProducts()]);
