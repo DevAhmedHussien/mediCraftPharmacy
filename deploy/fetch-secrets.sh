@@ -42,6 +42,22 @@ get() {
     [ -n "$value" ] || { echo "$name is empty in Secrets Manager" >&2; exit 1; }
     printf '%s=%s\n' "$name" "$value"
   done
+
+  # Optional, and the reason the CRM was silently doing nothing.
+  #
+  # `ghlConfigured` in lib/services/ghl.ts is `Boolean(GHL_API_TOKEN &&
+  # GHL_LOCATION_ID)`, and an unconfigured sync returns `{ ok: true, skipped:
+  # true }` — so processCrmOutbox marked every row SENT, nothing was logged,
+  # and no contact ever reached GoHighLevel. The integration looked healthy
+  # precisely because nothing it does is observable when it is off.
+  #
+  # Deliberately NOT in the required loop above: the site must still boot
+  # without a CRM. Setting the secret is now all it takes to turn the sync on.
+  for name in GHL_API_TOKEN GHL_LOCATION_ID; do
+    value=$(get "$name" 2>/dev/null) || { echo "note: $name not set — CRM sync stays off" >&2; continue; }
+    [ -n "$value" ] || continue
+    printf '%s=%s\n' "$name" "$value"
+  done
 } > "$TMP"
 
 install -m 600 -o ec2-user -g ec2-user "$TMP" "$OUT"
