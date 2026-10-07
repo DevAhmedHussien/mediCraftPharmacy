@@ -1,4 +1,5 @@
 import "server-only";
+import { kickOutboxes } from "@/lib/services/outbox-kick";
 
 import { db } from "@/lib/db";
 import type { Prisma } from "@prisma/client";
@@ -166,6 +167,15 @@ async function mirror(
   } catch {
     /* A CRM mirror is never worth failing a partner's action over. */
   }
+
+  /* Deliver it now rather than on the five-minute cron.
+
+     Change orders are the one pipeline that runs AFTER a partner is verified
+     and still filling prescriptions, so a sales team watching GoHighLevel for
+     "this practice wants more" is watching for exactly this row. Outside the
+     try/catch above on purpose: the kick cannot throw, and if the enqueue
+     failed there is nothing to drain. See lib/services/outbox-kick.ts. */
+  kickOutboxes();
 }
 
 /**

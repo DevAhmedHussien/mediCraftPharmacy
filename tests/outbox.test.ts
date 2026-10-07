@@ -30,28 +30,56 @@ function check(name: string, ok: boolean, detail = "") {
 
 console.log("\n  outbox");
 
+/* Every site that writes to an outbox must also kick it. The email kick
+   shipped first and drained only `processOutbox`, so the CRM rows written by
+   the SAME transaction still waited for the cron — the partner got their
+   confirmation in seconds while GoHighLevel heard minutes later. */
 for (const [label, file] of [
   ["applyTransition", "lib/services/transition.ts"],
   ["notifyStaffOfInquiry", "lib/services/inquiry-notify.ts"],
+  ["recordAmendmentCrmEvent", "lib/services/amendments.ts"],
 ] as const) {
   const src = readFileSync(file, "utf8");
 
   check(
-    `${label} kicks the drain`,
-    /processOutbox\(\)/.test(src),
-    `${file} enqueues mail but never calls processOutbox`
+    `${label} kicks the outboxes`,
+    /kickOutboxes\(\)/.test(src),
+    `${file} enqueues work but nothing drains it until the cron`
+  );
+}
+
+/* The kick itself: both queues, neither awaited, nothing able to throw. */
+{
+  const kick = readFileSync("lib/services/outbox-kick.ts", "utf8");
+
+  check(
+    "the kick drains EMAIL",
+    /processOutbox\(\)/.test(kick),
+    "registration confirmations would wait for the cron"
   );
 
   check(
-    `${label} does not await it`,
-    /void import\("@\/lib\/services\/email"\)/.test(src) && !/await\s+processOutbox/.test(src),
-    "awaiting puts an SMTP round trip on a path someone is waiting on"
+    "the kick drains the CRM mirror",
+    /processCrmOutbox\(\)/.test(kick),
+    "GoHighLevel would learn about every pipeline move up to five minutes late"
   );
 
   check(
-    `${label} cannot throw from the drain`,
-    /\.catch\(/.test(src.slice(src.indexOf("processOutbox"))),
-    "an unhandled rejection here turns a committed transition into a 500"
+    "one queue failing cannot stop the other",
+    /allSettled/.test(kick),
+    "Promise.all would let a GoHighLevel outage swallow the partner's email"
+  );
+
+  check(
+    "it is not awaited",
+    /void \(async/.test(kick) && !/^\s*await kickOutboxes/m.test(kick),
+    "awaiting puts two third-party round trips on a path someone is waiting on"
+  );
+
+  check(
+    "it cannot throw into its caller",
+    /\.catch\(/.test(kick),
+    "an unhandled rejection turns a committed transition into a 500"
   );
 }
 
