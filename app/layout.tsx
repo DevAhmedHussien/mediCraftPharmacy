@@ -16,7 +16,13 @@ const satoshi = localFont({
     { path: "../public/fonts/Satoshi-400.woff2", weight: "400", style: "normal" },
     { path: "../public/fonts/Satoshi-500.woff2", weight: "500", style: "normal" },
     { path: "../public/fonts/Satoshi-700.woff2", weight: "700", style: "normal" },
-    { path: "../public/fonts/Satoshi-900.woff2", weight: "900", style: "normal" },
+    /* 900 is NOT loaded. The redesign sets display type at 400 and UI at 500;
+       by the end only five `font-black` classes were left across the whole
+       application, all pre-redesign leftovers, and they have been moved to
+       weights already here. A 23 kB woff2 on the critical path of every page
+       to serve five headings was the wrong trade — fonts are render-blocking,
+       and FCP is the floor LCP cannot beat. The file stays in public/fonts as
+       part of the supplied family. */
   ],
   variable: "--font-satoshi",
   display: "swap",

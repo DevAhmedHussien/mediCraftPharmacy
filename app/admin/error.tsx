@@ -32,7 +32,7 @@ export default function AdminError({
         <AlertCircle className="h-6 w-6" strokeWidth={2} aria-hidden />
       </span>
 
-      <h1 className="mt-6 text-[1.5rem] font-black text-ink">Something went wrong</h1>
+      <h1 className="mt-6 font-display text-[1.5rem] font-normal tracking-title text-navy">Something went wrong</h1>
       <p className="mt-3 text-meta text-ink-soft text-pretty">
         This screen could not be loaded. The error has been logged.
         {error.digest && (

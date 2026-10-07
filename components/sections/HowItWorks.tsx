@@ -25,7 +25,7 @@ export function HowItWorks({ showCta = false }: { showCta?: boolean }) {
       <div className="container-x">
         <div className="max-w-2xl">
           <p className="eyebrow">How it works</p>
-          <h2 className="mt-3 text-display-sm font-black text-ink text-balance md:text-display-md">
+          <h2 className="mt-3 font-display text-display-sm font-normal tracking-title text-navy text-balance md:text-display-md">
             Ten steps, and you see pricing at step four
           </h2>
           <p className="mt-4 text-intro text-ink-soft text-pretty">

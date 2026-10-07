@@ -91,7 +91,7 @@ export function PortalShell({
             {eyebrow}
           </p>
         )}
-        <h1 className="mt-1 text-[1.5rem] font-black leading-tight tracking-tight text-[color:var(--admin-ink)] text-balance">
+        <h1 className="mt-1 font-display text-[1.5rem] font-normal leading-tight tracking-title text-[color:var(--admin-ink)] text-balance">
           {title}
         </h1>
       </div>

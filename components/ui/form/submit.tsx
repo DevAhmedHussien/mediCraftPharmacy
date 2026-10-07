@@ -176,7 +176,7 @@ export function FormAlert({ ok, message }: { ok: boolean; message?: string }) {
 export function SectionTitle({ step, title }: { step: number; title: string }) {
   return (
     <div className="flex items-center gap-3">
-      <span className="grid size-8 place-items-center rounded-[0.6rem] bg-brand-500 text-caption font-black text-white">
+      <span className="grid size-8 place-items-center rounded-xl bg-brand-500 text-caption font-bold text-white">
         {step}
       </span>
       <h3 className="text-[1.0625rem] font-bold text-ink">{title}</h3>
