@@ -45,6 +45,44 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # ---------------------------------------------------------------------
+      # Fail with a sentence somebody can act on.
+      #
+      # Deploy #2 through #6 all died here and none of them said why: an unset
+      # `vars.AWS_DEPLOY_ROLE_ARN` reaches configure-aws-credentials as an
+      # empty string, and the error it raises talks about credential providers
+      # rather than about the variable nobody set. Three separate debugging
+      # sessions went looking in AWS, where everything was correct.
+      #
+      # These are repository-level settings, so they cannot live in the repo
+      # and a checkout cannot tell you they are missing. This step can.
+      # ---------------------------------------------------------------------
+      - name: Preflight — required repository configuration
+        env:
+          ROLE_ARN: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          EC2_HOST: ${{ vars.EC2_HOST }}
+          SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+          PUBLIC_URL: ${{ vars.PUBLIC_URL }}
+        run: |
+          set -uo pipefail
+          missing=()
+          [ -n "${ROLE_ARN}"   ] || missing+=("vars.AWS_DEPLOY_ROLE_ARN   — Settings → Secrets and variables → Actions → Variables")
+          [ -n "${EC2_HOST}"   ] || missing+=("vars.EC2_HOST              — same place")
+          [ -n "${SSH_KEY}"    ] || missing+=("secrets.EC2_SSH_KEY        — same page, Secrets tab")
+          [ -n "${PUBLIC_URL}" ] || missing+=("vars.PUBLIC_URL            — used by the health check")
+
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "::error title=Deploy is not configured::${#missing[@]} required setting(s) are empty. Nothing was built or deployed."
+            for m in "${missing[@]}"; do echo "  MISSING  $m"; done
+            echo ""
+            echo "For this repository the values are:"
+            echo "  AWS_DEPLOY_ROLE_ARN = arn:aws:iam::<account>:role/medicraft-production-github-deploy"
+            echo "  EC2_HOST            = the production instance's public IP or DNS"
+            echo "  PUBLIC_URL          = https://www.medicraftpharmacy.com"
+            exit 1
+          fi
+          echo "All four present."
+
       - name: Assume the ECR push role
         uses: aws-actions/configure-aws-credentials@v4
         with:

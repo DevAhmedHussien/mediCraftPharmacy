@@ -10,7 +10,11 @@ name: CI
 
 on:
   push:
-    branches: ["**"]
+    # Everything EXCEPT the deploy branches. On main and staging this same
+    # file already runs as deploy.yml's `verify` job, so leaving them in made
+    # every push there run the suite twice — two npm installs, two Postgres
+    # services, two of everything, for one commit.
+    branches-ignore: [main, staging]
   pull_request:
   workflow_call: # deploy.yml calls this before it builds anything
 
