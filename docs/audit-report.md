@@ -337,5 +337,33 @@ and 21 moderate.
 
 SEO: **25/25**. Was 14/25.
 
-Lighthouse is unchanged and unmeasured since the fixes — CLS 0 and TBT 0
-throughout, LCP still the open item.
+### Performance, after — and a correction to H2
+
+| Route | perf | LCP | CLS | TBT |
+|---|---:|---:|---:|---:|
+| `/` | 97 | 2.2 s | 0.001 | 0 ms |
+| `/products` | 95 | 2.5 s | 0 | 0 ms |
+| `/product/[slug]` | 92 | 2.7 s | 0 | 0 ms |
+| `/products/[category]` | 96 | 2.5 s | 0 | 0 ms |
+| `/about` · `/quality` · `/providers` | 92–95 | 2.5–2.7 s | 0 | 0 ms |
+| `/refill` · `/contact` · `/blog` · `/login` | 92–97 | 2.1–2.7 s | 0 | 0 ms |
+
+**Live production**: `/` 92, `/products` 91, `/about` 91 — accessibility 100
+and best practices 100 on all three, CLS 0.
+
+**H2 was mostly wrong, and this is the fourth measurement error in this
+report.** It claimed LCP was 2.9–3.8 s on every route. That came from
+Lighthouse's *default* throttling, which is Lantern — a simulation that
+models a network rather than applying one. Measured with applied throttling,
+and independently with a `PerformanceObserver` over a genuinely throttled
+connection, LCP was 1.5–2.5 s all along. The `/about` that "scored 89"
+scores 95.
+
+One route was genuinely broken and is fixed: `/products` at 81, where FCP
+equalled LCP at 3.7 s because the page shipped every product's full
+`detail` — descriptions, directions, ingredient lists — to a client
+component that renders seven fields. 249 kB → 225 kB, 81 → 95.
+
+Also: Satoshi-900 is no longer loaded (23 kB off the critical path of every
+page, for five headings), and 1.2 MB of unreferenced stock photography is
+deleted.
