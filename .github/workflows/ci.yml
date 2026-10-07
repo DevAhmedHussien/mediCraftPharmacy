@@ -15,9 +15,21 @@ on:
   workflow_call: # deploy.yml calls this before it builds anything
 
 concurrency:
-  # One run per branch. A force-push mid-run cancels the stale one rather
-  # than racing it to the finish.
-  group: ci-${{ github.ref }}
+  # One run per branch PER CALLER. A force-push mid-run cancels the stale one
+  # rather than racing it to the finish.
+  #
+  # `github.workflow` is in the key because this file runs twice on a push to
+  # main: once on its own `push` trigger, and once as deploy.yml's `verify`
+  # job through `workflow_call`. Both saw `github.ref = refs/heads/main`, so
+  # both landed in the same group — and with `cancel-in-progress: true` the
+  # second to start killed the first. That is why every Deploy run since
+  # Oct 5 is red and every CI run beside it died in three seconds.
+  #
+  # When called from deploy.yml, `github.workflow` is the CALLER's name, so
+  # the two runs now occupy `ci-Deploy-…` and `ci-CI-…` and leave each other
+  # alone. Same-branch re-pushes still cancel their own stale run, which is
+  # what the rule was for.
+  group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
