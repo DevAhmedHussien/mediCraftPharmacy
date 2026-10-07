@@ -21,6 +21,7 @@ import {
 
 import { PARTNER_STATUS, PERMISSION, PERMISSION_ENUM, PROGRESS_STEPS, TRANSITIONS } from "../lib/partner/status";
 import { ALL_STAGE_TAGS, assertTagCoverage, EVENT_TAG_BY_LABEL } from "../lib/partner/ghl-tags";
+import { assertPipelineCoverage, PIPELINE_MOVE_BY_LABEL } from "../lib/partner/ghl-pipeline";
 
 let pass = 0;
 let fail = 0;
@@ -116,6 +117,27 @@ try {
   coverage = (error as Error).message;
 }
 eq("every transition has a GHL tag, and no tag is orphaned or reused", coverage, "ok");
+
+/* And the board. A transition with no pipeline entry would tag the contact
+   and leave their card where it was. */
+let pipelineCoverage = "ok";
+try {
+  assertPipelineCoverage(labels);
+} catch (error) {
+  pipelineCoverage = (error as Error).message;
+}
+eq("every transition has a GHL pipeline move", pipelineCoverage, "ok");
+
+/* A text is 160 characters before carriers split it, and a long portal URL
+   eats into that. 320 is two segments — the most any of these should cost. */
+const longSms = Object.entries(PIPELINE_MOVE_BY_LABEL)
+  .map(([label, move]) =>
+    move && "sms" in move && move.sms
+      ? [label, move.sms({ firstName: "Alexandria", portalUrl: "https://www.medicraftpharmacy.com/portal" }).length]
+      : null
+  )
+  .filter((row): row is [string, number] => Boolean(row) && (row as [string, number])[1] > 320);
+eq("every pipeline SMS fits two segments", longSms, []);
 
 eq("one stage tag per progress step", ALL_STAGE_TAGS.length, PROGRESS_STEPS.length);
 eq("stage tags are unique", new Set(ALL_STAGE_TAGS).size, PROGRESS_STEPS.length);
