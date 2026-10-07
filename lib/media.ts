@@ -48,8 +48,10 @@
      cover-providers.jpg  dispensary shelving that reads retail-pharmacy
      careers-team.jpg     same
 
-   The files are still on disk; nothing references them. Delete them once the
-   real shoot lands, or keep them out of the build as they are.
+   THOSE FILES ARE NOW DELETED — 1.2 MB of stock nothing referenced, that the
+   brief forbids using, shipping in every image and slowing every build. Git
+   history has them if a decision is reversed; this list stays because it
+   records WHY each was rejected, which is the part worth keeping.
 
    HOW TO PUT A REAL PHOTOGRAPH IN
    -------------------------------

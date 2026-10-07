@@ -415,6 +415,36 @@ export async function applyTransition(input: TransitionInput): Promise<Transitio
     }
   });
 
+  /* Drain the outbox NOW, rather than waiting for the cron.
+   *
+   * The rows above are written inside the transaction so a status change and
+   * its email are atomic — that part is right and stays. What was wrong is
+   * what happened next: nothing, until the five-minute
+   * `medicraft-drain-outbox` cron came round. A partner who finished
+   * registering waited up to five minutes for "we have your application",
+   * two and a half on average, and the most likely reading of that silence
+   * is that the form did not work.
+   *
+   * NOT AWAITED. The caller is a server action returning to someone who has
+   * just pressed a button, and making them wait on an SMTP round trip is the
+   * problem this outbox was built to avoid. The promise floats on purpose.
+   *
+   * SAFE ALONGSIDE THE CRON and other requests: `processOutbox` claims each
+   * row by flipping it to SENDING before the network call, so a second
+   * worker skips it.
+   *
+   * THE CRON REMAINS THE DELIVERY GUARANTEE. This only moves the common case
+   * from minutes to seconds. If the process dies here, the send fails, or
+   * the mail host is down, the row keeps its backoff and the cron retries
+   * it — nothing depends on this call succeeding.
+   */
+  void import("@/lib/services/email")
+    .then(({ processOutbox }) => processOutbox())
+    .catch(() => {
+      /* Swallowed deliberately: the transition has committed and the response
+         is already on its way. Throwing here would turn a delivered status
+         change into a 500 over work that was never on the critical path. */
+    });
   return transition;
 }
 

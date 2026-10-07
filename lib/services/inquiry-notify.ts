@@ -62,4 +62,18 @@ export async function notifyStaffOfInquiry(inquiryId: string, kind: SiteInquiryK
     })),
     skipDuplicates: true,
   });
+
+  /* And send it now, rather than within five minutes.
+   *
+   * Same reasoning as applyTransition: the row is the durability guarantee
+   * and the cron is the retry, but a staff alert about a patient asking a
+   * question is worth little if it arrives after the question has gone cold.
+   * Not awaited — the visitor is waiting on a form response, not on our mail
+   * host. The fuller note is in lib/services/transition.ts. */
+  void import("@/lib/services/email")
+    .then(({ processOutbox }) => processOutbox())
+    .catch(() => {
+      /* The cron retries it. A failure here must never surface to the
+         visitor, whose submission is already stored. */
+    });
 }
