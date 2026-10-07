@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 
 import { RESUME_MAX_BYTES, RESUME_TYPES, type FormState } from "@/lib/forms";
 import { careerSchema, validate } from "@/lib/forms.schema";
-import { clientIp } from "@/lib/rate-limit";
+import { clientIp, RATE_LIMITS, rateLimit } from "@/lib/rate-limit";
 import { recordInquiry } from "@/lib/services/inquiries";
 import { notifyStaffOfInquiry } from "@/lib/services/inquiry-notify";
 
@@ -26,6 +26,23 @@ export async function submitApplication(
   _prev: FormState,
   data: FormData
 ): Promise<FormState> {
+  /* RATE LIMITED, like every other public form.
+  
+     This was the one that was not. `contact`, `refill`, `work-with-us` and
+     `login` all take a budget; careers imported `clientIp` and never used it,
+     which left an unauthenticated endpoint that accepts a file and writes an
+     inquiry row with nothing between it and a script. The `email` budget is
+     the right one — ten an hour per connection — because a submission ends
+     up in a staff inbox, and the limit that matters is how many messages one
+     source can cause, not how many bytes it can send.
+  
+     Checked BEFORE validation, so a flood costs a map lookup rather than a
+     schema parse and a multipart file read. */
+  const ip = clientIp(headers());
+  if (!rateLimit(`careers:${ip}`, RATE_LIMITS.email).ok) {
+    return { ok: false, message: "Too many applications from this connection. Please try later." };
+  }
+
   const result = validate(careerSchema, data);
   if (!result.ok) return result.state;
 

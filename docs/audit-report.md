@@ -128,6 +128,13 @@ It is the only public form action with no `rateLimit` call — `contact`,
 `refill`, `work-with-us` and `login` all have one — and it accepts a CV file.
 *Fix:* add the same `rateLimit` guard the sibling actions use.
 
+> **Correction.** My first pass also listed this action as unvalidated. That
+> was wrong: it validates with `careerSchema` through `validate()` and
+> re-checks the resume's MIME type and size server-side, with a comment
+> explaining that `accept` is a picker filter rather than a constraint. The
+> grep behind M7 looked for `from "zod"` and missed `@/lib/schemas` and
+> `@/lib/forms.schema`. Only the missing rate limit was real.
+
 **H5 — `scrollable-region-focusable` (serious) ×4.**
 `/portal` and `/portal/products` at 375, `/admin/audit` at both widths. The
 node is `<div class="overflow-x-auto">` wrapping a table: a region a mouse can
@@ -163,7 +170,10 @@ strip in both the portal and admin layouts sits outside any landmark.
 
 **M6 — `empty-table-header` ×6** on `/admin/categories` and `/admin/inquiries`.
 
-**M7 — 15 of 22 server actions coerce input instead of validating it.**
+**M7 — up to 15 of 22 server actions coerce input instead of validating it.**
+*Count not yet trustworthy — see the H4 correction. The grep missed schema
+imports, so this number is an upper bound and needs re-deriving per file
+before any of it is acted on.*
 They use `String(data.get("x") ?? "").trim()`. That prevents type confusion but
 applies no length, format or enum bound, so an arbitrarily long string reaches
 Postgres and, in several paths, an outbound email. The largest are
