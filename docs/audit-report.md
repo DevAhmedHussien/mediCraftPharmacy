@@ -295,4 +295,47 @@ was produced by hand and nothing stops any of them regressing tomorrow.
 Recommended order: **1 → 2,3,4 → 5 → 6 → 7,8 → 9,10 → 11 → 12,13.** Tests first
 so every subsequent step has a before/after number rather than an assertion.
 
-Awaiting "go" before Part B.
+---
+
+## Part B progress
+
+| # | Finding | State |
+|---|---|---|
+| 1 | Test harness + CI | **done** — 81 e2e checks, wired into `verify`, so deploy inherits them |
+| 2 | H1 branded 404 + `global-error` | **done**, live |
+| 3 | H3 `Disallow: /portal` | **done**, live |
+| 4 | H4 rate-limit careers | **done**, live |
+| 5 | H5 4 serious a11y violations | **done** — portal and admin 0/0 at both widths |
+| 6 | H2 LCP < 2.5 s | **open** — the largest item left |
+| 7 | M1–M2 titles and descriptions | **done** — 25/25 |
+| 8 | M4–M6 heading order, region, empty headers | **done** |
+| 9 | M8 error + loading boundaries | partial — `global-error` added; portal still has no `loading.tsx` |
+| 10 | M9 34 raw hex → tokens | **open** |
+| 11 | M7 Zod on server actions | **open**, and the count needs re-deriving first |
+| 12 | L1–L5 dead code | **done** — 223 lines, 2 packages |
+| 13 | L6–L9 file splits, fonts, images, touch targets | **open** |
+
+### Three false findings, all the same mistake
+
+M3 (no Product schema), part of H4 (careers unvalidated) and one near-miss
+during the dead-code sweep (`components/icons/index.tsx`, imported as a
+directory) were all produced by a matcher too shallow for what it measured:
+a grep for `from "zod"` that missed `@/lib/forms.schema`, a JSON-LD reader
+that never walked `@graph`, a module check that never considered
+`index.tsx`.
+
+Each returned a confident wrong answer that something downstream acted on.
+None of them shipped only because a compiler or a test disagreed afterwards
+— which is the argument for the gates in step 1 being first rather than
+last.
+
+### Scorecard, after
+
+axe: **0 violations of any impact** across 22 public routes, the portal and
+the admin console, at 375 and 1440, signed out and signed in. Was 4 serious
+and 21 moderate.
+
+SEO: **25/25**. Was 14/25.
+
+Lighthouse is unchanged and unmeasured since the fixes — CLS 0 and TBT 0
+throughout, LCP still the open item.
