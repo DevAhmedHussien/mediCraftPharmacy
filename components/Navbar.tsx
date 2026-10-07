@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -141,7 +141,21 @@ export function Navbar({
           against their own button. The reference spans its panels edge to
           edge of the header; anchored to a button they were 640px boxes that
           jumped sideways as you moved between The pharmacy and Products. */}
+      {/* CLOSING IS HANDLED HERE, NOT ON EACH GROUP.
+      
+          The panels position against this pill, so `top-full` is the PILL's
+          bottom, not the trigger's — and the 10-22px between a trigger and
+          its panel is this element's own bottom padding. It belongs to
+          neither the group nor the panel, so a per-group `onMouseLeave`
+          fired the moment the pointer entered it: the menu shut 2px below
+          the button, every time, and the links were unreachable by mouse.
+      
+          One `onMouseLeave` on the pill instead. Triggers still open on
+          enter (and switch between each other); only leaving the whole
+          header closes. The pointer cannot cross a dead band because there
+          is no longer one to cross. */}
       <div
+        onMouseLeave={() => setOpenMenu(null)}
         data-scrolled={scrolled ? "" : undefined}
         className="relative rounded-full border border-white/90 bg-white/[0.62] shadow-glass backdrop-blur-xl backdrop-saturate-150 transition-[background-color,border-color,box-shadow] duration-300 motion-reduce:transition-none data-[scrolled]:border-white data-[scrolled]:bg-white/[0.82] data-[scrolled]:shadow-float"
       >
@@ -200,7 +214,6 @@ export function Navbar({
             <div
               className="static"
               onMouseEnter={() => setOpenMenu("products")}
-              onMouseLeave={() => setOpenMenu(null)}
               onKeyDown={(event) => {
                 if (event.key === "Escape" && openMenu === "products") {
                   event.stopPropagation();
@@ -366,21 +379,29 @@ function NavGroup({
   promo?: { href: string; src: string; eyebrow: string; title: string };
 }) {
   const panelId = `menu-${item.label.toLowerCase().replace(/\s+/g, "-")}`;
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   return (
     <div
       /* Deliberately not `relative` — see the note on the pill. The panel
          inside positions against the header, not against this button. */
       onMouseEnter={onOpen}
-      onMouseLeave={onClose}
       onKeyDown={(event) => {
         if (event.key === "Escape" && open) {
           event.stopPropagation();
           onClose();
+          /* Escape must put focus back on the trigger.
+          
+             Without this the panel closes and focus falls to the document —
+             measured: after Esc, `document.activeElement` was <body>. A
+             keyboard user who opens a menu, looks, and backs out has lost
+             their place in the page and has to tab from the top again. */
+          triggerRef.current?.focus();
         }
       }}
     >
       <button
+        ref={triggerRef}
         type="button"
         aria-expanded={open}
         aria-controls={panelId}
@@ -404,6 +425,24 @@ function NavGroup({
           own button. The panel is positioned against the header's inner
           container, so both menus open to the same edges and the page does
           not appear to shift sideways when you move between them. */}
+      {/* THE GAP BETWEEN TRIGGER AND PANEL IS PART OF THE HOVER TARGET.
+      
+          The panel used to start at `top-[calc(100%+0.625rem)]`, which left
+          10-21px belonging to neither the button nor the panel. Moving the
+          pointer down to click a link crossed that dead band, `mouseleave`
+          fired on the wrapper, and the menu shut before you arrived —
+          measured closing 2px below the button, 19px short of the panel.
+      
+          So the positioner starts at `top-full` — flush with the button —
+          and pays the visual offset in PADDING. The gap is now inside the
+          element you are already hovering, so the pointer never leaves. */}
+      <div
+        hidden={!open}
+        className={cn(
+          "absolute inset-x-0 top-full pt-2.5",
+          !open && "pointer-events-none"
+        )}
+      >
       <div
         id={panelId}
         role="region"
@@ -423,7 +462,7 @@ function NavGroup({
              Solid white, with the hairline and the menu shadow carrying the
              separation instead. Also cheaper: a backdrop-filter that blurs
              nothing still costs a compositing pass on every frame. */
-          "absolute inset-x-0 top-[calc(100%+0.625rem)] rounded-card border border-hair-soft bg-white p-3 shadow-menu",
+          "rounded-card border border-hair-soft bg-white p-3 shadow-menu",
           /* The one piece of motion on the header, and it answers an action:
              the panel rises 6px as it fades, so it reads as coming OUT of
              the pill rather than appearing on top of the page. 160ms — long
@@ -433,9 +472,8 @@ function NavGroup({
           promo ? "lg:grid lg:grid-cols-[minmax(0,1.6fr)_minmax(15rem,1fr)] lg:gap-3" : "",
           open
             ? "translate-y-0 opacity-100"
-            : "pointer-events-none -translate-y-1.5 opacity-0 motion-reduce:translate-y-0"
+            : "-translate-y-1.5 opacity-0 motion-reduce:translate-y-0"
         )}
-        hidden={!open}
       >
         {/* `auto-fit` at 220px: four links land as 2x2 in the wide column and
             as one column on a narrow one, with no breakpoint to maintain. */}
@@ -486,6 +524,7 @@ function NavGroup({
             </span>
           </Link>
         )}
+      </div>
       </div>
     </div>
   );
@@ -538,7 +577,10 @@ function MegaPanel({
       role="region"
       aria-label="Products"
       className={cn(
-        "absolute inset-x-0 top-full transition-[opacity,transform,visibility] duration-[160ms] ease-out motion-reduce:transition-none",
+        /* `pt-2.5`, not `mt-2.5` on the child — see the note in NavGroup.
+           A margin leaves the gap outside this box; padding puts it inside,
+           so the pointer stays within the element the whole way down. */
+        "absolute inset-x-0 top-full pt-2.5 transition-[opacity,transform,visibility] duration-[160ms] ease-out motion-reduce:transition-none",
         open
           ? "visible translate-y-0 opacity-100"
           : "invisible -translate-y-1.5 opacity-0 motion-reduce:translate-y-0"
@@ -547,7 +589,7 @@ function MegaPanel({
       {/* The mega-panel, as a glass sheet rather than a white band with a
           rule under it. It sits below a floating pill now, so a full-bleed
           bar with a hard bottom border read as a second header. */}
-      <div className="mt-2.5 w-full">
+      <div className="w-full">
         {/* 12px of padding and 8px between the three stacked parts, as the
             reference has it — the panel is a tray holding rounded rows, not a
             bordered card with a layout inside it. */}
