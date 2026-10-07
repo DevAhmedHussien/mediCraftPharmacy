@@ -41,8 +41,29 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const product = await getProduct(params.slug);
   if (!product) return { title: "Product not found" };
 
-  const title = `${product.name} — ${product.form} ${product.doses}`;
-  const description = `${product.detail.description} Compounded to order by ${site.name} in ${product.detail.size} ${product.detail.packaging.toLowerCase()}.`;
+  /* BUDGETED, because these are generated and product names run long.
+  
+     The title was `name — form doses`, which for "Semaglutide
+     Double-Strength Flex-Dose 3 mL" came to 84 characters once the site
+     template was appended; Google truncates around 60, so the strength and
+     form — the two facts a prescriber scans for — were exactly what got cut.
+     The name leads and the rest is added only while it fits.
+  
+     The description was the full catalogue paragraph plus a sentence, which
+     reached 295 characters. Trimmed on a word boundary so a snippet never
+     ends mid-word. */
+  const SUFFIX = ` | ${site.name}`.length;
+  const detail = ` — ${product.form} ${product.doses}`;
+  const title =
+    product.name.length + detail.length + SUFFIX <= 65
+      ? `${product.name}${detail}`
+      : product.name;
+
+  const described = `${product.detail.description} Compounded to order by ${site.name}.`;
+  const description =
+    described.length <= 170
+      ? described
+      : `${described.slice(0, 167).replace(/\s+\S*$/, "")}…`;
 
   return {
     title,

@@ -8,7 +8,7 @@ import { PhoneLink } from "@/components/PhoneLink";
 
 export const metadata: Metadata = pageMetadata({
   title: "Patient Refill Request",
-  description: `Request a prescription refill from ${site.name}. Enter the details from your prescription label and our team confirms every request before it enters the fulfillment queue.`,
+  description: `Request a prescription refill from ${site.name}. Enter the details from your label and our team confirms every request before it is filled.`,
   path: "/refill",
 });
 

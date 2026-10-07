@@ -11,8 +11,8 @@ import { careerBenefits, careers } from "@/lib/data";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = pageMetadata({
-  title: "Careers",
-  description: `Join the ${site.name} team in Tampa, Florida — open roles in compounding, fulfillment, lab and support.`,
+  title: "Careers and Open Roles",
+  description: `Join the ${site.name} team in Tampa, Florida. Open roles across sterile and non-sterile compounding, fulfillment, laboratory and provider support.`,
   path: "/careers",
 });
 

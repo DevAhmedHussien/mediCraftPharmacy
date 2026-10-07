@@ -88,8 +88,19 @@ export function InfoCard({
   href,
   status,
   media,
+  headingLevel = 3,
   className,
 }: {
+  /**
+   * Where this card sits in the page's outline.
+   *
+   * `h3` is right when the grid follows a `SectionHead` — which is most
+   * places. On /providers the benefit cards are the first content under the
+   * h1 with no section heading above them, and an h3 there took the outline
+   * from level 1 to level 3: a screen reader announces a subsection of
+   * something that was never announced.
+   */
+  headingLevel?: 2 | 3;
   title: string;
   body: string;
   /** Mono credential line — a list of qualifications, i.e. data. */
@@ -144,7 +155,11 @@ export function InfoCard({
         />
       )}
 
-      <h3 className="card-title text-balance">{title}</h3>
+      {headingLevel === 2 ? (
+        <h2 className="card-title text-balance">{title}</h2>
+      ) : (
+        <h3 className="card-title text-balance">{title}</h3>
+      )}
       <p className="card-body text-pretty">{body}</p>
       {credential && <p className="card-credential">{credential}</p>}
 
@@ -302,7 +317,16 @@ export function NavyPanel({
   return (
     <div className={cn("panel-navy", className)}>
       {badge && <p className="panel-badge">{badge}</p>}
-      {title && <h3 className="panel-title text-balance">{title}</h3>}
+      {/* `h2`, not `h3`.
+      
+          This panel is a top-level section on the pages that use it, and on
+          /about and /providers it is the FIRST heading after the h1 — so an
+          h3 took the outline straight from level 1 to level 3. A screen
+          reader navigating by heading hears a subsection of something that
+          was never announced. Where a NavyPanel sits inside a section that
+          already has an h2, two h2s in sequence is not a skip and reads
+          correctly. */}
+      {title && <h2 className="panel-title text-balance">{title}</h2>}
       {children}
     </div>
   );

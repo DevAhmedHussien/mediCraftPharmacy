@@ -35,8 +35,18 @@ export function pageMetadata({
   // as "MediCraft Pharmacy — … | MediCraft Pharmacy".
   const ogTitle = title.includes(site.name) ? title : `${title} | ${site.name}`;
 
+  /* A title that already names the brand gets no template.
+   *
+   * The root layout appends " | MediCraft Pharmacy" to every title. For the
+   * home page, whose title IS the brand plus the tagline, that produced
+   * "MediCraft Pharmacy — … | MediCraft Pharmacy" at 90 characters — Google
+   * truncates around 60, so the half that identified the page was the half
+   * that got cut. `absolute` opts out of the template for exactly the pages
+   * that do not need it. */
+  const resolvedTitle = title.includes(site.name) ? { absolute: title } : title;
+
   return {
-    title,
+    title: resolvedTitle,
     description,
     alternates: { canonical: path },
     openGraph: {

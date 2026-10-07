@@ -7,7 +7,7 @@ import { site } from "@/lib/site";
 export const metadata: Metadata = pageMetadata({
   title: legal.terms.title,
   description:
-    "Terms governing use of the MediCraft Pharmacy website, including intended use, the prescription requirement, and limitation of liability.",
+    "Terms governing use of the MediCraft Pharmacy website, including intended use, the prescription requirement, acceptable use and limitation of liability.",
   path: "/terms",
 });
 

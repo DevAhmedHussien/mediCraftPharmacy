@@ -79,7 +79,7 @@ The desktop console is clean; the mobile one is not.
 | Title 50–60 chars | **1/20** ✘ |
 | Description 140–160 chars | **12/20** ✘ |
 | Heading order unbroken | **17/20** ✘ |
-| `Product` JSON-LD on `/product/[slug]` | **absent** ✘ |
+| `Product` JSON-LD on `/product/[slug]` | present ✔ (see the M3 withdrawal) |
 
 Sitemap: 60 URLs, every public route present, **zero private routes leaked**.
 `robots.txt` disallows `/admin`, `/api/`, `/login` — **but not `/portal`**.
@@ -153,11 +153,17 @@ and the call sites are thin.
 `/products` is **18 characters**. `/product/[slug]` is 295. `/careers` 109,
 `/contact` 118, `/compounding` 188, `/refill` 177, `/about` 182, `/terms` 137.
 
-**M3 — No `Product` JSON-LD on `/product/[slug]`.**
-The page emits `Pharmacy` and `WebSite` only. For a formulary this is the one
-structured-data type that earns rich results, and it is the page type with 30
-instances. `BreadcrumbList` is also missing there (present on every other
-interior page).
+**M3 — ~~No `Product` JSON-LD on `/product/[slug]`~~ — WITHDRAWN, this was my
+error.** The page has emitted `Product` *and* `BreadcrumbList` all along. It
+publishes one block shaped `{"@context":…, "@graph":[Product,
+BreadcrumbList]}`, and the scraper behind this finding read only the
+top-level `@type` — which on that object is `undefined`. It never walked
+`@graph`.
+
+That is the second false finding in this report from the same cause: a grep
+or a parser too shallow for the thing it was measuring, producing a
+confident wrong answer. The SEO spec now walks `@graph` and asserts both
+types, so the claim is checked by something that can actually see them.
 
 **M4 — `heading-order` skips on `/about`, `/providers`, `/products/weight-management`.**
 Confirmed independently by parsing the SSR HTML and by axe's best-practice

@@ -19,7 +19,7 @@ import { media } from "@/lib/media";
 export const metadata: Metadata = pageMetadata({
   title: "About MediCraft",
   description:
-    "MediCraft Pharmacy is a 503A compounding pharmacy in Tampa, Florida — established 2025, opened 2026, built on a decade of quality engineering across 503A, 503B and cGMP environments.",
+    "A 503A compounding pharmacy in Tampa, Florida — established 2025, built on a decade of quality engineering across 503A, 503B and cGMP environments.",
   path: "/about",
 });
 

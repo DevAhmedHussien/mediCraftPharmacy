@@ -10,9 +10,9 @@ import { contact } from "@/lib/content";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = pageMetadata({
-  title: "Contact",
+  title: "Contact the Pharmacy Team",
   description:
-    "Reach the MediCraft Pharmacy team in Tampa, Florida — provider accounts, patient questions, and partnership inquiries.",
+    "Reach the MediCraft Pharmacy team in Tampa, Florida for provider accounts, patient questions, partnership inquiries and anything about an existing order.",
   path: "/contact",
 });
 

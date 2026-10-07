@@ -31,7 +31,23 @@ import type { Product } from "@/lib/data";
  * The packshot is served through next/image, so each tile gets a responsive
  * srcset and AVIF/WebP conversion rather than the full 1257×1600 render.
  */
-export function ProductCard({ product: p }: { product: Product }) {
+export function ProductCard({
+  product: p,
+  headingLevel = 3,
+}: {
+  product: Product;
+  /**
+   * Where this card sits in the page's outline.
+   *
+   * On /products each card lives under a category `h2`, so `h3` is right.
+   * On /products/[category] the grid IS the page's content, directly under
+   * the h1 — leaving it at `h3` took the outline from level 1 to level 3 and
+   * a screen reader heard a subsection of something never announced.
+   */
+  headingLevel?: 2 | 3;
+}) {
+  const Heading = (headingLevel === 2 ? "h2" : "h3") as "h2" | "h3";
+
   return (
     <article className="group h-full">
       <Link
@@ -57,9 +73,9 @@ export function ProductCard({ product: p }: { product: Product }) {
             {p.doses} · {p.form}
           </p>
 
-          <h3 className="text-[1.0625rem] font-medium leading-[1.3] text-navy text-balance">
+          <Heading className="text-[1.0625rem] font-medium leading-[1.3] text-navy text-balance">
             {p.name}
-          </h3>
+          </Heading>
 
           <p className="text-[0.875rem] leading-[1.5] text-ink-soft text-pretty">
             {p.blurb}

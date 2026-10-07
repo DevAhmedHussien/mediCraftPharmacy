@@ -61,7 +61,9 @@ export default async function ProvidersPage() {
             <Stagger className="grid gap-5">
               {providers.benefits.map((benefit) => (
                 <StaggerItem key={benefit.title}>
-                  <IconCard {...benefit} />
+                  {/* `headingLevel={2}`: these are the first content under
+                      the page's h1, with no section heading above them. */}
+                  <IconCard {...benefit} headingLevel={2} />
                 </StaggerItem>
               ))}
             </Stagger>

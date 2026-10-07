@@ -12,8 +12,8 @@ import { getProducts, getProductsGrouped } from "@/lib/catalogue";
 import { media } from "@/lib/media";
 
 export const metadata: Metadata = pageMetadata({
-  title: "Products",
-  description: "MediCraft Pharmacy",
+  title: "Compounded Formulary",
+  description: "Browse the MediCraft formulary: compounded weight management, hormone, peptide, dermatology and wellness preparations. Every one requires a valid prescription.",
   path: "/products",
 });
 

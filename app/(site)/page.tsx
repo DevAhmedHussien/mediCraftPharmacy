@@ -10,7 +10,7 @@ import { site, telHref } from "@/lib/site";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
-  title: `${site.name} — ${site.tagline}`,
+  title: `${site.name} — 503A Compounding in Tampa`,
   description: site.description,
   path: "/",
 });

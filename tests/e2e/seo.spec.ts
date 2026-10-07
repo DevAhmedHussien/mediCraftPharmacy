@@ -26,6 +26,32 @@ test.beforeEach(({}, testInfo) => {
 const titles = new Map<string, string>();
 const descriptions = new Map<string, string>();
 
+/**
+ * Every @type in a JSON-LD block, including inside `@graph`.
+ *
+ * Reading only the top-level `@type` is how the audit concluded the product
+ * page had no Product schema. It always did — the page emits one
+ * `{"@context":…, "@graph":[Product, BreadcrumbList]}` block, and a shallow
+ * read of that object returns `undefined`. A scraper that cannot see the
+ * markup is worse than no scraper, because it produces a confident wrong
+ * answer that somebody then acts on.
+ */
+function schemaTypes(html: string): string[] {
+  const out: string[] = [];
+  const walk = (node: unknown): void => {
+    if (Array.isArray(node)) return node.forEach(walk);
+    if (!node || typeof node !== "object") return;
+    const obj = node as Record<string, unknown>;
+    if (typeof obj["@type"] === "string") out.push(obj["@type"]);
+    if (Array.isArray(obj["@type"])) out.push(...(obj["@type"] as string[]));
+    if (obj["@graph"]) walk(obj["@graph"]);
+  };
+  for (const [, body] of html.matchAll(/type="application\/ld\+json"[^>]*>(.*?)<\/script>/gs)) {
+    walk(JSON.parse(body));
+  }
+  return out;
+}
+
 for (const route of PUBLIC_ROUTES) {
   test(`SEO: ${route}`, async ({ baseURL }) => {
     const ctx = await pwRequest.newContext({ baseURL });
@@ -86,11 +112,7 @@ test("product pages carry Product and BreadcrumbList schema", async ({ baseURL }
   const html = await (await ctx.get(SAMPLE.product)).text();
   await ctx.dispose();
 
-  const types = [...html.matchAll(/type="application\/ld\+json"[^>]*>(.*?)<\/script>/gs)]
-    .flatMap(([, b]) => {
-      const parsed = JSON.parse(b);
-      return (Array.isArray(parsed) ? parsed : [parsed]).map((o) => o["@type"]);
-    });
+  const types = schemaTypes(html);
 
   // The one schema type a formulary earns rich results from, on the page type
   // with thirty instances.

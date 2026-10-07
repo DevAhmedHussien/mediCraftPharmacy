@@ -111,9 +111,12 @@ export default async function CategoryPage({ params }: Params) {
               <p className="font-mono text-caption font-medium uppercase tracking-wider text-ink-muted">
                 {items.length} {items.length === 1 ? "product" : "products"}
               </p>
+              {/* `headingLevel={2}`: on this page the grid is the content
+                  directly under the h1, with no category heading between, so
+                  the cards' own titles are the second level. */}
               <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {items.map((p) => (
-                  <ProductCard key={p.slug} product={p} />
+                  <ProductCard key={p.slug} product={p} headingLevel={2} />
                 ))}
               </div>
             </>

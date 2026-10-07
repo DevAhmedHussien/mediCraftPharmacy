@@ -17,7 +17,7 @@ import { deliveryMedia, media } from "@/lib/media";
 export const metadata: Metadata = pageMetadata({
   title: "Our Compounding",
   description:
-    "What makes compounded medications different: custom strengths, allergen-free formulations, and six delivery forms — injectables, topicals, capsules, nasal sprays, troches and IV solutions.",
+    "What makes compounded medication different: custom strengths, allergen-free formulations, and six delivery forms from injectables to troches and IV solutions.",
   path: "/compounding",
 });
 
