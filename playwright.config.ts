@@ -43,7 +43,15 @@ export default defineConfig({
   webServer: process.env.E2E_BASE_URL
     ? undefined
     : {
-        command: `NEXT_DIST_DIR=.next-e2e npx next build && NEXT_DIST_DIR=.next-e2e npx next start -p ${PORT}`,
+        /* In CI the `Build` step has already produced `.next`, so rebuilding
+           into `.next-e2e` would cost a second full compile for nothing —
+           `CI` is set there, and only there, so the branch is explicit.
+           Locally it still builds into its own directory, because a running
+           `next dev` owns `.next` and this repo's next.config.js warns about
+           exactly that collision. */
+        command: process.env.CI
+          ? `npx next start -p ${PORT}`
+          : `NEXT_DIST_DIR=.next-e2e npx next build && NEXT_DIST_DIR=.next-e2e npx next start -p ${PORT}`,
         port: PORT,
         reuseExistingServer: !process.env.CI,
         timeout: 300_000,

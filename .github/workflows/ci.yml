@@ -97,3 +97,32 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      # ---------------------------------------------------------------------
+      # The gates from docs/audit-report.md, as a build step.
+      #
+      # Everything in that report was measured by hand once. These three specs
+      # are the same measurements run against a production build, so a
+      # regression fails a pull request instead of reaching the site and
+      # waiting for somebody to notice.
+      #
+      # They reuse the build above: `next build` has already written .next, so
+      # the webServer in playwright.config.ts starts rather than rebuilds.
+      # ---------------------------------------------------------------------
+      - name: Install the browser Playwright drives
+        run: npx playwright install --with-deps chromium
+
+      - name: SEO, accessibility and motion
+        run: npx playwright test
+        env:
+          # Both viewports. The serious a11y violations this suite exists to
+          # catch appeared only at 375 — a desktop-only run reported all clear.
+          CI: "true"
+
+      - name: Keep the report when something fails
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
