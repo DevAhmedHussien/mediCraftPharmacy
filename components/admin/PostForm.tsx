@@ -105,7 +105,7 @@ export function PostForm({ post, categories }: { post?: Post; categories: Catego
                 {STATUSES.map((option) => (
                   <label
                     key={option.value}
-                    className="flex cursor-pointer items-start gap-2.5 rounded-[5px] border p-2.5 transition-colors has-[:checked]:border-[color:var(--admin-accent)] has-[:checked]:bg-[#f4f7ff]"
+                    className="flex cursor-pointer items-start gap-2.5 rounded-2xl border p-2.5 transition-colors has-[:checked]:border-[color:var(--admin-accent)] has-[:checked]:bg-[theme(colors.info.bg)]"
                     style={{ borderColor: "var(--admin-border)" }}
                   >
                     <input
@@ -148,7 +148,7 @@ export function PostForm({ post, categories }: { post?: Post; categories: Catego
                   {categories.map((category) => (
                     <label
                       key={category.id}
-                      className="cursor-pointer rounded-[5px] border px-2.5 py-1 text-[0.8125rem] transition-colors has-[:checked]:border-[color:var(--admin-accent)] has-[:checked]:bg-[#e7edff] has-[:checked]:text-[color:var(--admin-accent)]"
+                      className="cursor-pointer rounded-full border px-3.5 py-2 text-[0.78125rem] font-medium transition-colors has-[:checked]:border-[color:var(--admin-ink)] has-[:checked]:bg-[color:var(--admin-ink)] has-[:checked]:text-white"
                       style={{ borderColor: "var(--admin-border-strong)" }}
                     >
                       <input

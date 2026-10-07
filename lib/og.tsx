@@ -98,7 +98,7 @@ export const OG_COLORS = {
   brandLight: "#9bb8ff",
   cyan: "#23dce1",
   navy: "#0d193e",
-  band: "#f5f8fd",
+  band: "#f7f7f5",
   white: "#ffffff",
 } as const;
 

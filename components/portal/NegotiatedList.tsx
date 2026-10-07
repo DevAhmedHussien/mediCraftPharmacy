@@ -53,7 +53,7 @@ export function NegotiatedList({ items }: { items: NegotiatedItem[] }) {
             onChange={(event) => setQ(event.target.value)}
             placeholder="Find a medication in your list…"
             aria-label="Search your pricing"
-            className="w-full rounded-[0.5rem] border border-line bg-white py-2 pl-9 pr-3 text-meta text-ink placeholder:text-ink-muted focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+            className="w-full rounded-[14px] border border-hair bg-white py-2 pl-9 pr-3 text-meta text-ink placeholder:text-ink-muted focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
           />
         </div>
         <p className="text-caption text-ink-muted">
@@ -63,7 +63,7 @@ export function NegotiatedList({ items }: { items: NegotiatedItem[] }) {
         </p>
       </div>
 
-      <div className="overflow-hidden rounded-tile border border-line">
+      <div className="overflow-hidden rounded-card border border-hair-soft">
         <table className="w-full text-meta">
           <thead className="border-b border-line bg-sand">
             <tr>
@@ -110,7 +110,7 @@ export function NegotiatedList({ items }: { items: NegotiatedItem[] }) {
               <td className="px-4 py-2.5 text-right tabular-nums text-ink-muted line-through">
                 ${totals.list.toFixed(2)}
               </td>
-              <td className="px-4 py-2.5 text-right text-caption font-medium text-emerald-700">
+              <td className="px-4 py-2.5 text-right text-caption font-medium text-success-fg">
                 −${totals.saved.toFixed(2)}
               </td>
               <td className="px-4 py-2.5 text-right font-bold tabular-nums text-ink">

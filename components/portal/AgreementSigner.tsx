@@ -43,7 +43,7 @@ export function AgreementSigner({
   const [state, action] = useFormState(submitAction, initialFormState);
 
   return (
-    <form action={action} className="rounded-tile border border-line p-6">
+    <form action={action} className="rounded-card border border-hair-soft p-6">
       <h2 className="text-[1.0625rem] font-bold text-ink">{heading}</h2>
 
       <p className="mt-3 whitespace-pre-line text-caption leading-relaxed text-ink-muted">
@@ -62,7 +62,7 @@ export function AgreementSigner({
         <span className="text-meta text-ink">{consent}</span>
       </label>
       {state.errors?.agreed && (
-        <p role="alert" className="mt-1.5 text-caption font-medium text-red-600">
+        <p role="alert" className="mt-1.5 text-caption font-medium text-danger-fg">
           {state.errors.agreed}
         </p>
       )}
@@ -79,10 +79,10 @@ export function AgreementSigner({
           autoComplete="name"
           aria-invalid={Boolean(state.errors?.typedName)}
           placeholder="Elena Ruiz"
-          className="mt-2 w-full max-w-sm rounded-[0.5rem] border border-line bg-white px-3 py-2.5 font-serif text-[1.25rem] text-ink placeholder:font-sans placeholder:text-[0.9375rem] placeholder:text-ink-muted focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+          className="mt-2 w-full max-w-sm rounded-[14px] border border-hair bg-white px-3 py-2.5 font-serif text-[1.25rem] text-ink placeholder:font-sans placeholder:text-[0.9375rem] placeholder:text-ink-muted focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
         />
         {state.errors?.typedName && (
-          <p role="alert" className="mt-1.5 text-caption font-medium text-red-600">
+          <p role="alert" className="mt-1.5 text-caption font-medium text-danger-fg">
             {state.errors.typedName}
           </p>
         )}

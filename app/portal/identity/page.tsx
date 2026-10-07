@@ -96,7 +96,7 @@ export default async function PortalIdentityPage() {
       back={{ href: "/portal", label: "Your application" }}
     >
       {done ? (
-        <p className="rounded-tile border border-emerald-200 bg-emerald-50 px-4 py-3 text-meta text-emerald-900">
+        <p className="rounded-tile border border-success-fg/25 bg-success-bg px-4 py-3 text-meta text-success-fg">
           Verified. Your formulary and pricing are open.
         </p>
       ) : waiting ? (
@@ -107,7 +107,7 @@ export default async function PortalIdentityPage() {
       ) : (
         <>
           {sentBack && (
-            <p className="rounded-tile border border-amber-200 bg-amber-50 px-4 py-3 text-meta text-amber-900">
+            <p className="rounded-tile border border-warning-fg/25 bg-warning-bg px-4 py-3 text-meta text-warning-fg">
               <strong className="font-bold">We need another look.</strong>
               {sentBack.note && ` ${sentBack.note}`}
             </p>

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 import { Footer } from "@/components/Footer";
-import { ContactChannelsBand } from "@/components/sections/ContactChannels";
+import { MotionProvider } from "@/components/motion/MotionProvider";
 import { categoryThumb } from "@/lib/media";
 import { Navbar } from "@/components/Navbar";
 import { CookieConsent } from "@/components/CookieConsent";
@@ -187,7 +187,10 @@ export default async function SiteLayout({ children }: { children: ReactNode }) 
   };
 
   return (
-    <>
+    /* The paper ground. Set on the shell rather than on <body> so the admin
+       console and /login — which sit outside this route group — keep their
+       own grounds. */
+    <div className="min-h-screen bg-paper text-navy">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -212,19 +215,28 @@ export default async function SiteLayout({ children }: { children: ReactNode }) 
           class rather than a bare `main` selector so the admin's own <main>
           does not inherit a 108px gap it has no header to fill. */}
       <main id="main" tabIndex={-1} className="site-main">
-        {children}
+        {/* The animation engine, mounted once for the marketing shell and
+            nowhere else — /admin, /portal and /login sit outside this route
+            group and keep their CSS transitions. `strict` inside makes a
+            stray `motion.*` import throw rather than quietly double the
+            bundle; see components/motion/MotionProvider.tsx. */}
+        <MotionProvider>{children}</MotionProvider>
       </main>
 
-      {/* Every page ends with how to reach the pharmacy. Outside <main> on
-          purpose: it is site furniture like the footer, not the content of
-          the page it sits under, so "skip to content" does not land in it and
-          the heading outline of each page is left alone. */}
-      <ContactChannelsBand />
-
+      {/* The Phone / Email / Location band that used to sit here is gone.
+          
+          It repeated on all twenty-four pages, directly above a footer that
+          already carries the address and the phone number — so every page
+          ended by saying how to reach the pharmacy twice, in two different
+          treatments, and the second one was three cards tall.
+          
+          Nothing is lost. `/contact` still renders `ContactChannels`
+          directly, which is where that information is the content rather
+          than furniture, and the footer keeps the address and the number. */}
       <Footer />
       {/* Client-only: the stored choice is in localStorage, which the server
           cannot read, so the banner mounts hidden and appears once checked. */}
       <CookieConsent />
-    </>
+    </div>
   );
 }

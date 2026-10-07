@@ -33,7 +33,17 @@ const AI_AGENTS = [
   "Bytespider",
 ];
 
-const DISALLOW = ["/admin", "/api/", "/login"];
+/**
+ * `/portal` is in here, and it was not.
+ *
+ * The ten partner-portal routes redirect anyone unauthenticated to /login, so
+ * nothing private was ever exposed — but a crawler does not know that until
+ * it has fetched each one and followed the redirect. Left out, Googlebot
+ * walks ten redirect chains on a site whose crawl budget should go to the
+ * formulary, and Search Console fills with "Page with redirect" for URLs that
+ * are not meant to be indexed in the first place.
+ */
+const DISALLOW = ["/admin", "/api/", "/login", "/portal"];
 
 export default function robots(): MetadataRoute.Robots {
   return {

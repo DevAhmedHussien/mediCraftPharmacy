@@ -715,11 +715,14 @@ function renderText(rendered: Rendered): string {
     .join("\n");
 }
 
-/** Brand values, duplicated here because email cannot read a CSS variable. */
+/** Brand values, duplicated here because email cannot read a CSS variable.
+    Kept in step with the `sand`/`line` tokens by hand — an inbox is the one
+    place the brand shows up without a stylesheet, so a stale copy here means
+    the only surface a partner sees before signing in is the old palette. */
 const MAIL = {
-  ground: "#f5f8fd",
+  ground: "#f7f7f5",
   surface: "#ffffff",
-  line: "#dde4f0",
+  line: "#e3e3de",
   ink: "#0f1a33",
   inkSoft: "#46536f",
   inkMuted: "#636e89",

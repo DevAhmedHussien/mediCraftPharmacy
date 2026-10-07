@@ -6,7 +6,6 @@ import { EmptyState, PageHeader, Panel, StatStrip } from "@/components/admin/ui"
 import { requirePermissionPage } from "@/lib/guard";
 import { ADMIN_ACTIONABLE_STATUSES, PARTNER_STATUS, type PartnerStatus } from "@/lib/partner/status";
 import { countByStatus, listPartners } from "@/lib/services/partners";
-import { cn } from "@/lib/utils";
 
 export const metadata = { title: "Partners" };
 
@@ -52,12 +51,8 @@ export default async function AdminPartnersPage({
       <div className="flex flex-wrap gap-1.5">
         <Link
           href="/admin/partners"
-          className={cn(
-            "rounded-[5px] border px-2.5 py-1 text-[0.8125rem] font-medium transition-colors",
-            status === "all"
-              ? "border-[color:var(--admin-accent)] bg-[#e7edff] text-[color:var(--admin-accent)]"
-              : "border-[color:var(--admin-border-strong)] bg-[color:var(--admin-surface)] text-[color:var(--admin-ink-70)] hover:text-[color:var(--admin-ink)]"
-          )}
+          aria-current={status === "all" ? "page" : undefined}
+          className="admin-chip"
         >
           All · {total}
         </Link>
@@ -66,12 +61,8 @@ export default async function AdminPartnersPage({
           <Link
             key={s}
             href={`/admin/partners?status=${s}`}
-            className={cn(
-              "rounded-[5px] border px-2.5 py-1 text-[0.8125rem] transition-colors",
-              status === s
-                ? "border-[color:var(--admin-accent)] bg-[#e7edff] font-medium text-[color:var(--admin-accent)]"
-                : "border-[color:var(--admin-border-strong)] bg-[color:var(--admin-surface)] text-[color:var(--admin-ink-70)] hover:text-[color:var(--admin-ink)]"
-            )}
+            aria-current={status === s ? "page" : undefined}
+            className="admin-chip"
           >
             {/* The same label the badge in the table uses. A filter chip
                 reading "onboarding submitted" above a row badged "Details to

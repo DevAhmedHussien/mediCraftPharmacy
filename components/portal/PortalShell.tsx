@@ -31,6 +31,7 @@ export function PortalShell({
   title,
   eyebrow,
   status,
+  bare,
   welcome,
   back,
   children,
@@ -43,6 +44,18 @@ export function PortalShell({
   accountName?: string;
   eyebrow?: string;
   status: PartnerStatus;
+  /**
+   * The page draws its own header and tracker, so this one steps aside.
+   *
+   * Only /portal sets it. The redesigned overview carries the practice name,
+   * the step readout, the h1 and a phase-grouped tracker in one component —
+   * rendering the shell's title and `StepTracker` behind it would give the
+   * page two h1s and two trackers disagreeing about the same status.
+   *
+   * The shell still provides what is genuinely shared: the welcome banner,
+   * the back link and the page wrapper.
+   */
+  bare?: boolean;
   welcome?: boolean;
   back?: { href: string; label: string };
   children: ReactNode;
@@ -54,7 +67,7 @@ export function PortalShell({
       {welcome && (
         <p
           role="status"
-          className="mb-6 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-[0.875rem] text-emerald-900"
+          className="mb-6 rounded-2xl border border-success-fg/25 bg-success-bg px-4 py-3 text-[0.875rem] text-success-fg"
         >
           Your application has been received and you are signed in. This is where you
           track it from here.
@@ -71,6 +84,7 @@ export function PortalShell({
         </Link>
       )}
 
+      {!bare && (
       <div className="mb-5">
         {eyebrow && (
           <p className="text-[0.625rem] font-semibold uppercase tracking-[0.12em] text-[color:var(--admin-ink-50)]">
@@ -81,8 +95,9 @@ export function PortalShell({
           {title}
         </h1>
       </div>
+      )}
 
-      {!finished && (
+      {!bare && !finished && (
         <div className="admin-panel mb-5 px-5 py-4">
           <StepTracker status={status} />
         </div>

@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { PortalOverview } from "@/components/portal/PortalOverview";
 import { PortalShell } from "@/components/portal/PortalShell";
 import { db } from "@/lib/db";
 import { requirePartnerPage } from "@/lib/guard";
-import { nextAction, stepPosition } from "@/lib/partner/steps";
+
 import { PARTNER_STATUS, type PartnerStatus } from "@/lib/partner/status";
 import { getLatestMeeting } from "@/lib/services/meetings";
 import { site } from "@/lib/site";
@@ -22,44 +23,13 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-/** What is happening, in the applicant's words. Exhaustive over the enum. */
-const EXPLANATION: Record<PartnerStatus, string> = {
-  APPLICATION_SUBMITTED:
-    "One quick step before your pricing: confirm who is asking and upload a photo ID. Our formulary is confidential to each practice, so we check before we send it.",
-  IDENTITY_SUBMITTED:
-    "We have your details and are confirming them. Your formulary and pricing follow, usually the same business day.",
-  PRODUCT_LIST_SENT:
-    "Your application is approved. Take a look at our formulary — accept the pricing as it stands, or ask for a call to discuss it.",
-  MEETING_REQUESTED:
-    "We have your request for a call and your notes. Someone will send you a few times to choose from shortly.",
-  PRICING_MEETING:
-    "Your call is booked. After it, we will send pricing built for your practice.",
-  NEGOTIATED_PRICING_SENT:
-    "Your pricing is ready. Review it and either accept it or tell us what still does not work.",
-  PRICING_CHANGES_REQUESTED:
-    "You asked for another round. We are revising your pricing and will send it back shortly.",
-  PRICING_PARTNER_ACCEPTED:
-    "Pricing is agreed. The next step is your full account details.",
-  ONBOARDING_IN_PROGRESS:
-    "Finish your account details whenever you are ready — your progress saves as you type.",
-  DOCUMENTS_PENDING:
-    "One step left: upload your licences and a government-issued photo ID for your authorised signer.",
-  ONBOARDING_SUBMITTED: "We are reviewing your account details and documents.",
-  ONBOARDING_CHANGES_REQUESTED: "We need a few corrections before we can approve your account.",
-  ONBOARDING_APPROVED:
-    "Your details are approved. Your Master Service Agreement is on its way.",
-  MSA_SENT: "Your Master Service Agreement is ready to sign. It is the last step.",
-  MSA_SIGNED: "Thank you for signing. We are activating your account now.",
-  VERIFIED: "You are a verified MediCraft partner. Everything below is live.",
-  REJECTED:
-    "We are not able to move forward with this application. Please get in touch if you have questions.",
-  MSA_DECLINED: "The agreement was declined. Contact us and we will pick it up from there.",
-  SUSPENDED: "This account is suspended. Please contact us.",
-
-  // Retired statuses, unreachable but the Record must be total.
-  PRICING_SUBMITTED: "We have your price list and are reviewing it.",
-  PRICING_ADMIN_APPROVED: "Your pricing is ready to review.",
-};
+/* The per-status explanation table that used to live here is gone.
+ *
+ * It was a second place that described each stage in prose, maintained
+ * alongside `publicDetail` in lib/partner/steps.ts — which is where the
+ * redesigned overview reads from. Two tables describing one pipeline is one
+ * table too many; the steps module already had to be exhaustive over
+ * PartnerStatus, and this one had to be kept in step with it by hand. */
 
 export default async function PortalPage({
   searchParams,
@@ -111,8 +81,6 @@ export default async function PortalPage({
     !!meeting &&
     !meeting.scheduledAt &&
     meeting.proposedSlots.length > 0;
-  const next = nextAction(status);
-  const position = stepPosition(status);
 
   /* Everything the dashboard needs, fetched only once the partner is actually
      verified. A partner three steps from the end has no price list and no
@@ -128,64 +96,22 @@ export default async function PortalPage({
       title={partner.application?.practiceName ?? partner.companyName}
       eyebrow="Your application"
       status={status}
+      /* The overview draws its own header, h1 and tracker — see `bare`. */
+      bare
       welcome={Boolean(searchParams.welcome)}
     >
-      {/* One card carries the whole answer to "what now" — the state, the
-          action and the button. It used to be an explanatory paragraph and,
-          twelve inches further down, a button labelled "Continue".
+      {/* The whole "where am I, what now" answer in one component. Everything
+          in it derives from lib/partner/steps.ts — the same table the route
+          guards read — so the screen cannot disagree with what the partner is
+          actually allowed to open. */}
+      <PortalOverview
+        status={status}
+        practiceName={partner.application?.practiceName ?? partner.companyName}
+      />
 
-          Not shown once verified: there is no "next step" for a partner who
-          has finished, and the dashboard below is a better answer to "where do
-          things stand" than a sentence saying everything is live. */}
-      {!verified && (
-      <section
-        aria-labelledby="next-step"
-        className={
-          next
-            ? "rounded-tile border border-brand-200 bg-brand-50/50 p-6"
-            : "rounded-tile border border-line bg-sand p-6"
-        }
-      >
-        {/* A heading, not a styled paragraph. This card is the answer to the
-            only question an applicant has, and a screen reader skimming the
-            page by heading used to pass straight over it — the first heading
-            on the page was "Questions?" at the very bottom. */}
-        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-          <h2 id="next-step" className="eyebrow">
-            {awaitingPick || next ? "Your next step" : "Where things stand"}
-          </h2>
-          <p className="text-caption tabular-nums text-ink-muted">
-            Step {position.current} of {position.total}
-          </p>
-        </div>
-
-        {/* Once times are on the table, this card must not still be promising
-            to send them. The status cannot tell the two halves of a meeting
-            offer apart — it is MEETING_REQUESTED either way — so the copy is
-            chosen from the same `awaitingPick` condition that decides whether
-            to render the picker below, rather than from the status alone. */}
-        <p className="mt-3 text-intro text-ink text-pretty">
-          {awaitingPick
-            ? "We have sent you times for your pricing call. Pick whichever suits you below and it is booked straight away."
-            : EXPLANATION[status]}
-        </p>
-
-        {next ? (
-          <Link href={next.href} className="btn-accent btn-lg mt-5">
-            {next.label}
-          </Link>
-        ) : (
-          /* No button, so say why there is no button. An applicant staring at
-             a card with nothing to press assumes the page is broken. */
-          <p className="mt-4 text-meta text-ink-soft">
-            Nothing is needed from you right now — we will email you the moment this moves.
-          </p>
-        )}
-      </section>
-      )}
 
       {(partner.rejectedReason || partner.suspendedReason) && (
-        <p className="mt-6 rounded-tile border border-red-200 bg-red-50 px-4 py-3 text-meta text-red-900">
+        <p className="mt-6 rounded-tile border border-danger-fg/25 bg-danger-bg px-4 py-3 text-meta text-danger-fg">
           <strong className="font-bold">Reason:</strong>{" "}
           {partner.rejectedReason ?? partner.suspendedReason}
         </p>

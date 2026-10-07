@@ -23,9 +23,9 @@ import { AlertCircle, CheckCircle2, Info } from "lucide-react";
 export type AlertTone = "success" | "error" | "info";
 
 const STYLES: Record<AlertTone, { border: string; background: string; color: string }> = {
-  success: { border: "#bcd9c6", background: "#f2f9f4", color: "#2c6b4d" },
-  error: { border: "#e4b8ae", background: "#fdf4f2", color: "#9c3a2a" },
-  info: { border: "#c3d2f0", background: "#f4f7ff", color: "#2c4a68" },
+  success: { border: "#bcd9c6", background: "var(--status-success-bg)", color: "var(--status-success-fg)" },
+  error: { border: "color-mix(in srgb, var(--status-danger-fg) 30%, transparent)", background: "var(--status-danger-bg)", color: "var(--status-danger-fg)" },
+  info: { border: "#c3d2f0", background: "var(--status-info-bg)", color: "#2c4a68" },
 };
 
 const ICONS: Record<AlertTone, typeof Info> = {
@@ -51,7 +51,7 @@ export function AdminAlert({
   return (
     <p
       role={resolved === "error" ? "alert" : "status"}
-      className="mb-3 flex items-start gap-2 rounded-lg border px-3 py-2 text-[0.8125rem]"
+      className="mb-3 flex items-start gap-2 rounded-2xl border px-3.5 py-2.5 text-[0.8125rem]"
       style={{ borderColor: style.border, background: style.background, color: style.color }}
     >
       <Icon className="mt-0.5 size-3.5 shrink-0" strokeWidth={2.2} aria-hidden />

@@ -65,7 +65,7 @@ export function PartnersTable({ rows }: { rows: PartnerRow[] }) {
           const stale =
             days >= 2 && ADMIN_ACTIONABLE_STATUSES.includes(row.original.status);
           return (
-            <span className={cn("font-mono tabular-nums", stale ? "font-bold text-amber-700" : "text-ink-soft")}>
+            <span className={cn("font-mono tabular-nums", stale ? "font-bold text-warning-fg" : "text-ink-soft")}>
               {days === 0 ? "today" : `${days}d`}
             </span>
           );

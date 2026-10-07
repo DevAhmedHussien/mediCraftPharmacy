@@ -164,13 +164,20 @@ export default async function ProductPage({ params }: Params) {
         </div>
 
         <div className="container-x mt-10">
-          <div className="grid items-start gap-10 lg:grid-cols-2 lg:gap-14">
+          {/* auto-fit at a 420px floor, as the reference does, rather than
+              `lg:grid-cols-2`: between 1024 and 1120 the named breakpoint gave
+              two columns too narrow for the three-up spec row underneath, so
+              Strength/Form/Route wrapped mid-word. */}
+          <div
+            className="grid items-center gap-10 lg:gap-16"
+            style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 26.25rem), 1fr))" }}
+          >
             {/*
              * `object-contain` on a plate rather than `cover`: the render is a
              * tall packshot, so cropping it to a landscape frame would clip the
              * vial. `priority` because this is the page's hero image.
              */}
-            <div className="relative aspect-square overflow-hidden rounded-tile border border-line bg-white">
+            <div className="relative aspect-square overflow-hidden rounded-hero bg-stone">
               <Image
                 src={product.image}
                 alt={`${product.name} — ${product.form}, ${product.doses}, ${product.detail.size} ${product.detail.packaging.toLowerCase()}`}
@@ -189,7 +196,7 @@ export default async function ProductPage({ params }: Params) {
                 {product.category}
               </Link>
 
-              <h1 className="mt-4 text-display-sm font-black text-ink text-balance md:text-display-md">
+              <h1 className="mt-4 font-display text-[clamp(2.125rem,4.4vw,3.375rem)] font-normal leading-[1.06] tracking-display text-navy text-balance">
                 {product.name}
               </h1>
 
@@ -267,7 +274,14 @@ export default async function ProductPage({ params }: Params) {
 
       {/* ---- Description ---- */}
       <section className="section">
-        <div className="container-narrow px-0 md:px-0">
+        {/* `container-x` with the measure capped INSIDE it, not
+            `container-narrow`. The narrow container centres itself, so this
+            prose used to start 126px right of the breadcrumb, the spec table
+            and the CTA — one page with two left edges. Prose still gets a
+            65-character measure; it just gets it by stopping early rather
+            than by moving. */}
+        <div className="container-x">
+          <div className="max-w-[45rem]">
           <h2 className="section-title-sm">Description</h2>
           <p className="mt-4 text-body text-ink-soft text-pretty">
             {product.detail.description}
@@ -278,7 +292,7 @@ export default async function ProductPage({ params }: Params) {
             {product.detail.directions}
           </p>
 
-          <aside className="mt-12 flex items-start gap-4 rounded-tile border border-line bg-sand px-6 py-5">
+          <aside className="mt-12 flex items-start gap-4 rounded-[1.25rem] border border-hair-soft bg-white px-6 py-5">
             <Icon name="rx" className="mt-0.5 h-5 w-5 text-cyan-700" />
             <p className="text-meta text-ink-soft text-pretty">
               <strong className="font-bold text-ink">
@@ -287,6 +301,7 @@ export default async function ProductPage({ params }: Params) {
               {formulary.rxNotice.body}
             </p>
           </aside>
+          </div>
         </div>
       </section>
 

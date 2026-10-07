@@ -31,7 +31,7 @@ export function AdminNav({
   const isSuper = role === "SUPER_ADMIN";
 
   return (
-    <nav aria-label="Admin" className="space-y-5">
+    <nav aria-label="Admin" className="flex flex-col gap-4">
       {ADMIN_NAV_GROUPS.map((group) => {
         const visible = group.items.filter((item) => {
           // Team management cannot sit behind a permission — see the note on
@@ -43,10 +43,11 @@ export function AdminNav({
 
         return (
           <div key={group.heading}>
-            <p className="px-3 pb-1.5 text-[0.625rem] font-semibold uppercase tracking-[0.12em] text-[color:var(--admin-ink-50)]">
+            {/* Mono, matching the portal rail — see the note there. */}
+            <p className="px-2.5 pb-1.5 font-mono text-[0.65625rem] uppercase tracking-eyebrow text-[color:var(--admin-ink-50)]">
               {group.heading}
             </p>
-            <ul className="space-y-px">
+            <ul className="flex flex-col gap-0.5">
               {visible.map((item) => {
                 // `/admin` would otherwise match every child route.
                 const active = item.exact
@@ -67,7 +68,7 @@ export function AdminNav({
                         <span
                           className={cn(
                             "shrink-0 rounded px-1.5 py-px text-[0.6875rem] font-semibold tabular-nums",
-                            "bg-[#f8e9e5] text-[#9c3a2a]"
+                            "bg-[#f8e9e5] text-[theme(colors.danger.fg)]"
                           )}
                         >
                           {waiting}

@@ -109,7 +109,18 @@ export function NotificationBell({
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-haspopup="menu"
-        aria-label={unread > 0 ? `Notifications, ${unread} unread` : "Notifications"}
+        /* The label CONTAINS the glyph on the badge.
+         
+           It read "Notifications, 9 unread" while the badge showed "9+", and
+           axe flags that pair: a voice-control user who says "click 9+" — the
+           only thing they can see — addresses nothing, because the visible
+           string is not part of the accessible name. Naming the badge's own
+           text first fixes it and reads no worse. */
+        aria-label={
+          unread > 0
+            ? `Notifications: ${unread > 9 ? "9+" : unread} unread`
+            : "Notifications"
+        }
         className={cn(
           "relative grid size-9 place-items-center rounded-lg transition-colors",
           tone === "dark"
@@ -121,7 +132,10 @@ export function NotificationBell({
         {unread > 0 && (
           <span
             aria-hidden
-            className="absolute right-1 top-1 grid min-w-[1.05rem] place-items-center rounded-full bg-[#d4483b] px-1 text-[0.625rem] font-bold leading-[1.05rem] text-white"
+            /* On `danger` rather than #d4483b, which measured 4.38:1 against
+               white at 10px bold. `danger` is 6.57:1 and is the red the rest
+               of the application already uses. */
+            className="absolute right-1 top-1 grid min-w-[1.05rem] place-items-center rounded-full bg-danger px-1 text-[0.625rem] font-bold leading-[1.05rem] text-white"
           >
             {unread > 9 ? "9+" : unread}
           </span>

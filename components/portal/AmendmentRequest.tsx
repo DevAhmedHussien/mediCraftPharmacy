@@ -88,7 +88,7 @@ export function AmendmentRequest({ products }: { products: AvailableProduct[] })
 
   if (!open) {
     return (
-      <div className="mt-4 rounded-tile border border-line bg-sand p-6">
+      <div className="mt-4 rounded-card border border-hair-soft bg-paper p-6">
         <p className="text-body text-ink">
           Want to add preparations to your schedule? Tell us which, and we will price them
           and send a change order to sign. Everything already on your schedule keeps running
@@ -103,7 +103,7 @@ export function AmendmentRequest({ products }: { products: AvailableProduct[] })
   }
 
   return (
-    <div className="mt-4 overflow-hidden rounded-tile border border-line bg-white">
+    <div className="mt-4 overflow-hidden rounded-card border border-hair-soft bg-white">
       <div className="border-b border-line bg-sand px-6 py-4">
         <h3 className="text-[1.0625rem] font-bold text-ink">Request more medications</h3>
         <p className="mt-0.5 text-caption text-ink-muted">
@@ -235,7 +235,7 @@ export function AmendmentRequest({ products }: { products: AvailableProduct[] })
             categories has no way to see what they have already picked, and the
             count alone ("7 selected") is not an answer to "which seven?". */}
         {chosenProducts.length > 0 && (
-          <div className="rounded-tile border border-brand-200 bg-brand-50/60 p-4">
+          <div className="rounded-card border border-hair-soft bg-tint p-4">
             <p className="text-meta font-bold text-ink">
               {chosenProducts.length} selected
             </p>

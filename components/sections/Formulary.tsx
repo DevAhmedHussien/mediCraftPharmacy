@@ -35,7 +35,10 @@ export function Formulary({
   return (
     <>
       {/* ---- Category pills ---- */}
-      <div className="sticky top-[var(--chrome-h-condensed)] z-30 border-b border-line bg-white/92 backdrop-blur">
+      {/* 94% opaque, like the nav panel above it — at 92% on the new ground
+          the product cards showed through the pill rail as they scrolled
+          under it. */}
+      <div className="sticky top-[var(--chrome-h-condensed)] z-30 border-b border-hair bg-paper/[0.94] backdrop-blur">
         <div className="container-x py-4">
           <div className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1">
             <button
@@ -69,9 +72,13 @@ export function Formulary({
         <div className="space-y-16">
           {visible.map((g) => (
             <section key={g.category.slug} id={g.category.slug} className="scroll-mt-44">
-              <header className="flex flex-wrap items-center gap-4 border-b-2 border-line pb-5">
+              {/* One hairline, not a 2px rule. The heavy rule was doing the
+                  job of a heading weight; the reference gets the same
+                  separation from a 28px Satoshi 400 above a single hairline,
+                  which keeps the page quiet when eleven of these stack. */}
+              <header className="flex flex-wrap items-baseline gap-x-4 gap-y-1 border-b border-hair pb-4">
                 <div className="min-w-0 flex-1">
-                  <h2 className="text-[1.25rem] font-black text-ink">
+                  <h2 className="font-display text-[1.75rem] font-normal tracking-title text-navy">
                     <Link
                       href={`/products/${g.category.slug}`}
                       className="transition-colors hover:text-brand-600"
@@ -79,7 +86,7 @@ export function Formulary({
                       {g.category.name}
                     </Link>
                   </h2>
-                  <p className="mt-0.5 text-meta text-ink-muted text-pretty">
+                  <p className="mt-1 text-[0.9375rem] text-ink-soft text-pretty">
                     {g.category.blurb}
                   </p>
                 </div>
@@ -92,24 +99,27 @@ export function Formulary({
               </header>
 
               {g.items.length > 0 ? (
-                <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                <div
+                  className="mt-8 grid gap-4"
+                  style={{ gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 15.625rem), 1fr))" }}
+                >
                   {g.items.map((p) => (
                     <ProductCard key={p.slug} product={p} />
                   ))}
                 </div>
               ) : (
-                <div className="mt-8 rounded-tile border-2 border-dashed border-line bg-sand px-6 py-14 text-center">
-                  <p className="text-[1.0625rem] font-bold text-ink">
+                /* Left-aligned, on the page ground, one dashed hairline.
+                   Centred text in a filled 2px-dashed box read as an error
+                   state; this category simply has nothing in it yet. */
+                <div className="mt-8 flex flex-col items-start gap-2.5 rounded-card border border-dashed border-hair-strong px-7 py-10">
+                  <p className="text-[1.25rem] font-medium text-navy">
                     {formulary.comingSoon.title}
                   </p>
-                  <p className="mx-auto mt-2 max-w-md text-meta text-ink-soft text-pretty">
+                  <p className="max-w-[46ch] text-[0.9375rem] text-ink-soft text-pretty">
                     {formulary.comingSoon.body}
                   </p>
-                  <Link
-                    href={formulary.comingSoon.cta.href}
-                    className="btn-primary mt-6 inline-flex"
-                  >
-                    {formulary.comingSoon.cta.label} <span aria-hidden>→</span>
+                  <Link href={formulary.comingSoon.cta.href} className="btn btn-primary mt-1.5">
+                    {formulary.comingSoon.cta.label}
                   </Link>
                 </div>
               )}
@@ -121,7 +131,7 @@ export function Formulary({
             Required in substance, not decoration: this states that nothing here
             can be bought directly and that every compound needs a patient-
             specific prescription. */}
-        <aside className="mt-16 flex items-start gap-4 rounded-tile border border-line bg-sand px-6 py-5">
+        <aside className="mt-16 flex items-start gap-4 rounded-[1.25rem] border border-hair-soft bg-white px-6 py-5">
           <Icon name="rx" className="mt-0.5 h-5 w-5 text-cyan-700" />
           <p className="text-meta text-ink-soft text-pretty">
             <strong className="font-bold text-ink">

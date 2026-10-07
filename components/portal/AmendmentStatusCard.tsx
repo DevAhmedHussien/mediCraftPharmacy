@@ -156,7 +156,7 @@ export function AmendmentStatusCard({ amendment }: { amendment: Amendment }) {
             ))}
           </ul>
         ) : (
-          <div className="mt-4 overflow-x-auto rounded-lg border" style={{ borderColor: "var(--admin-border)" }}>
+          <div className="mt-4 overflow-x-auto rounded-2xl border" style={{ borderColor: "var(--admin-border)" }}>
             <table className="w-full min-w-[26rem] border-collapse text-left text-[0.8125rem]">
               <thead>
                 <tr style={{ background: "var(--admin-bg)" }}>
@@ -208,8 +208,8 @@ export function AmendmentStatusCard({ amendment }: { amendment: Amendment }) {
 
         {amendment.adminNote && (
           <p
-            className="mt-4 rounded-lg border-l-2 py-2 pl-3 text-[0.8125rem] leading-relaxed text-[color:var(--admin-ink-70)]"
-            style={{ borderColor: "var(--admin-accent)", background: "#f4f7ff" }}
+            className="mt-4 rounded-r-[14px] border-l-2 py-2 pl-3 text-[0.8125rem] leading-relaxed text-[color:var(--admin-ink-70)]"
+            style={{ borderColor: "var(--admin-accent)", background: "var(--status-info-bg)" }}
           >
             {amendment.adminNote}
           </p>
@@ -266,7 +266,7 @@ export function AmendmentStatusCard({ amendment }: { amendment: Amendment }) {
                   placeholder="Which items, and what you were expecting."
                 />
                 {roundState.errors?.note && (
-                  <p role="alert" className="text-[0.75rem] font-medium text-[#9c3a2a]">
+                  <p role="alert" className="text-[0.75rem] font-medium text-[theme(colors.danger.fg)]">
                     {roundState.errors.note}
                   </p>
                 )}
@@ -289,7 +289,7 @@ export function AmendmentStatusCard({ amendment }: { amendment: Amendment }) {
                   placeholder="So the first ten minutes are not spent working out what the call is for."
                 />
                 {callState.errors?.notes && (
-                  <p role="alert" className="text-[0.75rem] font-medium text-[#9c3a2a]">
+                  <p role="alert" className="text-[0.75rem] font-medium text-[theme(colors.danger.fg)]">
                     {callState.errors.notes}
                   </p>
                 )}
@@ -307,7 +307,7 @@ export function AmendmentStatusCard({ amendment }: { amendment: Amendment }) {
             <ul className="space-y-2">
               {meeting!.proposedSlots.map((slot, index) => (
                 <li key={slot}>
-                  <label className="flex cursor-pointer items-start gap-2.5 rounded-lg border px-3 py-2.5 text-[0.8125rem] transition-colors hover:bg-[color:var(--admin-bg)]"
+                  <label className="flex cursor-pointer items-start gap-2.5 rounded-2xl border px-3 py-2.5 text-[0.8125rem] transition-colors hover:bg-[color:var(--admin-bg)]"
                     style={{ borderColor: "var(--admin-border)" }}
                   >
                     <input

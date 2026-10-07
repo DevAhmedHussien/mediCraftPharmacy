@@ -112,7 +112,7 @@ export function FormularyBrowser({
   return (
     <div className="space-y-4">
       {/* --- Controls ------------------------------------------------------ */}
-      <div className="rounded-tile border border-line bg-white p-4">
+      <div className="rounded-card border border-hair-soft bg-white p-4">
         <div className="flex flex-wrap items-center gap-3">
           <div className="relative min-w-[14rem] flex-1">
             <Search
@@ -126,7 +126,7 @@ export function FormularyBrowser({
               onChange={(event) => setDraftQuery(event.target.value)}
               placeholder="Search by name, strength or form…"
               aria-label="Search the formulary"
-              className="w-full rounded-[0.5rem] border border-line bg-white py-2 pl-9 pr-3 text-meta text-ink placeholder:text-ink-muted focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+              className="w-full rounded-[14px] border border-hair bg-white py-2 pl-9 pr-3 text-meta text-ink placeholder:text-ink-muted focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
             />
           </div>
 
@@ -134,7 +134,7 @@ export function FormularyBrowser({
             value={category}
             onChange={(event) => setParams({ category: event.target.value || null })}
             aria-label="Filter by category"
-            className="rounded-[0.5rem] border border-line bg-white px-3 py-2 text-meta text-ink focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+            className="rounded-[14px] border border-hair bg-white px-3 py-2 text-meta text-ink focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
           >
             <option value="">All categories</option>
             {categories.map((c) => (
@@ -187,7 +187,7 @@ export function FormularyBrowser({
               type="button"
               disabled={pending}
               onClick={() => startTransition(async () => void (await clearAllSelected()))}
-              className="font-medium text-ink-soft hover:text-red-700 hover:underline disabled:opacity-50"
+              className="font-medium text-ink-soft hover:text-danger-fg hover:underline disabled:opacity-50"
             >
               Clear selection
             </button>
@@ -208,7 +208,7 @@ export function FormularyBrowser({
 
       {/* --- The list ------------------------------------------------------ */}
       {optimisticRows.length === 0 ? (
-        <div className="rounded-tile border border-dashed border-line px-6 py-12 text-center">
+        <div className="rounded-card border border-dashed border-hair-strong px-6 py-12 text-center">
           <p className="text-meta font-medium text-ink">Nothing matches that</p>
           <p className="mt-1 text-caption text-ink-muted">
             {selectedOnly
@@ -217,7 +217,7 @@ export function FormularyBrowser({
           </p>
         </div>
       ) : (
-        <ul className="overflow-hidden rounded-tile border border-line bg-white">
+        <ul className="overflow-hidden rounded-card border border-hair-soft bg-white">
           {optimisticRows.map((row) => (
             <li key={row.id} className="border-b border-line last:border-0">
               <label
@@ -228,7 +228,7 @@ export function FormularyBrowser({
               >
                 <span
                   className={cn(
-                    "mt-0.5 flex size-[1.15rem] shrink-0 items-center justify-center rounded-[0.3rem] border transition-colors",
+                    "mt-0.5 flex size-[1.15rem] shrink-0 items-center justify-center rounded-md border transition-colors",
                     row.selected
                       ? "border-brand-500 bg-brand-500 text-white"
                       : "border-line bg-white"
@@ -260,7 +260,7 @@ export function FormularyBrowser({
                       </span>
                     )}
                     {row.deaSchedule && row.deaSchedule !== "NC" && (
-                      <span className="rounded-full bg-amber-50 px-2 py-0.5 text-caption font-medium text-amber-800">
+                      <span className="rounded-full bg-warning-bg px-2 py-0.5 text-caption font-medium text-warning-fg">
                         {row.deaSchedule}
                       </span>
                     )}

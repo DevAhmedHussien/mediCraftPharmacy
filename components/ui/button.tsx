@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
+import { Loader2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -33,6 +34,9 @@ const buttonVariants = cva("btn", {
   variants: {
     variant: {
       primary: "btn-primary",
+      secondary: "btn-secondary",
+      ghost: "btn-ghost",
+      destructive: "btn-destructive",
       /* Cyan on navy — navy type, never white. See globals.css:159. */
       accent: "btn-accent",
       outline: "btn-outline",
@@ -45,6 +49,7 @@ const buttonVariants = cva("btn", {
       sm: "btn-sm",
       md: "",
       lg: "btn-lg",
+      icon: "btn-icon",
     },
     block: {
       true: "w-full",
@@ -72,11 +77,54 @@ export interface ButtonProps
    *   <Button asChild><Link href="/providers">Open an account</Link></Button>
    */
   asChild?: boolean;
+  /**
+   * Spinner, disabled, `aria-busy`.
+   *
+   * Disables as well as decorating: a pending button that still accepts
+   * clicks is how a form is submitted twice, and on this site that means two
+   * price lists or two change orders. The spinner REPLACES the leading icon
+   * rather than being inserted beside it, so the button does not change width
+   * mid-submit and shove the row around.
+   */
+  loading?: boolean;
+  /** Icon before the label. Replaced by the spinner while `loading`. */
+  leadingIcon?: React.ReactNode;
+  /** Icon after the label — an arrow, an external-link mark. */
+  trailingIcon?: React.ReactNode;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, block, asChild = false, type, ...props }, ref) => {
+  (
+    {
+      className,
+      variant,
+      size,
+      block,
+      asChild = false,
+      type,
+      loading = false,
+      leadingIcon,
+      trailingIcon,
+      disabled,
+      children,
+      ...props
+    },
+    ref
+  ) => {
     const Comp = asChild ? Slot : "button";
+
+    /* `asChild` hands rendering to the caller's element, and Slot accepts
+       exactly one child — decorating here would inject siblings and throw.
+       A link has no pending state anyway. */
+    const content = asChild ? (
+      children
+    ) : (
+      <>
+        {loading ? <Loader2 className="size-4 shrink-0 animate-spin" aria-hidden /> : leadingIcon}
+        {children}
+        {trailingIcon}
+      </>
+    );
 
     return (
       <Comp
@@ -85,10 +133,25 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
            surprised every codebase that has ever shipped a form. Default to
            "button" and make submitting explicit — but only when we actually
            render a <button>, since `asChild` targets may not take the attr. */
-        {...(asChild ? {} : { type: type ?? "button" })}
-        className={cn(buttonVariants({ variant, size, block }), className)}
+        {...(asChild
+          ? {}
+          : {
+              type: type ?? "button",
+              disabled: disabled || loading,
+              /* Announced, not just drawn — a spinner is invisible to a
+                 screen reader, so without this the button goes quiet and
+                 gets pressed again. */
+              "aria-busy": loading || undefined,
+            })}
+        className={cn(
+          buttonVariants({ variant, size, block }),
+          "disabled:pointer-events-none disabled:opacity-50",
+          className
+        )}
         {...props}
-      />
+      >
+        {content}
+      </Comp>
     );
   }
 );

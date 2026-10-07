@@ -108,7 +108,7 @@ function Row({
     });
 
   return (
-    <div className="rounded-[5px] border p-3" style={{ borderColor: "var(--admin-border)" }}>
+    <div className="rounded-2xl border p-3" style={{ borderColor: "var(--admin-border)" }}>
       <div className="flex flex-wrap items-center gap-3">
         <StatusBadge kind="document" status={document.status} />
 
@@ -199,7 +199,7 @@ function Row({
       )}
 
       {error && (
-        <p role="alert" className="mt-2 text-[0.75rem] font-medium text-[#9c3a2a]">
+        <p role="alert" className="mt-2 text-[0.75rem] font-medium text-[theme(colors.danger.fg)]">
           {error}
         </p>
       )}

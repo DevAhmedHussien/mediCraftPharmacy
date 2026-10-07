@@ -39,7 +39,7 @@ import { cn } from "@/lib/utils";
    ========================================================================= */
 
 const SERIES = [
-  { key: "views" as const, label: "Page views", color: "#1b54fb" },
+  { key: "views" as const, label: "Page views", color: "var(--admin-accent)" },
   { key: "uniques" as const, label: "Unique visitors", color: "#0c959d" },
 ];
 
@@ -147,8 +147,8 @@ export function TrafficChart({
         >
           <defs>
             <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#1b54fb" stopOpacity="0.14" />
-              <stop offset="100%" stopColor="#1b54fb" stopOpacity="0" />
+              <stop offset="0%" stopColor="var(--admin-accent)" stopOpacity="0.14" />
+              <stop offset="100%" stopColor="var(--admin-accent)" stopOpacity="0" />
             </linearGradient>
           </defs>
 
@@ -248,7 +248,7 @@ export function TrafficChart({
         {hover !== null && active && (
           <div
             role="status"
-            className="pointer-events-none absolute top-2 z-10 min-w-[10rem] -translate-x-1/2 rounded-[0.5rem] border border-[color:var(--admin-border-strong)] bg-white px-3 py-2"
+            className="pointer-events-none absolute top-2 z-10 min-w-[10rem] -translate-x-1/2 rounded-[0.75rem] border border-[color:var(--admin-border-strong)] bg-white px-3 py-2"
             style={{
               left: `${Math.min(88, Math.max(12, ((x(hover) / W) * 100)))}%`,
             }}
@@ -280,7 +280,7 @@ export function TrafficChart({
         <summary className="cursor-pointer text-caption text-ink-muted hover:text-brand-600">
           View as table
         </summary>
-        <div className="mt-3 max-h-64 overflow-auto rounded-[0.5rem] border border-line">
+        <div className="mt-3 max-h-64 overflow-auto rounded-[0.75rem] border border-hair">
           <table className="w-full text-caption">
             <thead className="sticky top-0 bg-sand">
               <tr>

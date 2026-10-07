@@ -52,7 +52,14 @@ export default function RefillPage() {
       />
 
       <section className="section">
-        <div className="container-x grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-14">
+        {/* `auto-fit` at a 360px floor, per the reference — not a named
+            breakpoint with uneven columns. The two halves stay equal and
+            collapse when either would go under 360px, which is where a
+            prescription-label form stops being fillable side-by-side. */}
+        <div
+          className="container-x grid gap-10 lg:gap-16"
+          style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 22.5rem), 1fr))" }}
+        >
           <Reveal>
             <SectionHead title="What to expect" size="sm" />
             <SpecRail items={EXPECTATIONS} className="mt-6" />
@@ -71,7 +78,10 @@ export default function RefillPage() {
           </Reveal>
 
           <Reveal delay={0.1}>
-            <div className="rounded-panel border border-line bg-white p-7 md:p-9">
+            {/* 28px radius and a clamped pad, per the reference. It was the
+                20px `rounded-panel` on the old `line` grey — a card from the
+                previous system holding the new fields. */}
+            <div className="rounded-[28px] border border-hair-soft bg-white p-[clamp(1.375rem,3.4vw,2.5rem)]">
               <RefillForm />
             </div>
           </Reveal>

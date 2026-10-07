@@ -69,8 +69,8 @@ export function AmendmentPanel({
       </div>
 
       <blockquote
-        className="mb-4 rounded-[5px] border-l-2 py-2 pl-3 text-[0.8125rem] leading-relaxed text-[color:var(--admin-ink-70)]"
-        style={{ borderColor: "var(--admin-accent)", background: "#f4f7ff" }}
+        className="mb-4 rounded-r-[14px] border-l-2 py-2 pl-3 text-[0.8125rem] leading-relaxed text-[color:var(--admin-ink-70)]"
+        style={{ borderColor: "var(--admin-accent)", background: "var(--status-info-bg)" }}
       >
         {amendment.requestNotes}
       </blockquote>
@@ -95,7 +95,7 @@ export function AmendmentPanel({
         <div className="mt-4">
           <p className="admin-label mb-1">They said</p>
           <blockquote
-            className="rounded-lg border-l-2 py-2 pl-3 text-[0.8125rem] leading-relaxed text-[color:var(--admin-ink-70)]"
+            className="rounded-r-[14px] border-l-2 py-2 pl-3 text-[0.8125rem] leading-relaxed text-[color:var(--admin-ink-70)]"
             style={{ borderColor: "var(--admin-border-strong)", background: "var(--admin-bg)" }}
           >
             {amendment.partnerNote}

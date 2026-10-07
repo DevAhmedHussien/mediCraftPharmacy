@@ -48,13 +48,13 @@ export default async function PortalWelcomePage() {
 
   return (
     <PortalShell accountName={name} title={`Welcome, ${name}`} eyebrow="Verified partner" status={status}>
-      <div className="flex items-start gap-3 rounded-tile border border-emerald-200 bg-emerald-50 px-5 py-4">
-        <BadgeCheck className="mt-0.5 size-5 shrink-0 text-emerald-700" strokeWidth={2.2} aria-hidden />
+      <div className="flex items-start gap-3 rounded-tile border border-success-fg/25 bg-success-bg px-5 py-4">
+        <BadgeCheck className="mt-0.5 size-5 shrink-0 text-success-fg" strokeWidth={2.2} aria-hidden />
         <div>
-          <p className="text-meta font-bold text-emerald-900">
+          <p className="text-meta font-bold text-success-fg">
             Your account is verified and open.
           </p>
-          <p className="mt-1 text-caption text-emerald-800">
+          <p className="mt-1 text-caption text-success-fg">
             {partner.verifiedAt && (
               <>
                 Activated{" "}

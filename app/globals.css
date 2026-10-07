@@ -23,7 +23,7 @@
    * exactly right for headings, so it takes those. The split is the fonts'
    * own, not a preference. */
   --font-sans: var(--font-satoshi), system-ui, -apple-system, sans-serif;
-  --font-display: var(--font-ui), system-ui, -apple-system, sans-serif;
+  --font-display: var(--font-satoshi), system-ui, -apple-system, sans-serif;
 
   /* The sticky header sits under a translucent white; the saturation boost
      keeps the brand blue vivid when it scrolls beneath instead of going grey. */
@@ -53,8 +53,19 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
+/* The document ground is `paper`, not white.
+ *
+ * Every page was painting its own `bg-paper` patch over a WHITE body, which
+ * works right up to the edges of that patch: the strip above a page that
+ * starts with a floating header, the macOS overscroll bounce, and any route
+ * that forgot the class all showed white behind a design whose entire ground
+ * is #f7f7f5. Setting it here means a page never has to say it. */
+html {
+  @apply bg-paper;
+}
+
 body {
-  @apply bg-white text-body text-ink antialiased;
+  @apply bg-paper text-body text-ink antialiased;
   font-family: var(--font-sans);
 }
 
@@ -74,11 +85,17 @@ h3 {
 /* The chrome is fixed, so the document is inset by its height once here rather
    than every page remembering to leave room for it.
 
-   Scoped to a class, not the bare `main` element: /admin renders its own
-   <main> under its own (shorter, non-fixed) header, and a blanket rule left a
-   108px void at the top of every admin screen. */
+   NO LONGER NEEDED, AND NOW HARMFUL. The redesign's header is a sticky glass
+   pill, which stays in flow — so the page already starts below it. Keeping
+   this would add a second 4.5rem gap under a header that is not overlapping
+   anything, which reads as a mysteriously empty first screen.
+
+   The rule is kept at zero rather than deleted: `.site-main` is on the (site)
+   layout, `--chrome-h` is still read by `scroll-padding-top` (so an in-page
+   anchor does not land under the pill) and by `.hero-full`, and a future
+   header that goes back to `fixed` needs this seam to exist. */
 .site-main {
-  padding-top: var(--chrome-h);
+  padding-top: 0;
 }
 
 /* Selection picks up the brand rather than the browser default. */
@@ -91,8 +108,18 @@ h3 {
   /* ---------------------------------------------------------------------
      Layout shell
      ------------------------------------------------------------------ */
+  /* 1120px, flat 20px gutters — the reference's measure, and the one the nav
+     pill, the hero and PageHeader already use.
+     
+     It was max-w-[1280px] with px-5/sm:px-8/lg:px-10, so every section built
+     on `container-x` sat 160px wider than the header floating above it and
+     the gutters stepped at two breakpoints the design does not have. Nothing
+     lined up vertically: the nav pill's left edge and the first paragraph's
+     left edge were 30px apart on a desktop.
+     
+     One class, 41 call sites across 19 files. */
   .container-x {
-    @apply mx-auto w-full max-w-[1280px] px-5 sm:px-8 lg:px-10;
+    @apply mx-auto w-full max-w-[1120px] px-5;
   }
   /* Reading measure — long-form regulatory prose stays under ~72 characters. */
   .container-narrow {
@@ -100,14 +127,30 @@ h3 {
   }
   /* Vertical rhythm. One class per band so section padding can never be
      fought over by two competing selectors. */
+  /* 80px mobile / 112px desktop.
+     
+     The home page is 96/160 and keeps it — it sets its own rhythm with a
+     local constant, because a landing page can afford that much air between
+     a hero and the first claim. Interior pages cannot: they open with a
+     PageHeader that already carries 96px of top padding, so a 160px section
+     on top of it put 256px of nothing between the lead paragraph and the
+     content it introduces. The references use 72-120px on interior screens. */
   .section {
-    @apply py-16 md:py-24;
+    @apply py-20 lg:py-28;
   }
   .section-tight {
     @apply py-12 md:py-16;
   }
+  /* The alternating band is gone.
+     
+     White sections alternating with a pale blue tint was the single most
+     template-like thing about the old site, and the redesign replaces it with
+     one continuous `paper` ground and generous space between sections. The
+     class stays — eleven pages apply it — and now does nothing, so a band
+     left in markup simply reads as the page it sits on rather than as a
+     stripe the new design never had. */
   .band {
-    @apply bg-sand;
+    @apply bg-transparent;
   }
   .band-navy {
     @apply bg-navy text-white;
@@ -122,18 +165,21 @@ h3 {
      structural marker is what ties the page back to the identity, and it is
      the one ornament the system allows itself.
      ------------------------------------------------------------------ */
+  /* Plex Mono, tracked out, no rule.
+     
+     The cyan dash that used to sit before every eyebrow was the logo's mouth
+     ratio held exactly — a nice idea, and it put a coloured mark in front of
+     forty headings. The redesign's eyebrow is the mono label from the hero
+     spec plate: the typeface change alone is what separates it from the
+     prose, so nothing else has to. */
   .eyebrow {
-    @apply inline-flex items-center gap-2.5 text-label font-medium uppercase text-cyan-700;
+    @apply inline-block font-mono text-xs font-normal uppercase tracking-eyebrow text-brand-500;
   }
-  .eyebrow::before {
-    content: "";
-    /* 18×5 is the logo's mouth ratio (rx 25.33 / ry 4.55) held exactly. */
-    @apply block h-[5px] w-[18px] shrink-0 rounded-full bg-cyan-400;
-  }
+
   /* On navy the accessible cyan is too dark — use the artwork value. */
   .band-navy .eyebrow,
   .eyebrow-invert {
-    @apply text-cyan-300;
+    @apply text-cyan-400;
   }
 
   /*
@@ -165,11 +211,20 @@ h3 {
    *
    * 700 is still unmistakably a heading at 36–46px. Black is now spent in one
    * place: the home page headline. */
+  /* Satoshi 400, large, pulled in hard.
+     
+     This was Lato Bold. The redesign sets the whole page in one family at
+     regular weight — an 88px hero at 400 tracked to -0.045em — and a bold
+     section heading underneath it reads as a different site. Size and
+     tracking do the work that weight used to.
+     
+     `clamp` rather than a `md:` step, so the heading scales continuously
+     instead of jumping at one breakpoint. */
   .section-title {
-    @apply font-display text-display-md font-bold tracking-tight text-ink md:text-display-lg;
+    @apply font-display text-[clamp(2rem,4.2vw,3.25rem)] font-normal leading-[1.08] tracking-title text-navy;
   }
   .section-title-sm {
-    @apply font-display text-display-sm font-bold tracking-tight text-ink md:text-display-md;
+    @apply font-display text-[clamp(1.6rem,3vw,2.25rem)] font-normal leading-[1.12] tracking-title text-navy;
   }
   .band-navy .section-title,
   .band-navy .section-title-sm {
@@ -195,35 +250,83 @@ h3 {
      consumer; this audience is prescribers signing their name to a
      compounder's quality.
      ------------------------------------------------------------------ */
+  /* =====================================================================
+     ONE BUTTON SYSTEM.
+
+     There were four: `.btn-*` here, `.btn-pill*` added during the redesign,
+     `PillLink` in the glass primitives, and `.admin-btn*` in the console.
+     Four shapes for one idea is how a site ends up with a 8px-radius button
+     next to a pill on the same screen.
+
+     The redesign makes every button a pill, so that is the base — and
+     `btn-primary` / `btn-outline` simply ARE the pill now, which is why the
+     separate `.btn-pill` classes are gone rather than kept alongside. Every
+     call site that already said `btn-primary` moved with them.
+
+     Weight is 500, not 700. The page is Satoshi 400 throughout; a bold
+     button against a regular 88px headline is the button shouting.
+
+     `components/ui/button.tsx` is the typed contract over these, and is the
+     only thing application code should reach for. These classes exist so the
+     colour of a MediCraft button is decided in one file, not in a cva.
+     ===================================================================== */
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-5 py-3 text-meta font-bold transition duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2;
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-[15px] text-[15px] font-medium transition-colors duration-200 motion-reduce:transition-none;
+    @apply focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500;
+    /* WCAG 2.5.5: a 44px target on touch, without changing how it looks on a
+       pointer device — the padding is already above 44 at md and lg. */
+    @apply max-sm:min-h-11;
   }
+  /* The solid call to action: navy, going to brand blue on hover. */
   .btn-primary {
-    @apply btn bg-brand-500 text-white hover:bg-brand-600 active:translate-y-px;
+    @apply btn bg-navy text-white hover:bg-brand-500 active:translate-y-px;
   }
-  /* The cyan CTA — used on navy, where it is the highest-contrast thing
-     available. Navy type on cyan, never white. */
+  /* The quiet one beside it. Hairline on translucent white, so it reads as a
+     surface on `paper` rather than a hole. */
+  .btn-outline {
+    @apply btn border border-hair bg-white/70 text-navy hover:bg-white active:translate-y-px;
+  }
+  /* Cyan on navy, and ONLY on navy — the identity reserves cyan as a fill,
+     and at 4.4:1 against white it is the one brand colour that cannot carry
+     text on a light ground. Correct inside `.band-navy`; wrong anywhere the
+     page ground shows through. */
   .btn-accent {
     @apply btn bg-cyan-400 text-navy hover:bg-cyan-300 active:translate-y-px;
   }
-  .btn-outline {
-    @apply btn border-[1.5px] border-ink/20 bg-transparent text-ink hover:border-ink hover:bg-ink hover:text-white;
-  }
   .btn-outline-invert {
-    @apply btn border-[1.5px] border-white/35 bg-transparent text-white hover:border-white hover:bg-white hover:text-navy;
+    @apply btn border border-white/35 bg-transparent text-white hover:bg-white hover:text-navy;
+  }
+  /* Secondary and destructive complete the set the Button component exposes. */
+  .btn-secondary {
+    @apply btn bg-brand-50 text-brand-700 hover:bg-brand-100 active:translate-y-px;
+  }
+  .btn-ghost {
+    @apply btn bg-transparent text-ink-soft hover:bg-white/70 hover:text-navy active:translate-y-px;
+  }
+  .btn-destructive {
+    @apply btn bg-danger-fg text-white hover:brightness-110 active:translate-y-px;
   }
   .btn-sm {
-    @apply px-4 py-2 text-caption;
+    @apply px-[18px] py-2.5 text-[14px];
   }
   .btn-lg {
-    @apply px-7 py-3.5 text-body;
+    @apply px-7 py-4 text-base;
+  }
+  /* Square, for a lone icon — `btn`'s horizontal padding is sized for a word
+     and leaves a visibly oblong target around a 16px glyph. */
+  .btn-icon {
+    @apply size-11 shrink-0 gap-0 p-0;
   }
 
   .link-arrow {
     @apply inline-flex items-center gap-1.5 font-bold text-brand-600 transition-colors hover:text-brand-500;
   }
+  /* Another "on a navy band" leftover. cyan-300 is the artwork cyan
+     lightened for type on dark; on the one off-white ground the redesign
+     uses it measured under 2:1 on /products/[category]. cyan-700 is the step
+     that clears 4.5:1 on white, which is the whole reason it exists. */
   .link-arrow-invert {
-    @apply inline-flex items-center gap-1.5 font-bold text-cyan-300 transition-colors hover:text-cyan-200;
+    @apply inline-flex items-center gap-1.5 font-medium text-cyan-700 transition-colors hover:text-navy motion-reduce:transition-none;
   }
 
   /* ---------------------------------------------------------------------
@@ -245,8 +348,14 @@ h3 {
      What is left is a border that deepens on hover, which is enough to say
      "this is clickable" without the page appearing to breathe.
      ------------------------------------------------------------------ */
+  /* 24px radius, hairline, translucent white — the redesign's card.
+     
+     `bg-white/70` rather than solid: on the `paper` ground the slight
+     translucency is what makes a card read as sitting ON the page rather
+     than being a hole cut in it, and it is the same surface the glass
+     primitives use at a lower blur. */
   .card {
-    @apply relative flex flex-col overflow-hidden rounded-tile border border-line bg-white p-7 transition-colors duration-200;
+    @apply relative flex flex-col overflow-hidden rounded-card border border-hair-soft bg-white/70 p-7 transition-colors duration-200;
   }
   /* Hover is a faint brand tint on the border, not a dark outline. A near
      black rule appearing around a card as the pointer crosses it is the
@@ -257,8 +366,13 @@ h3 {
   }
   /* brand-600 rather than brand-500: these are set at body size, where the
      deeper blue holds up better (7.47:1 on white). */
+  /* Navy, medium. It was brand-600 BOLD — which meant every card heading on
+     the site was the same colour as every link on the site, so on the contact
+     page "Phone", "Business Hours" and "Follow MediCraft" all looked
+     clickable and none of them were. Blue stays for links and the eyebrow;
+     headings are navy and earn their weight from size. */
   .card-title {
-    @apply font-display mb-2.5 text-[1.0625rem] font-bold text-brand-600;
+    @apply font-display mb-2.5 text-[1.0625rem] font-medium text-navy;
   }
   /* Keeps a two-line title clear of the corner arrow on linked cards. */
   a.card .card-title {
@@ -307,8 +421,13 @@ h3 {
    *
    * The brand tint, not white: a white card on a white section has nothing to
    * separate it, and a border alone would make it a box. */
+  /* The tinted callout panel. `tint` is the reference's own pale blue; it was
+     `brand-50/60` over `brand-100`, which is the same idea reached for twice
+     with two different values. The name is a fossil — this panel has not been
+     navy since the light redesign — but it is referenced from markup and
+     renaming it would be churn for no reader. */
   .panel-navy {
-    @apply relative overflow-hidden rounded-panel border border-brand-100 bg-brand-50/60 p-8 text-ink md:p-10;
+    @apply relative overflow-hidden rounded-card border border-hair-soft bg-tint p-8 text-ink md:p-10;
   }
   /*
    * No bloom here. This panel appears a dozen times across the site, so a
@@ -347,22 +466,29 @@ h3 {
   .panel-navy :is(.border-white\/10, .border-white\/15, .border-white\/20) {
     @apply border-brand-100;
   }
+  /* The eyebrow treatment, as a pill. Mono, tracked out, hairline border —
+     the bordered brand-blue chip read as a button nobody could press. */
   .panel-badge {
-    @apply mb-5 inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white px-3.5 py-1.5 text-label font-semibold uppercase text-brand-700;
+    @apply mb-5 inline-flex items-center gap-2 rounded-full border border-hair bg-white/70 px-3.5 py-1.5 font-mono text-[10.5px] uppercase tracking-eyebrow text-ink-muted;
   }
+  /* 400, navy. Was Lato Black in brand blue — two signals (weight and
+     colour) doing the job the redesign gives to size alone. */
   .panel-title {
-    @apply font-display text-display-sm font-black leading-[1.15] tracking-tight text-ink md:text-[2rem];
+    @apply font-display text-[clamp(1.5rem,2.6vw,2rem)] font-normal leading-[1.12] tracking-title text-navy;
   }
 
   /* Metric grid inside the panel. */
   .metric {
-    @apply rounded-lg border border-brand-100 bg-white p-4;
+    @apply rounded-[14px] border border-hair-soft bg-white/70 p-4;
   }
+  /* Navy at 500, not brand-blue at 900. On a page where the only other blue
+     is the hero's accent half-sentence, four black-weight blue figures in a
+     panel were the loudest thing on the screen. */
   .metric-value {
-    @apply text-[1.5rem] font-black leading-none text-brand-600;
+    @apply text-[1.375rem] font-medium leading-none tracking-[-0.02em] text-navy;
   }
   .metric-label {
-    @apply mt-1.5 block text-caption leading-snug text-ink-muted;
+    @apply mt-1.5 block font-mono text-[10.5px] uppercase tracking-[0.08em] leading-snug text-ink-muted;
   }
 
   /* ---------------------------------------------------------------------
@@ -381,24 +507,37 @@ h3 {
   .spec-mark {
     @apply mt-0.5 shrink-0 font-mono text-caption font-semibold uppercase tracking-wider text-cyan-700;
   }
+  /* Navy medium. The mono mark beside it is already brand blue; making the
+     title blue and bold too meant a ruled list of regulatory facts read as a
+     list of links. */
   .spec-title {
-    @apply text-meta font-bold text-brand-600;
+    @apply text-[15px] font-medium text-navy;
   }
   .spec-body {
     @apply mt-1 text-meta text-ink-soft;
   }
   /* Inverted, for spec rails inside navy panels. */
+  /* `invert` used to mean "this spec list sits on a navy band". The redesign
+     has no navy bands — every surface is the one off-white ground — so these
+     rules were painting white-on-white: axe found `text-white/65` body copy
+     on /about and /quality at a contrast ratio no one could read, and the
+     only reason the headings were visible at all is that `text-white` on
+     #f7f7f5 still catches the eye as a smudge.
+     
+     The modifier is kept because `blocks.tsx` passes it and the pages that
+     use it do want a quieter list than the default. It now means quieter —
+     a softer rule and muted body — rather than reversed. */
   .spec-invert {
-    @apply border-white/10;
+    @apply border-hair-soft;
   }
   .spec-invert .spec-mark {
-    @apply text-cyan-300;
+    @apply text-cyan-700;
   }
   .spec-invert .spec-title {
-    @apply text-white;
+    @apply text-navy;
   }
   .spec-invert .spec-body {
-    @apply text-white/65;
+    @apply text-ink-soft;
   }
 
   /* ---------------------------------------------------------------------
@@ -441,10 +580,10 @@ h3 {
     box-shadow: 0 0 0 2px theme("colors.brand.200");
   }
   .timeline-year {
-    @apply mb-1 block font-mono text-caption font-bold uppercase tracking-[0.12em] text-brand-600;
+    @apply font-mono text-[10.5px] uppercase tracking-eyebrow text-ink-muted;
   }
   .timeline-title {
-    @apply mb-1.5 text-[1.0625rem] font-bold text-brand-600;
+    @apply text-[1.0625rem] font-medium leading-snug text-navy;
   }
 
   /* ---------------------------------------------------------------------
@@ -456,7 +595,7 @@ h3 {
     @apply flex gap-5;
   }
   .step-num {
-    @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-500 text-meta font-black text-white;
+    @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-500 text-meta font-black text-white;
   }
   .process-card {
     @apply relative rounded-tile border border-line bg-white p-6;
@@ -471,30 +610,42 @@ h3 {
   /* ---------------------------------------------------------------------
      Chips, pills, badges
      ------------------------------------------------------------------ */
+  /* The filter pill. 14px medium in a 10/16 pill, as the reference draws it
+     — it was 12px BOLD, which at that size turns the category names into
+     shouted labels and makes eleven of them in a row read as a toolbar rather
+     than as a set of choices.
+
+     The selected state is navy, not brand blue: blue is what every LINK on
+     this page is, so a blue pill in a rail of pills looked like the one you
+     could click rather than the one you had. */
   .chip {
-    @apply inline-flex items-center gap-2 rounded-full border border-line bg-white px-4 py-2 text-caption font-bold text-ink-soft transition;
+    @apply inline-flex items-center gap-2 rounded-full border border-hair bg-white px-4 py-2.5 text-[0.875rem] font-medium text-ink-soft transition-colors duration-200 hover:border-hair-strong hover:text-navy motion-reduce:transition-none;
   }
   .chip-active {
-    @apply border-brand-500 bg-brand-500 text-white;
+    @apply border-navy bg-navy text-white hover:border-navy hover:text-white;
   }
   /* Both badges were drawn for a navy footer — translucent white on dark, and
      a pale amber that only reads against it. On the light footer they were
      invisible and washed out respectively. */
   .badge-pill {
-    @apply inline-flex items-center rounded-full border border-line bg-white px-3 py-1 text-caption font-medium text-ink-soft;
+    @apply inline-flex items-center rounded-full border border-hair bg-white px-3 py-1 text-caption font-medium text-ink-soft;
   }
   /* "In progress" needs to read as honest rather than as an accreditation
      already held — amber, not cyan, and the copy always says so. */
   .badge-progress {
-    @apply inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-caption font-semibold text-amber-800;
+    @apply inline-flex items-center gap-1.5 rounded-full border border-warning-fg/35 bg-warning-bg px-3 py-1 text-caption font-semibold text-warning-fg;
   }
 
   /* Callout — a tinted aside with a brand rule down the left edge. */
+  /* On the `info` / `success` pairs rather than raw palette steps, so a
+     callout here and a status banner in the portal are the same two colours.
+     The 20px radius and the left rule are unchanged — the rule is what marks
+     this as an aside rather than another card. */
   .callout {
-    @apply rounded-r-tile border-l-[3px] border-brand-500 bg-brand-50 px-6 py-5 text-meta text-ink-soft;
+    @apply rounded-r-[1.25rem] border-l-[3px] border-info bg-info-bg px-6 py-5 text-meta text-ink-soft;
   }
   .callout-cyan {
-    @apply rounded-r-tile border-l-[3px] border-cyan-500 bg-cyan-50 px-6 py-5 text-meta text-ink-soft;
+    @apply rounded-r-[1.25rem] border-l-[3px] border-success bg-success-bg px-6 py-5 text-meta text-ink-soft;
   }
 
   .hairline {
@@ -551,7 +702,7 @@ h3 {
     @apply sr-only;
   }
   .skip-link:focus-visible {
-    @apply not-sr-only fixed left-4 top-4 z-[100] rounded-lg bg-brand-500 px-5 py-3 text-meta font-bold text-white outline-none ring-2 ring-white;
+    @apply not-sr-only fixed left-4 top-4 z-[100] rounded-full bg-brand-500 px-5 py-3 text-meta font-bold text-white outline-none ring-2 ring-white;
   }
   /* `main` is a focus target for the skip link but must not show a ring when
      reached by mouse. */
@@ -630,11 +781,21 @@ h3 {
    * background on hover — the underline is the only feedback, which keeps the
    * bar quiet while still telling a visitor where they are.
    */
+  /* `whitespace-nowrap` is load-bearing in the glass pill.
+     
+     The design mock carried four nav items; the real header has five plus the
+     portal link and two CTAs, inside a 1120px pill. Without this, "The
+     pharmacy", "For providers" and "Compounding notes" each break across two
+     lines and the pill grows to twice its height.
+     
+     Weight is 400, not 500 — the redesign sets the whole page in Satoshi
+     regular, and a medium nav against a regular 88px headline reads as the
+     nav shouting. */
   .nav-link {
-    @apply relative flex items-center rounded-md px-3.5 py-2 text-meta font-medium text-ink-soft transition-colors duration-200 hover:text-brand-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500;
+    @apply relative flex items-center whitespace-nowrap rounded-[0.625rem] px-2.5 py-2 text-[14px] font-normal text-ink-soft transition-colors duration-200 hover:text-navy focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500;
   }
   .nav-link-active {
-    @apply font-bold text-brand-600;
+    @apply font-medium text-navy;
   }
   /* Grows from the centre on hover; already full width when the route is
      active. Transform-only, so it never triggers layout. */
@@ -1034,7 +1195,154 @@ h3 {
   }
 }
 
+/* ---------------------------------------------------------------------------
+   The scroll feel, in two values.
+
+   RANGE is how much scrolling a reveal takes. It was `entry 0% entry 40%` —
+   from the moment an element's top crosses the viewport edge to 40% of the
+   way through it entering, which on a tall section is about 150px of scroll.
+   That is a burst, and a page of bursts is what makes scrolling feel like a
+   series of pops rather than one movement. `entry 0% cover 30%` roughly
+   triples the runway, so a block is still easing in while the next has begun
+   — the overlap is what reads as continuous.
+
+   EASE is a GENTLE SYMMETRIC CURVE, and specifically not the strong ease-out
+   the JS leaves use. That distinction is the whole trick, and I got it wrong
+   first: on a scroll-driven animation the reader's own scroll velocity is
+   already the easing. Putting `cubic-bezier(0.22, 1, 0.36, 1)` on top of it —
+   which reaches 90% in the first third of its progress — means an element
+   snaps to nearly full opacity the moment it enters and then crawls, which
+   is the pop this was meant to remove.
+
+   Measured across 31 scroll positions on the home page, counting how many
+   elements are mid-transition at each:
+
+     entry 0% entry 40%, linear        17/31 steps   42 samples   (before)
+     entry 0% cover 30%, strong-out    17/31 steps   32 samples   (worse)
+     entry 0% cover 30%, linear        20/31 steps   54 samples
+     entry 0% cover 45%, gentle-io     20/31 steps   55 samples   (this)
+
+   More of the page is always mid-movement, which is what reads as one
+   continuous surface rather than a series of blocks arriving.
+
+   Time-based animations keep the strong ease-out — the hero plate, the nav
+   panels, the JS leaves — because there the curve IS the motion.
+--------------------------------------------------------------------------- */
+:root {
+  --reveal-range: entry 0% cover 45%;
+  --reveal-ease: cubic-bezier(0.33, 0, 0.67, 1);
+}
+
 @layer utilities {
+  /* ===================================================================
+     SCROLL REVEAL, IN CSS.
+
+     Zero JavaScript. `animation-timeline: view()` drives the keyframes
+     from the element's own progress through the viewport, so the work
+     happens on the compositor and nothing ships to the client.
+
+     WHY THIS AND NOT A MOTION LIBRARY FOR THE COMMON CASE
+     -----------------------------------------------------
+     The home page's First Load JS is 102 kB. Pulling framer-motion onto
+     it costs ~47 kB even with LazyMotion, and the budget for this work
+     is 8 kB. A reveal is opacity and a transform; it does not need an
+     animation engine. The engine is reserved for the two things CSS
+     genuinely cannot do — see components/motion/.
+
+     THREE ESCAPE HATCHES, because content that does not appear is worse
+     than content that does not move:
+       · browsers without `animation-timeline` get no rule at all, so
+         the element is simply visible (this is why the @supports wraps
+         the rule and not the keyframes)
+       · `prefers-reduced-motion` is gated at the media-query level
+       · nothing here sets opacity outside the animation, so a failure
+         to run leaves the element at its natural opacity of 1
+     =================================================================== */
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .reveal {
+        animation: reveal-up var(--reveal-ease) both;
+        animation-timeline: view();
+        animation-range: var(--reveal-range);
+      }
+
+      /* A stagger, without an orchestrator.
+      
+         Each child starts its range a little later than the one before,
+         which reads as a sequence for exactly the same reason a
+         JS stagger does — and costs nothing. Six steps, because the
+         brief caps a group at six and because beyond that the last card
+         is still waiting when the first is long finished. */
+      .reveal-group > * {
+        animation: reveal-up var(--reveal-ease) both;
+        animation-timeline: view();
+        animation-range: var(--reveal-range);
+      }
+      /* The stagger is a later START with the same length of runway, so a
+         card further along the row is not also slower — it begins later and
+         settles at the same rate, which is what a stagger is. */
+      .reveal-group > *:nth-child(2) { animation-range: entry 8% cover 38%; }
+      .reveal-group > *:nth-child(3) { animation-range: entry 16% cover 46%; }
+      .reveal-group > *:nth-child(4) { animation-range: entry 24% cover 54%; }
+      .reveal-group > *:nth-child(5) { animation-range: entry 32% cover 62%; }
+      .reveal-group > *:nth-child(n + 6) { animation-range: entry 40% cover 70%; }
+
+      /* Media, which gets depth instead of travel.
+      
+         A photograph that slides up reads as a photograph sliding up. One
+         that settles out of a slight over-scale reads as the page having
+         depth, which is the thing "smooth" usually means — and it is the
+         same two compositor properties, so it costs nothing extra.
+         
+         The scale is on the IMAGE inside the frame, never on the frame: a
+         frame that scales would move its neighbours and that is a layout
+         shift. The frame already clips. */
+      .reveal-media > img,
+      .reveal-media > picture > img {
+        animation: reveal-media var(--reveal-ease) both;
+        animation-timeline: view();
+        animation-range: entry 0% cover 45%;
+      }
+    }
+  }
+
+  @keyframes reveal-up {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* 1.05 is deliberately small. Past about 1.08 the settle reads as a zoom
+     effect; at 1.05 it reads as the image arriving. */
+  @keyframes reveal-media {
+    from {
+      opacity: 0.55;
+      transform: scale(1.05);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* The shorter throw, for things that sit on or near an image — a 24px
+     rise under a hero plate reads as the plate sliding off the picture. */
+  @keyframes reveal-up-sm {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
   /* The tick mark used by .check-list, as a data URI so it needs no request. */
   .check-list,
   .check-list-invert {
@@ -1240,15 +1548,39 @@ h3 {
     font-family: var(--font-sans);
     line-height: 1.45;
 
-    --admin-bg: #f0f5fa;
-    --admin-surface: #ffffff;
-    /* The marketing `tile` radius, so a card in the admin and a card on the
-       public site are the same shape. They were 0.428rem and 0.875rem — close
-       enough to look like a mistake rather than a decision. */
-    --admin-card-radius: 0.875rem;
+    /* --- Repointed at the redesign -----------------------------------
+       Every one of these is referenced by the console's components, so this
+       block is the whole restyle: change the variables and Panel, DataTable,
+       Pill, StatStrip, Facts and the rail all follow.
+
+       The ground was #f0f5fa, a cool blue-grey. It is `paper` now, the same
+       off-white the marketing site sits on — signing in should not feel like
+       arriving at a different product, and that was the single biggest tell.
+
+       Borders move from the blue-grey ramp to the warm `hair` greys for the
+       same reason: two neutral ramps in one application is what made the
+       console and the site look like separate codebases. */
+    --admin-bg: #f7f7f5;
+    /* 70% white, not solid. The reference draws every content panel as
+       `rgba(255,255,255,.7)` over the page ground — the same translucency the
+       rail uses, one step less frosted. Solid white made the console read as
+       a different application from the site sitting behind the same glass
+       header, and it is what made the dashboard look like a white box
+       dropped on a warm page. */
+    --admin-surface: rgb(255 255 255 / 0.7);
+    /* The rule INSIDE a panel. Lighter than `--admin-border`, which separates
+       a panel from the page; this one only separates a row from the row
+       above it, and at a panel's full width the heavier grey reads as a
+       stack of boxes rather than as a list. */
+    --admin-row-rule: #f0f0ec;
+    /* 24px, matching `rounded-card`. It was 14px — the old marketing `tile`
+       radius — and the redesign moved cards to 24px, so holding 14 here
+       would recreate the mismatch that comment was written to fix. */
+    --admin-card-radius: 1.5rem;
     --admin-card-pad: 1.5rem;
-    --admin-shadow: 0 4px 24px 0 rgb(16 31 77 / 0.08);
-    --admin-shadow-sm: 0 2px 8px 0 rgb(16 31 77 / 0.06);
+    /* The glass shadow, navy-tinted like everything else. */
+    --admin-shadow: inset 0 1px 0 rgb(255 255 255 / 0.8), 0 8px 30px rgb(13 25 62 / 0.05);
+    --admin-shadow-sm: 0 2px 8px 0 rgb(13 25 62 / 0.05);
     /* The rail is white, not navy.
        A dark rail is the console convention and it was here to make the
        working panel unambiguous. But it is the only dark surface left in the
@@ -1258,12 +1590,36 @@ h3 {
        background sitting a shade off white. */
     --admin-rail: #ffffff;
     --admin-rail-text: var(--admin-ink-70);
-    --admin-border: #dde1e8;
-    --admin-border-strong: #c7cdd8;
-    --admin-ink: #161f33;
+    --admin-border: #e3e3de;
+    --admin-border-soft: #ecece7;
+    --admin-border-strong: #dadad4;
+    /* The brand navy exactly, rather than a near-black that was almost it. */
+    --admin-ink: #0d193e;
     --admin-ink-70: #4a5470;
-    --admin-ink-50: #78829a;
+    /* #636e89, which is the site's own `ink-muted` — not the #78829a this
+       was. Every micro-label in both consoles is set in it at 10.5px, and on
+       the rail's 62%-white glass that value measured 3.72:1, which axe
+       flagged sixteen times on one screen. #636e89 clears 4.92:1 there and
+       5.09:1 on white, and has the side effect that a muted label in the
+       console and one on the marketing site are finally the same grey. */
+    --admin-ink-50: #636e89;
     --admin-accent: #1b54fb;
+
+    /* --- Status, as custom properties -------------------------------
+       The same four semantic pairs as `theme.extend.colors`, exposed as
+       CSS variables because a React `style={{}}` attribute is plain CSS —
+       Tailwind's `theme()` does not resolve there, and a `style` prop is
+       the only way to colour the console's panels, which take their
+       surfaces from variables so the whole dashboard repoints from one
+       block. Classes should still use `bg-success-bg` and friends. */
+    --status-success-fg: #0b6e74;
+    --status-success-bg: #e3f7f7;
+    --status-warning-fg: #8a5a00;
+    --status-warning-bg: #fff4dd;
+    --status-danger-fg: #b42318;
+    --status-danger-bg: #fdecea;
+    --status-info-fg: #1b54fb;
+    --status-info-bg: #eef2ff;
   }
 
   /* Only the admin paints the whole page in its own surface.
@@ -1336,20 +1692,48 @@ h3 {
    * Tiles that carry their own tint — the brand-coloured "next step" card, the
    * emerald success notes, the red reasons — keep their borders, because there
    * the border is what makes the tint legible rather than decoration. */
+  /* Portal tiles. The old rule hid the border and replaced it with a heavy
+     drop shadow, which is the one card treatment the reference never uses —
+     eight of them stacked down a step page read as eight floating dialogs.
+     A 24px radius, a hairline and the shared inset-white shadow instead, so
+     a portal tile and a console panel are the same object. */
   .portal .rounded-tile.border-line {
-    border-color: transparent;
-    background: #fff;
-    box-shadow: 0 4px 24px 0 rgb(16 31 77 / 0.08);
+    border-color: var(--admin-border-soft);
+    border-radius: var(--admin-card-radius);
+    /* The same 70% white every other panel in both consoles is on. Solid
+       white here left the portal's tiles reading as a different material
+       from the panels beside them. */
+    background: var(--admin-surface);
   }
   .portal .rounded-tile.border-dashed {
     box-shadow: none;
   }
 
+  /* The console panel. A hairline AND the inset-white shadow, because the
+     reference draws both: the shadow is what makes the surface read as
+     raised, the border is what holds its edge where a white panel meets the
+     near-white page ground. With `border: 0` the two were indistinguishable
+     wherever a panel was wider than the shadow's spread, which on a 1180px
+     column is most of them. */
+  /* A hairline and nothing else. The reference gives content panels no
+     shadow at all — the translucency is what lifts them off the ground, and
+     a drop shadow under every one of six stacked panels is what made the
+     overview read as a pile of floating dialogs. The rail keeps its shadow,
+     because the rail genuinely does float over the content. */
   .admin-panel {
     background: var(--admin-surface);
-    border: 0;
+    border: 1px solid var(--admin-border-soft);
     border-radius: var(--admin-card-radius);
-    box-shadow: var(--admin-shadow);
+  }
+
+  /* The emphasis panel — one per screen, for the thing the partner is being
+     asked to do next. The gradient is the reference's; it is what separates
+     "act on this" from the panels merely reporting state around it. */
+  .admin-panel-lead {
+    background: linear-gradient(180deg, #ffffff 0%, #f1f3f8 100%);
+    border: 1px solid var(--admin-border-soft);
+    border-radius: 1.75rem;
+    box-shadow: inset 0 1px 0 #fff;
   }
 
   /* Identifiers line up when they are tabular and monospaced. Comparing two
@@ -1360,20 +1744,96 @@ h3 {
     letter-spacing: -0.01em;
   }
 
+  /* Mono at normal weight, not bold sans. Every structural micro-label in
+     the reference sits in the mono register — that is what distinguishes a
+     field label from a short value set at the same size, which bolding it
+     does not. */
   .admin-label {
-    font-size: 0.6875rem;
-    font-weight: 600;
-    letter-spacing: 0.06em;
+    font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.65625rem;
+    font-weight: 400;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--admin-ink-50);
   }
 
+  /* The console's filter chip.
+     
+     A pill, like every other chip, pill and button in this application. These
+     were 5px-radius rectangles — the one place left where a control was
+     drawn as a box while the site around it was drawn as a pill, which is
+     exactly the sort of detail that makes a console feel bolted on rather
+     than part of the product.
+     
+     Selected is navy, not a pale blue wash with blue text. Blue is what every
+     link in a table of links already is; a blue chip in a rail of chips read
+     as the one you could click rather than the one you had. */
+  .admin-chip {
+    @apply inline-flex items-center whitespace-nowrap rounded-full border px-3.5 py-2 text-[0.78125rem] font-medium transition-colors duration-200;
+    border-color: var(--admin-border);
+    background: var(--admin-surface);
+    color: var(--admin-ink-70);
+  }
+  .admin-chip:hover {
+    border-color: var(--admin-border-strong);
+    color: var(--admin-ink);
+  }
+  .admin-chip[aria-current="page"],
+  .admin-chip[aria-pressed="true"] {
+    border-color: var(--admin-ink);
+    background: var(--admin-ink);
+    color: #fff;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .admin-chip {
+      transition: none;
+    }
+  }
+
   .admin-row {
-    border-bottom: 1px solid var(--admin-border);
+    border-bottom: 1px solid var(--admin-row-rule);
     transition: background-color 120ms ease;
   }
   .admin-row:hover {
-    background: #f6f9fd;
+    background: rgb(255 255 255 / 0.75);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    /* The console's filter chip.
+     
+     A pill, like every other chip, pill and button in this application. These
+     were 5px-radius rectangles — the one place left where a control was
+     drawn as a box while the site around it was drawn as a pill, which is
+     exactly the sort of detail that makes a console feel bolted on rather
+     than part of the product.
+     
+     Selected is navy, not a pale blue wash with blue text. Blue is what every
+     link in a table of links already is; a blue chip in a rail of chips read
+     as the one you could click rather than the one you had. */
+  .admin-chip {
+    @apply inline-flex items-center whitespace-nowrap rounded-full border px-3.5 py-2 text-[0.78125rem] font-medium transition-colors duration-200;
+    border-color: var(--admin-border);
+    background: var(--admin-surface);
+    color: var(--admin-ink-70);
+  }
+  .admin-chip:hover {
+    border-color: var(--admin-border-strong);
+    color: var(--admin-ink);
+  }
+  .admin-chip[aria-current="page"],
+  .admin-chip[aria-pressed="true"] {
+    border-color: var(--admin-ink);
+    background: var(--admin-ink);
+    color: #fff;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .admin-chip {
+      transition: none;
+    }
+  }
+
+  .admin-row {
+      transition: none;
+    }
   }
   .admin-row:last-child {
     border-bottom: 0;
@@ -1383,20 +1843,35 @@ h3 {
      The marketing .btn-* classes are 44px tall with a 1rem label, sized for a
      thumb on a phone. An operator clicks with a mouse and needs six controls
      in a toolbar, so these are 32px with a 0.8125rem label. */
+  /* The console's buttons are the site's buttons, at console density.
+     
+     They were 8px-radius rectangles while every button on the public site
+     became a pill — two shapes for one idea, in one application. The radius
+     and the hover behaviour now match; only the padding and type size differ,
+     because a table row with four actions in it cannot carry 15px type and
+     15px of vertical padding without becoming a form.
+     
+     Still their own classes rather than `.btn-sm`: the console's buttons are
+     coloured from the `--admin-*` variables so the whole console can be
+     repointed from one block, which is how the dashboard was restyled at
+     all. */
   .admin-btn {
-    @apply inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-[0.8125rem] font-medium transition-colors;
+    @apply inline-flex shrink-0 items-center justify-center gap-1.5 rounded-full px-3.5 py-1.5 text-[0.8125rem] font-medium transition-colors duration-200 motion-reduce:transition-none;
     @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1;
     --tw-ring-color: var(--admin-accent);
   }
   .admin-btn:disabled {
     @apply cursor-not-allowed opacity-50;
   }
+  /* Navy going to brand blue, the same move as `.btn-primary`. It was brand
+     blue going darker, which made the console's primary and the site's
+     primary two different colours doing the same job. */
   .admin-btn-primary {
-    background: var(--admin-accent);
+    background: var(--admin-ink);
     color: #fff;
   }
   .admin-btn-primary:hover:not(:disabled) {
-    background: #1544d4;
+    background: var(--admin-accent);
   }
   .admin-btn-secondary {
     background: var(--admin-surface);
@@ -1432,8 +1907,13 @@ h3 {
     --tw-ring-offset-color: var(--admin-surface);
   }
 
+  /* 14px, the radius every field in the application uses — the console's
+     own filter box was 8px, which next to a rail of pills and a row of
+     24px panels was the one control still drawn to the old scale. Padding
+     goes up with it: a 14px radius on a 28px-tall box eats its own corners,
+     so the curve has something to sit on. */
   .admin-input {
-    @apply w-full rounded-lg px-2.5 py-1.5 text-[0.8125rem];
+    @apply w-full rounded-[14px] px-3.5 py-2.5 text-[0.8125rem];
     background: var(--admin-surface);
     border: 1px solid var(--admin-border-strong);
     color: var(--admin-ink);
@@ -1447,23 +1927,36 @@ h3 {
     box-shadow: 0 0 0 3px rgb(27 84 251 / 0.12);
   }
   .admin-input[aria-invalid="true"] {
-    border-color: #c0553f;
+    /* `danger`, not a one-off #c0553f — the last stray status hex in the
+       stylesheet. */
+    border-color: var(--status-danger-fg);
   }
 
-  /* Rail navigation. */
+  /* Rail navigation. 14px in a 9/10 box with a 10px radius, as the reference
+     draws it — it was 13px in a 6/12 box, which packed ten items tight enough
+     that the group headings stopped separating them. */
   .admin-rail-link {
-    @apply flex items-center gap-2.5 rounded-lg px-3 py-1.5 text-[0.8125rem] transition-colors;
+    @apply flex items-center gap-2.5 rounded-[0.625rem] px-2.5 py-[0.5625rem] text-[0.875rem] transition-colors duration-200;
     color: var(--admin-rail-text);
   }
+  @media (prefers-reduced-motion: reduce) {
+    .admin-rail-link {
+      transition: none;
+    }
+  }
   .admin-rail-link:hover {
-    background: var(--admin-bg);
+    background: rgb(255 255 255 / 0.7);
     color: var(--admin-ink);
   }
-  /* The active item carries the accent, which on a light rail is what the
-     white overlay used to do on a dark one. */
+  /* The current item is a solid white chip on the rail's translucent glass,
+     not a blue wash. The rail is already 62% white over the page ground, so a
+     pale-blue fill on it came out muddy and — being the same blue as the
+     accent text it carried — read as a disabled control rather than as the
+     page you are on. White against glass separates on surface, not on hue. */
   .admin-rail-link[aria-current="page"] {
-    background: #e8eefe;
-    color: var(--admin-accent);
-    font-weight: 600;
+    background: #ffffff;
+    color: var(--admin-ink);
+    font-weight: 500;
+    box-shadow: 0 1px 2px rgb(13 25 62 / 0.06);
   }
 }

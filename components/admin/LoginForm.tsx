@@ -30,14 +30,18 @@ export function LoginForm({ next }: { next?: string }) {
   const [method, setMethod] = useState<"password" | "code">("password");
 
   return (
-    <div className="mt-7">
+    <div className="mt-8">
       {/* A segmented control, not two pages. The address is typed into
           whichever panel is showing, so switching costs a field, not a page
           load. */}
       <div
         role="tablist"
         aria-label="How to sign in"
-        className="grid grid-cols-2 gap-1 rounded-xl border border-line bg-sand p-1"
+        /* A pill track, not a bordered box. The reference puts the whole
+           control on `hair-soft` with a white "thumb" under the selected
+           half — the shadow is what makes it read as raised rather than as
+           two buttons that happen to differ in colour. */
+        className="grid grid-cols-2 gap-1 rounded-full bg-hair-soft p-1"
       >
         <MethodTab
           id="password"
@@ -85,9 +89,11 @@ function MethodTab({
       aria-controls={`signin-${id}`}
       onClick={() => onSelect(id)}
       className={cn(
-        "inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-meta font-bold transition-colors",
-        "focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-1",
-        active ? "bg-white text-ink shadow-card" : "text-ink-muted hover:text-ink"
+        "inline-flex items-center justify-center gap-2 rounded-full px-3 py-2.5 text-[14px] font-medium transition-colors duration-200 motion-reduce:transition-none",
+        "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500",
+        active
+          ? "bg-white text-navy shadow-[0_1px_2px_rgba(13,25,62,.08)]"
+          : "text-ink-soft hover:text-navy"
       )}
     >
       {icon}
@@ -100,7 +106,7 @@ function PasswordForm({ next }: { next?: string }) {
   const [state, action] = useFormState(login, initialFormState);
 
   return (
-    <form id="signin-password" role="tabpanel" action={action} className="mt-6 space-y-4">
+    <form id="signin-password" role="tabpanel" action={action} className="mt-6 flex flex-col gap-4">
       {next && <input type="hidden" name="next" value={next} />}
 
       {state.message && <FormAlert ok={state.ok} message={state.message} />}
@@ -148,7 +154,7 @@ function CodeForm({ next }: { next?: string }) {
   const sent = state.data?.sent === "1";
 
   return (
-    <form id="signin-code" role="tabpanel" action={action} className="mt-6 space-y-4">
+    <form id="signin-code" role="tabpanel" action={action} className="mt-6 flex flex-col gap-4">
       {next && <input type="hidden" name="next" value={next} />}
 
       {state.message && <FormAlert ok={state.ok} message={state.message} />}
@@ -181,7 +187,7 @@ function CodeForm({ next }: { next?: string }) {
             placeholder="000000"
             hint="Check your inbox. The code expires ten minutes after it is sent."
             error={state.errors?.code}
-            className="text-center font-mono text-[1.375rem] tracking-[0.4em]"
+            className="h-[58px] text-center font-mono text-[22px] tracking-[0.4em]"
           />
 
           <div className="flex flex-wrap items-center gap-x-5 gap-y-3 pt-1">
@@ -208,7 +214,7 @@ function ResendButton() {
       name="intent"
       value="send"
       disabled={pending}
-      className="text-meta font-medium text-ink-muted underline underline-offset-4 transition-colors hover:text-ink disabled:opacity-50"
+      className="text-[14px] font-medium text-ink-muted underline underline-offset-4 transition-colors hover:text-navy disabled:opacity-50 motion-reduce:transition-none"
     >
       Send a new code
     </button>

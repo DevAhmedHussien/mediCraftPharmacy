@@ -132,50 +132,80 @@ export function StatStrip({
   }>;
 }) {
   return (
+    /* FOUR CARDS, not one panel with dividers.
+    
+       The reference lays these out as discrete 22px cards in an `auto-fit`
+       grid at a 220px floor. A single divided strip is the dashboard cliché
+       and it behaves badly: at the breakpoint where four columns become two,
+       the `divide-y`/`divide-x` rules disagree about which edges exist and
+       you get stray hairlines hanging off the ends. Separate cards reflow
+       with no rules to get wrong. */
     <dl
-      className="admin-panel grid divide-y sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4"
-      style={{ borderColor: "var(--admin-border)" }}
+      className="grid gap-4"
+      style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 13.75rem), 1fr))" }}
     >
-      {stats.map((stat, index) => {
+      {stats.map((stat) => {
         const urgent = stat.urgent && Number(stat.value) > 0;
-        const body = (
-          <>
-            <dt className="admin-label">{stat.label}</dt>
-            <dd
-              className={cn(
-                "mt-1 flex items-baseline gap-1.5 text-[1.625rem] font-semibold leading-none tabular-nums tracking-[-0.02em]",
-                urgent && "text-[#9c3a2a]"
-              )}
-            >
+
+        return (
+          /* The <dt> and <dd> are DIRECT children of this div, and the link
+             is inside the <dt>, stretched over the card by a pseudo-element.
+             
+             It used to be `dl > div > a > dt`, which axe flags twice: a <dl>
+             may only directly contain dt, dd, div, script or template, and a
+             <dt>/<dd> must be contained by a <dl>. With an <a> in between,
+             assistive tech saw a definition list with no definitions in it —
+             four labels and four numbers, unpaired. */
+          <div
+            key={stat.label}
+            className={cn(
+              "admin-panel relative flex flex-col gap-2 p-[1.375rem] transition-colors duration-200 motion-reduce:transition-none",
+              stat.href && "hover:bg-white"
+            )}
+            style={{ borderRadius: "1.375rem" }}
+          >
+            <dt className="admin-label flex items-center gap-1.5">
+              {/* The dot marks the card that wants attention. The reference
+                  gives every stat one; here only the urgent ones get it,
+                  because a dot on all four marks nothing. */}
               {urgent && (
                 <span
                   aria-hidden
-                  className="size-1.5 shrink-0 self-center rounded-full bg-current"
+                  className="size-1.5 shrink-0 rounded-full bg-[theme(colors.warning.fg)]"
                 />
               )}
+              {stat.href ? (
+                <Link
+                  href={stat.href}
+                  className="admin-focus rounded-xl after:absolute after:inset-0 after:rounded-[1.375rem] after:content-['']"
+                >
+                  {stat.label}
+                </Link>
+              ) : (
+                stat.label
+              )}
+            </dt>
+
+            <dd
+              className={cn(
+                "font-display text-[2.25rem] font-normal leading-none tabular-nums tracking-display",
+                /* `warning`, not `danger`. A queue with eleven things in it
+                   is a queue doing its job — it is not a failure, and
+                   colouring it the same red the console uses for "agreement
+                   declined" and "suspended" taught operators to read that
+                   red as "there is work", which is exactly the wrong lesson
+                   for the day something actually breaks. */
+                urgent ? "text-[theme(colors.warning.fg)]" : "text-[color:var(--admin-ink)]"
+              )}
+            >
               {stat.value}
               {urgent && <span className="sr-only">, needs attention</span>}
             </dd>
+
             {stat.detail && (
-              <dd className="mt-1 text-[0.75rem] text-[color:var(--admin-ink-50)]">
+              <dd className="text-[0.78125rem] text-[color:var(--admin-ink-50)]">
                 {stat.detail}
               </dd>
-            )}
-          </>
-        );
-
-        return (
-          <div
-            key={stat.label}
-            className={cn("px-4 py-3", index > 0 && "sm:border-l")}
-            style={{ borderColor: "var(--admin-border)" }}
-          >
-            {stat.href ? (
-              <Link href={stat.href} className="admin-focus block rounded-[5px] transition-opacity hover:opacity-70">
-                {body}
-              </Link>
-            ) : (
-              body
             )}
           </div>
         );
@@ -260,12 +290,29 @@ export function Since({ date }: { date: Date | string }) {
    word, which is how a queue gets triaged at a glance. The WORD is what
    carries the meaning — the colour never does it alone.
    ------------------------------------------------------------------ */
+/* On the `success` / `warning` / `danger` / `info` token pairs, not ten
+   hardcoded hexes.
+   
+   `good` was #246848 on #e3f0e8 — a green, and the only green in the
+   application. The identity has no green; a green tick beside a cyan brand
+   mark is a third colour nobody chose, and on the partners table it sat four
+   pixels from a brand-blue pill in the next row. `success` is cyan-700, which
+   is a colour this brand actually owns.
+   
+   Each pair clears 4.5:1 both on its own chip and on the page ground
+   (success 5.41 / 5.60, warning 5.43 / 5.53, danger 5.75 / 6.13, info
+   5.07 / 5.28, neutral 6.50 / 7.18), so a pill reads whether it sits in a
+   white panel or directly on the page.
+   
+   The dot is the foreground colour rather than a lighter sibling: a dot that
+   is paler than its own label is a decoration, and the comment above this
+   block is explicit that the shape and position are doing triage work. */
 const TONES = {
-  neutral: { chip: "bg-[#eceff3] text-[#49536b]", dot: "#8a93a8" },
-  good: { chip: "bg-[#e3f0e8] text-[#246848]", dot: "#2f9163" },
-  warn: { chip: "bg-[#fbefd8] text-[#805c12]", dot: "#d79a1f" },
-  bad: { chip: "bg-[#fbe8e3] text-[#8f3526]", dot: "#c4553c" },
-  info: { chip: "bg-[#e6edfb] text-[#1f4190]", dot: "#3a6ae8" },
+  neutral: { chip: "bg-hair-soft text-ink-soft", dot: "#46536f" },
+  good: { chip: "bg-success-bg text-success-fg", dot: "#0b6e74" },
+  warn: { chip: "bg-warning-bg text-warning-fg", dot: "#8a5a00" },
+  bad: { chip: "bg-danger-bg text-danger-fg", dot: "#b42318" },
+  info: { chip: "bg-info-bg text-info-fg", dot: "#1b54fb" },
 } as const;
 
 export type Tone = keyof typeof TONES;
@@ -283,7 +330,7 @@ export function Pill({
   return (
     <span
       className={cn(
-        "inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-2 py-[0.1875rem] text-[0.6875rem] font-semibold leading-none",
+        "inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-[0.25rem] text-[0.6875rem] font-medium leading-none",
         TONES[tone].chip
       )}
     >
@@ -415,9 +462,9 @@ export function RowAction({
   type?: "button" | "submit";
 }) {
   const className = cn(
-    "admin-focus inline-flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors",
+    "admin-focus inline-flex size-8 shrink-0 items-center justify-center rounded-[0.625rem] transition-colors",
     tone === "danger"
-      ? "text-[color:var(--admin-ink-50)] hover:bg-[#fbe8e3] hover:text-[#8f3526]"
+      ? "text-[color:var(--admin-ink-50)] hover:bg-danger-bg hover:text-danger-fg"
       : "text-[color:var(--admin-ink-50)] hover:bg-[color:var(--admin-bg)] hover:text-[color:var(--admin-ink)]"
   );
 
@@ -466,21 +513,36 @@ export function EmptyState({
   title,
   description,
   action,
+  bordered,
   className,
 }: {
   icon?: LucideIcon;
   title: string;
   description: string;
   action?: { label: string; href: string };
+  /** Draws the dashed edge, for the rare case this is not inside a Panel. */
+  bordered?: boolean;
   className?: string;
 }) {
   return (
     <div
       className={cn(
-        "flex flex-col items-start gap-3 rounded-[6px] border border-dashed px-6 py-10",
+        /* No border and no box.
+        
+           This almost always renders INSIDE a Panel — "the queue is clear"
+           sits in the "Needs you" panel — and a dashed 6px box inside a 24px
+           card is two containers saying one thing, with the inner one drawn
+           in the style the rest of the console stopped using. It also forced
+           a 100px-tall dashed rectangle onto the screen whose only message
+           is that there is nothing to look at.
+           
+           `bordered` is there for the handful of places this stands alone on
+           the page ground and does need an edge. */
+        "flex flex-col items-start gap-3 py-2",
+        bordered && "rounded-card border border-dashed px-6 py-10",
         className
       )}
-      style={{ borderColor: "var(--admin-border-strong)" }}
+      style={bordered ? { borderColor: "var(--admin-border-strong)" } : undefined}
     >
       {Icon && (
         <Icon className="size-6 text-[color:var(--admin-ink-50)]" strokeWidth={1.5} aria-hidden />

@@ -1,6 +1,8 @@
 "use client";
 
-import { motion, useReducedMotion, useScroll, useSpring } from "framer-motion";
+/* `m`, not `motion` — the provider runs LazyMotion in `strict`, which
+   makes the full namespace throw on import. See MotionProvider.tsx. */
+import { m, useReducedMotion, useScroll, useSpring } from "framer-motion";
 
 /**
  * Reading progress for the long pages.
@@ -28,7 +30,7 @@ export function ScrollProgress() {
   if (reduce) return null;
 
   return (
-    <motion.div
+    <m.div
       aria-hidden
       style={{ scaleX }}
       className="fixed inset-x-0 top-0 z-[60] h-[3px] origin-left bg-cyan-400"

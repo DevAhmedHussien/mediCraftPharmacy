@@ -184,7 +184,7 @@ export default async function PortalProductsPage() {
                       <span className="block text-caption text-ink-muted">
                         {[row.product.strength, row.product.form].filter(Boolean).join(" · ")}
                         {row.product.deaSchedule && row.product.deaSchedule !== "NC" && (
-                          <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-amber-900">
+                          <span className="ml-2 rounded bg-warning-bg px-1.5 py-0.5 text-warning-fg">
                             {row.product.deaSchedule}
                           </span>
                         )}

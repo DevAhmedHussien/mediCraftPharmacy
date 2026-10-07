@@ -123,7 +123,7 @@ export default function CoveragePage() {
                 </p>
                 <Link
                   href={coverage.shipping.panel.cta.href}
-                  className="btn-accent mt-7 inline-flex"
+                  className="btn-pill mt-7"
                 >
                   {coverage.shipping.panel.cta.label} <span aria-hidden>→</span>
                 </Link>

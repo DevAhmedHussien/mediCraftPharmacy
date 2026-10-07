@@ -56,6 +56,41 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        /* --- Redesign neutrals ------------------------------------------
+           The off-white ground and the hairline greys the new design sits
+           on. Brand blue, cyan and navy are untouched above — these only add
+           the surfaces underneath them.
+
+           `hair` is three steps because the design uses them for three
+           different jobs: dividers and table rules, card borders, and the
+           heavier top rule on a step list. One grey doing all three is what
+           makes a page look like a wireframe. */
+        paper: "#f7f7f5",
+        hair: {
+          DEFAULT: "#e3e3de",
+          soft: "#ecece7",
+          strong: "#dadad4",
+        },
+        stone: "#ecedef",
+        tint: "#eef2ff",
+
+        /* --- Semantic status ---------------------------------------------
+           Four states, named for what they MEAN rather than what colour they
+           are. The repo had 66 hardcoded `emerald-50` / `red-600` /
+           `amber-200` classes doing this job, which is why a success banner
+           in the portal and one in the admin were different greens.
+
+           `success` is cyan-700 on a pale cyan, not green: the identity has
+           no green, and a green tick beside a cyan brand mark reads as a
+           third colour nobody chose. The other three are desaturated toward
+           the navy so they sit in the same light as every other surface.
+
+           Each is a pair — `fg` clears 4.5:1 on its own `bg`. */
+        success: { DEFAULT: "#0b6e74", fg: "#0b6e74", bg: "#e3f7f7" },
+        warning: { DEFAULT: "#8a5a00", fg: "#8a5a00", bg: "#fff4dd" },
+        danger: { DEFAULT: "#b42318", fg: "#b42318", bg: "#fdecea" },
+        info: { DEFAULT: "#1b54fb", fg: "#1b54fb", bg: "#eef2ff" },
+
         brand,
         cyan,
         navy: {
@@ -66,18 +101,28 @@ const config: Config = {
         /* Text ramp. Pulled toward the brand navy rather than neutral grey, so
            even body copy carries a trace of the identity's hue.
            `muted` is set at the darkest value that still reads as a third
-           step: it clears 4.5:1 on white *and* on the sand band (4.80 / 4.51).
-           A lighter grey looked better in isolation but failed on the band,
-           where most of the captions on this site actually sit. */
+           step: it clears 4.5:1 on white *and* on the page ground (5.09 /
+           4.75 against #f7f7f5). A lighter grey looked better in isolation
+           but failed on the ground, where most of the captions on this site
+           actually sit. */
         ink: {
           DEFAULT: "#0f1a33",
           soft: "#46536f",
           muted: "#636e89",
         },
-        /* The alternating section band — a grey cooled toward blue so it sits
-           under the palette instead of beside it. */
-        sand: "#f5f8fd",
-        line: "#dde4f0",
+        /* `sand` and `line` are the previous palette's band and divider, and
+           they are kept under their old names because 60-odd marketing call
+           sites reference them. What they POINT AT is now the redesign's
+           ground and hairline — #f5f8fd and #dde4f0 are blue-tinted, and
+           neither value appears anywhere in the reference. Leaving them meant
+           a cool divider sitting next to a warm one on the same card, which
+           is most of why the interior pages still read as the old system
+           after the heroes and containers were rebuilt.
+
+           They are aliases, not a second palette: `sand` IS `paper`, `line`
+           IS `hair`. New markup should use the redesign names. */
+        sand: "#f7f7f5",
+        line: "#e3e3de",
       },
       fontFamily: {
         /*
@@ -94,7 +139,7 @@ const config: Config = {
          * classes apply.
          */
         sans: ["var(--font-satoshi)", "system-ui", "sans-serif"],
-        display: ["var(--font-ui)", "system-ui", "sans-serif"],
+        display: ["var(--font-satoshi)", "system-ui", "sans-serif"],
         // Reserved for regulatory micro-data — USP chapters, lot numbers,
         // beyond-use dates. Never for prose.
         mono: ["var(--font-mono)", "ui-monospace", "monospace"],
@@ -117,6 +162,13 @@ const config: Config = {
       borderRadius: {
         tile: "0.875rem",
         panel: "1.5rem",
+        /* --- Redesign ---------------------------------------------------
+           24px cards and 32px hero/CTA panels. `panel` is already 1.5rem,
+           so `card` is its alias under the name the redesign uses; both are
+           kept because `panel` is referenced by the existing admin console
+           and renaming it there would be churn for no reader. */
+        card: "1.5rem",
+        hero: "2rem",
       },
       boxShadow: {
         // Shadows are tinted with the navy rather than black, so cards sit in
@@ -124,6 +176,24 @@ const config: Config = {
         card: "0 1px 2px rgba(13,25,62,0.04), 0 8px 24px rgba(13,25,62,0.06)",
         lift: "0 2px 4px rgba(13,25,62,0.05), 0 18px 44px rgba(13,25,62,0.11)",
         bar: "0 1px 0 rgba(13,25,62,0.06), 0 6px 20px rgba(13,25,62,0.05)",
+        /* --- Redesign ---------------------------------------------------
+           Frosted surfaces. The inset white top line is what reads as glass;
+           without it a translucent fill just looks faded. Both shadows stay
+           navy-tinted like the originals so every card sits in one light. */
+        glass: "inset 0 1px 0 rgba(255,255,255,.8), 0 8px 30px rgba(13,25,62,.05)",
+        float: "inset 0 1px 0 rgba(255,255,255,.9), 0 12px 40px rgba(13,25,62,.08)",
+        /* The dropdown panel. Deeper and wider than `float` because it hangs
+           over page content rather than sitting on the page — without the
+           separation the panel and the hero read as one surface. */
+        menu: "0 24px 60px rgba(13,25,62,.14)",
+      },
+      letterSpacing: {
+        /* The redesign's display type is Satoshi 400 at 88px, which needs
+           pulling in hard; at that size the default tracking reads as gaps
+           between letters rather than as a word. */
+        display: "-0.045em",
+        title: "-0.035em",
+        eyebrow: "0.12em",
       },
       keyframes: {
         "fade-up": {

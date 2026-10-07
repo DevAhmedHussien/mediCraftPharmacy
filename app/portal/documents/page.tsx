@@ -86,7 +86,7 @@ export default async function PortalDocumentsPage() {
           Nothing else is needed from you.
         </WaitingNotice>
       ) : status === PARTNER_STATUS.ONBOARDING_CHANGES_REQUESTED ? (
-        <p className="rounded-tile border border-amber-200 bg-amber-50 px-4 py-3 text-meta text-amber-900">
+        <p className="rounded-tile border border-warning-fg/25 bg-warning-bg px-4 py-3 text-meta text-warning-fg">
           <strong className="font-bold">A reviewer asked for changes.</strong> Anything they
           rejected is marked below — replace it and submit again.
         </p>

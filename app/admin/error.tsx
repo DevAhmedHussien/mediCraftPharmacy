@@ -28,7 +28,7 @@ export default function AdminError({
 
   return (
     <div className="mx-auto max-w-lg py-16 text-center">
-      <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-red-600">
+      <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-danger-bg text-danger-fg">
         <AlertCircle className="h-6 w-6" strokeWidth={2} aria-hidden />
       </span>
 

@@ -119,7 +119,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
               <p className="mt-5 text-intro text-ink-soft text-pretty">{post.excerpt}</p>
             )}
 
-            <p className="mt-6 border-t border-line pt-4 font-mono text-caption text-ink-muted">
+            <p className="mt-6 border-t border-hair pt-4 font-mono text-caption text-ink-muted">
               <time dateTime={post.publishedAt?.toISOString()}>
                 {post.publishedAt?.toLocaleDateString("en-US", {
                   month: "long",
@@ -138,7 +138,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
               full-bleed photograph before it pushes the thing they are
               looking for below the fold on a phone. */}
           {post.cover && (
-            <figure className="relative mt-10 aspect-[16/9] overflow-hidden rounded-tile border border-line bg-sand">
+            <figure className="relative mt-10 aspect-[16/9] overflow-hidden rounded-card bg-stone">
               <Image
                 src={`/api/uploads/${post.cover.key}`}
                 alt={post.cover.alt ?? ""}

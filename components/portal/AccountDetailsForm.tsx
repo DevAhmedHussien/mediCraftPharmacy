@@ -156,7 +156,7 @@ export function AccountDetailsForm({
           }
         >
           {prescribers.fields.map((field, index) => (
-            <fieldset key={field.id} className="rounded-[0.6rem] border border-line p-5">
+            <fieldset key={field.id} className="rounded-card border border-hair-soft p-5">
               <legend className="px-2 font-mono text-label uppercase tracking-wide text-ink-muted">
                 Prescriber {index + 1}
               </legend>
@@ -213,7 +213,7 @@ export function AccountDetailsForm({
                   <button
                     type="button"
                     onClick={() => prescribers.remove(index)}
-                    className="inline-flex items-center gap-1.5 text-caption font-medium text-red-700 hover:underline"
+                    className="inline-flex items-center gap-1.5 text-caption font-medium text-danger-fg hover:underline"
                   >
                     <Trash2 className="size-3.5" strokeWidth={2} aria-hidden />
                     Remove this prescriber
@@ -254,7 +254,7 @@ export function AccountDetailsForm({
             <MaskedField<AccountDetailsValues> name="practice.fax" label="Practice fax" mask="phone" optional hint="Ten digits, US numbers only. Optional." />
           </div>
 
-          <fieldset className="rounded-[0.6rem] border border-line p-5">
+          <fieldset className="rounded-card border border-hair-soft p-5">
             <legend className="px-2 font-mono text-label uppercase tracking-wide text-ink-muted">
               Office contact
             </legend>
@@ -309,7 +309,7 @@ export function AccountDetailsForm({
           />
 
           {!billingSame && (
-            <fieldset className="rounded-[0.6rem] border border-line p-5">
+            <fieldset className="rounded-card border border-hair-soft p-5">
               <legend className="px-2 font-mono text-label uppercase tracking-wide text-ink-muted">
                 Billing address
               </legend>
@@ -524,7 +524,7 @@ function StatesPicker() {
       </div>
 
       {error && (
-        <p role="alert" className="mt-2 text-caption font-medium text-red-600">
+        <p role="alert" className="mt-2 text-caption font-medium text-danger-fg">
           {error}
         </p>
       )}

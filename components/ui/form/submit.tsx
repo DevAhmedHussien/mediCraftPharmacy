@@ -95,8 +95,8 @@ export function useFormAction<T extends FieldValues>(
 /** The one definition of what a result banner looks like. */
 const bannerClass = (ok: boolean) =>
   ok
-    ? "flex items-start gap-2.5 rounded-tile border border-emerald-200 bg-emerald-50 px-4 py-3 text-meta text-emerald-900"
-    : "flex items-start gap-2.5 rounded-tile border border-red-200 bg-red-50 px-4 py-3 text-meta text-red-900";
+    ? "flex items-start gap-2.5 rounded-tile border border-success-fg/25 bg-success-bg px-4 py-3 text-meta text-success-fg"
+    : "flex items-start gap-2.5 rounded-tile border border-danger-fg/25 bg-danger-bg px-4 py-3 text-meta text-danger-fg";
 
 export function FormBanner({ banner }: { banner: Banner }) {
   if (!banner) return null;

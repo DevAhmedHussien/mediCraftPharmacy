@@ -279,7 +279,7 @@ export function PriceListEditor({
                     className="admin-input w-20 text-right"
                   />
                 </Cell>
-                <Cell numeric className={changed ? "font-semibold text-[#2c6b4d]" : ""}>
+                <Cell numeric className={changed ? "font-semibold text-[theme(colors.success.fg)]" : ""}>
                   {money(final)}
                 </Cell>
                 <Cell>
@@ -361,7 +361,7 @@ export function PriceListEditor({
             </div>
             <div>
               <dt className="admin-label">Saved</dt>
-              <dd className="tabular-nums text-[#2c6b4d]">
+              <dd className="tabular-nums text-[theme(colors.success.fg)]">
                 {money(totals.saved)}
                 {totals.list > 0 && (
                   <span className="ml-1 text-[color:var(--admin-ink-50)]">

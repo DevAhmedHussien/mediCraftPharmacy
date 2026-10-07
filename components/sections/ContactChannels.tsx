@@ -70,7 +70,11 @@ export function ContactChannels({
   return (
     <ul className={cn("grid gap-5 sm:grid-cols-2 lg:grid-cols-3", className)}>
       {channels().map((c) => (
-        <li key={c.label} className="card border-t-[3px] border-t-brand-500">
+        /* No accent rule on top. A 3px brand bar on three identical cards is
+           decoration that encodes nothing — these are three channels, not a
+           ranked or staged set — and it was the only place on the site where
+           a card wore one, so it read as a leftover rather than a system. */
+        <li key={c.label} className="card">
           <Heading className="card-title">{c.label}</Heading>
           {c.href ? (
             <a
@@ -89,16 +93,14 @@ export function ContactChannels({
   );
 }
 
-/** The sitewide strip. Rendered by the site layout, above the footer. */
-export function ContactChannelsBand() {
-  return (
-    <section
-      aria-label="How to reach us"
-      className="border-t border-line bg-sand py-12 md:py-14"
-    >
-      <div className="container-x">
-        <ContactChannels />
-      </div>
-    </section>
-  );
-}
+/* `ContactChannelsBand` was removed with its last call site.
+ *
+ * It wrapped `ContactChannels` in a full-width band and the (site) layout
+ * rendered it under every page — directly above a footer that already
+ * carries the address and the phone number. Twenty-four pages each ended by
+ * saying how to reach the pharmacy twice.
+ *
+ * The component below stays: /contact renders it, and there the phone, the
+ * email and the address are the content of the page rather than furniture
+ * under it.
+ */

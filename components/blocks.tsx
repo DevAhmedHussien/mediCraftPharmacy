@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { Icon, type IconName } from "@/components/icons/set";
 import type { Media } from "@/lib/media";
+import { PageHeader, PageHeaderImage } from "@/components/ui/page-header";
 import { cn } from "@/lib/utils";
 
 /* ===========================================================================
@@ -172,7 +173,13 @@ export function InfoCard({
 
   return (
     <div
-      className={cn("card", status ? "border-dashed opacity-80" : "card-hover", className)}
+      /* A dashed border marks the "not yet" card, not 80% opacity.
+         
+         `opacity-80` multiplies down everything inside it, which took the
+         cyan-700 meta line — a value chosen precisely because it clears
+         4.5:1 on white — below the threshold on /support. The dashed rule
+         says the same thing and says it to everyone. */
+      className={cn("card", status ? "border-dashed" : "card-hover", className)}
     >
       {inner}
     </div>
@@ -512,9 +519,14 @@ export function ClosingCta({
   secondary?: { label: string; href: string };
 }) {
   return (
-    <section className="border-t border-line bg-sand section">
-      <div className="container-x text-center">
-        <h2 className="mx-auto max-w-3xl text-display-md font-bold tracking-tight text-ink text-balance md:text-display-lg">
+    /* The handoff's closing panel: a rounded card on the paper ground, white
+       falling to #f1f3f8, rather than a full-bleed sand band with a rule
+       above it. The band was the last piece of the alternating-stripe rhythm
+       the redesign removes. */
+    <section className="section">
+      <div className="mx-auto w-full max-w-[1120px] px-5">
+        <div className="flex flex-col items-center gap-5 rounded-hero border border-hair-soft bg-gradient-to-b from-white to-[#f1f3f8] px-6 py-[clamp(2.5rem,6vw,5.5rem)] text-center">
+        <h2 className="mx-auto max-w-3xl font-display text-[clamp(2.1rem,4.6vw,3.6rem)] font-normal leading-[1.06] tracking-display text-navy text-balance">
           {title}
         </h2>
         <p className="mx-auto mt-5 max-w-xl text-intro text-ink-soft text-pretty">{body}</p>
@@ -522,14 +534,21 @@ export function ClosingCta({
           {/* No appended arrow. "Open a Provider Account →" is the glyph
               doing nothing the verb has not already done, and it is on every
               generated page on the internet. The button is a button. */}
-          <Link href={primary.href} className="btn-primary btn-lg">
+          <Link
+            href={primary.href}
+            className="inline-flex items-center rounded-full bg-navy px-6 py-[15px] text-[15px] font-medium text-white transition-colors duration-200 hover:bg-brand-500 motion-reduce:transition-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
+          >
             {primary.label}
           </Link>
           {secondary && (
-            <Link href={secondary.href} className="btn-outline btn-lg">
+            <Link
+              href={secondary.href}
+              className="inline-flex items-center rounded-full border border-hair bg-white/70 px-6 py-[15px] text-[15px] font-medium text-navy transition-colors duration-200 hover:bg-white motion-reduce:transition-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
+            >
               {secondary.label}
             </Link>
           )}
+        </div>
         </div>
       </div>
     </section>
@@ -539,11 +558,16 @@ export function ClosingCta({
 /* --- Page masthead ------------------------------------------------------- */
 
 /**
- * Interior page header. A short navy band rather than a cover photo: the stock
- * imagery the previous design used varied so much in brightness that the type
- * needed a heavy scrim on every page, which read as a template. A flat brand
- * gradient is quieter, loads nothing, and lets the mark's cyan do the accent
- * work.
+ * The interior masthead, now a thin wrapper over the shared PageHeader.
+ *
+ * Fifteen files import `PageHero`, so the name stays and the shape changes
+ * underneath them: the references stack the copy at the full 1120px measure
+ * and give the image its own full-width section below, rather than splitting
+ * the row 7/5. Splitting halved the measure of both.
+ *
+ * `media` still works and renders through `PageHeaderImage`, so no call site
+ * had to change — but a page wanting the reference's glass specification
+ * plate should use `PageHeader` + `PageHeaderImage` directly.
  */
 export function PageHero({
   eyebrow,
@@ -555,56 +579,16 @@ export function PageHero({
   eyebrow?: string;
   title: string;
   lead?: string;
-  /** Optional photograph, shown beside the copy rather than behind it. */
   media?: Media;
   children?: ReactNode;
 }) {
   return (
-    <section className="border-b border-line bg-white">
-      <div className="container-x">
-        <div
-          className={cn(
-            "grid items-center gap-10 py-12 md:py-16 lg:py-20",
-            media && "lg:grid-cols-12 lg:gap-12"
-          )}
-        >
-          <div className={cn(media ? "lg:col-span-7" : "max-w-3xl")}>
-            {eyebrow && <p className="eyebrow">{eyebrow}</p>}
-            <h1 className="mt-4 text-display-md font-black tracking-tight text-ink text-balance md:text-display-lg">
-              {title}
-            </h1>
-            {lead && (
-              <p className="mt-5 max-w-2xl text-intro leading-relaxed text-ink-soft text-pretty">
-                {lead}
-              </p>
-            )}
-            {children}
-          </div>
-
-          {media && (
-            <div className="lg:col-span-5">
-              {/* Framed, always.
-               *
-               * These covers are 16:9 photographs of rooms and benches — none
-               * of them sits on a clean sweep — so on a white page they need
-               * an edge to read as a photograph rather than a stray panel.
-               * BrandFigure's own rule, applied here for the same reason. */}
-              <figure className="overflow-hidden rounded-tile border border-line">
-                <Image
-                  src={media.src}
-                  alt={media.alt}
-                  width={media.width}
-                  height={media.height}
-                  priority
-                  sizes="(min-width: 1024px) 34rem, 92vw"
-                  className="h-auto w-full"
-                />
-              </figure>
-            </div>
-          )}
-        </div>
-      </div>
-    </section>
+    <>
+      <PageHeader eyebrow={eyebrow} title={title} lead={lead}>
+        {children}
+      </PageHeader>
+      {media && <PageHeaderImage src={media.src} alt={media.alt} />}
+    </>
   );
 }
 

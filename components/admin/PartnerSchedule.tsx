@@ -64,7 +64,7 @@ export function PartnerSchedule({ lines }: { lines: ScheduleLine[] }) {
           empty schedule here means one of those did not happen.
         </p>
       ) : (
-        <div className="overflow-x-auto rounded-[5px] border" style={{ borderColor: "var(--admin-border)" }}>
+        <div className="overflow-x-auto rounded-2xl border" style={{ borderColor: "var(--admin-border)" }}>
           <table className="w-full min-w-[34rem] border-collapse text-left text-[0.8125rem]">
             <thead>
               <tr style={{ background: "var(--admin-bg)" }}>
@@ -102,7 +102,7 @@ export function PartnerSchedule({ lines }: { lines: ScheduleLine[] }) {
                       <span className="block text-[0.75rem] text-[color:var(--admin-ink-50)]">
                         {[line.strength, line.form].filter(Boolean).join(" · ") || "—"}
                         {line.deaSchedule && line.deaSchedule !== "NC" && (
-                          <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-amber-900">
+                          <span className="ml-2 rounded bg-warning-bg px-1.5 py-0.5 text-warning-fg">
                             {line.deaSchedule}
                           </span>
                         )}

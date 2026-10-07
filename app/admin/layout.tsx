@@ -51,7 +51,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     .join("");
 
   return (
-    <div className="admin flex min-h-dvh">
+    <div className="admin min-h-dvh lg:grid lg:grid-cols-[260px_minmax(0,1fr)]">
       {/* The first tab stop on every admin screen.
           The rail carries a dozen links before the table a keyboard
           user actually came for; without this they tab through all of
@@ -60,41 +60,44 @@ export default async function AdminLayout({ children }: { children: ReactNode })
         Skip to the console
       </a>
 
-      {/* Fixed and independently scrollable, so queue counts stay in view
-          while working a long table. */}
-      <aside
-        className="hidden w-56 shrink-0 flex-col overflow-y-auto border-r p-3 lg:flex"
-        style={{ background: "var(--admin-rail)", borderColor: "var(--admin-border)" }}
-      >
-        <div className="flex items-center gap-2 px-2 pb-5 pt-1">
-          <Link href="/admin" aria-label="MediCraft admin">
-            <Logo className="h-6 w-auto" animate="none" />
-          </Link>
-          <span className="rounded bg-[#e8eefe] px-1.5 py-px text-[0.625rem] font-semibold uppercase tracking-wider text-[color:var(--admin-accent)]">
-            Admin
-          </span>
+      {/* The same glass card the partner portal's rail is, in the same 16px
+          gutter — the two consoles are one piece of furniture seen from two
+          sides, and until this they were a floating card on one side and a
+          bordered column on the other. Sticky and independently scrollable,
+          so queue counts stay in view while working a long table. */}
+      <aside className="sticky top-0 hidden h-dvh p-4 lg:block">
+        <div className="flex h-full min-h-0 flex-col gap-[22px] overflow-y-auto rounded-card border border-white/90 bg-white/[0.62] px-3.5 py-5 shadow-glass backdrop-blur-xl">
+          <div className="flex items-center gap-2 pl-2">
+            <Link href="/admin" aria-label="MediCraft admin">
+              <Logo className="h-7 w-auto" animate="none" />
+            </Link>
+            {/* A bordered mono chip, as the reference draws it — not a
+                filled blue pill. Filled blue is what the console uses for
+                things you act on; this is a label saying which of the two
+                consoles you are in, and it should sit back. */}
+            <span className="rounded border border-[color:var(--admin-border)] px-1.5 py-0.5 font-mono text-[0.625rem] uppercase tracking-eyebrow text-[color:var(--admin-ink-50)]">
+              Admin
+            </span>
+          </div>
+
+          <AdminNav
+            waiting={waiting}
+            role={session.user.role}
+            permissions={session.user.permissions}
+          />
         </div>
-
-        <AdminNav
-          waiting={waiting}
-          role={session.user.role}
-          permissions={session.user.permissions}
-        />
-
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header
-          className="flex h-12 shrink-0 items-center gap-4 border-b px-4"
-          style={{ background: "var(--admin-rail)", borderColor: "var(--admin-border)" }}
-        >
-          <Link href="/admin" className="lg:hidden" aria-label="MediCraft admin">
+      <div className="flex min-w-0 flex-col">
+        {/* Below `lg` only — on a laptop the identity chip sits in the page
+            header, where the reference puts it. A full-width bar there would
+            re-draw the border the rail just stopped drawing. */}
+        <header className="flex h-12 shrink-0 items-center gap-4 border-b border-hair-soft px-4 lg:hidden">
+          <Link href="/admin" aria-label="MediCraft admin">
             <Logo className="h-5 w-auto" animate="none" />
           </Link>
           <div className="ml-auto flex items-center gap-2">
             <NotificationBell items={notifications.items} unread={notifications.unread} />
-            {/* Name, role and sign out. In the bar rather than the foot of the
-                rail, so it is present on a phone too — the rail is not. */}
             <AdminUserMenu
               name={name}
               email={session.user.email ?? ""}
@@ -107,16 +110,13 @@ export default async function AdminLayout({ children }: { children: ReactNode })
         </header>
 
         {/* The rail is desktop-only; on a tablet the sections sit here. */}
-        <div
-          className="border-b bg-[color:var(--admin-surface)] px-4 py-2 lg:hidden"
-          style={{ borderColor: "var(--admin-border)" }}
-        >
+        <div className="border-b border-hair-soft px-4 py-2 lg:hidden">
           <div className="no-scrollbar -mx-1 flex gap-1 overflow-x-auto">
             {visibleAdminLinks(session.user.role, session.user.permissions).map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[0.8125rem] text-[color:var(--admin-ink-70)] transition-colors hover:bg-black/[0.04]"
+                className="flex shrink-0 items-center gap-1.5 rounded-[0.625rem] px-2.5 py-1.5 text-[0.8125rem] text-[color:var(--admin-ink-70)] transition-colors hover:bg-black/[0.04] motion-reduce:transition-none"
               >
                 <item.icon className="size-3.5" strokeWidth={1.75} aria-hidden />
                 {item.label}
@@ -125,8 +125,27 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           </div>
         </div>
 
-        <main id="admin-main" tabIndex={-1} className="min-w-0 flex-1 p-4 md:p-6">
-          <div className="mx-auto w-full max-w-[86rem]">{children}</div>
+        <main
+          id="admin-main"
+          tabIndex={-1}
+          className="min-w-0 flex-1 p-4 md:p-6 lg:pb-24 lg:pl-6 lg:pr-10 lg:pt-8"
+        >
+          {/* The desktop identity chip. Mirrors the mobile header above
+              rather than duplicating it — only one of the two is ever in the
+              accessibility tree at a given width. */}
+          <div className="mb-5 hidden items-center justify-end gap-2 lg:flex">
+            <NotificationBell items={notifications.items} unread={notifications.unread} />
+            {/* Name, role and sign out. */}
+            <AdminUserMenu
+              name={name}
+              email={session.user.email ?? ""}
+              initials={initials}
+              roleLabel={
+                session.user.role === "SUPER_ADMIN" ? "Super admin" : "Administrator"
+              }
+            />
+          </div>
+          <div className="flex w-full max-w-[86rem] flex-col gap-5">{children}</div>
         </main>
       </div>
     </div>

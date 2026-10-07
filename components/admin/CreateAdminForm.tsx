@@ -111,7 +111,7 @@ export function CreateAdminForm({
               className="admin-input"
             />
             {state.errors?.confirmPassword && (
-              <p role="alert" className="mt-1 text-[0.75rem] font-medium text-[#9c3a2a]">
+              <p role="alert" className="mt-1 text-[0.75rem] font-medium text-[theme(colors.danger.fg)]">
                 {state.errors.confirmPassword}
               </p>
             )}
@@ -172,7 +172,7 @@ export function PermissionGrid({
           <label
             key={permission.value}
             htmlFor={`${idPrefix}-${permission.value}`}
-            className="flex cursor-pointer items-start gap-2.5 rounded-[5px] border px-3 py-2.5"
+            className="flex cursor-pointer items-start gap-2.5 rounded-2xl border px-3 py-2.5"
             style={{ borderColor: "var(--admin-border)" }}
           >
             <input

@@ -2,7 +2,7 @@
 
 import { useId } from "react";
 import { useFormStatus } from "react-dom";
-import { Loader2 } from "lucide-react";
+
 
 import { Button } from "@/components/ui/button";
 import { formatUsPhone } from "@/lib/masks";
@@ -368,25 +368,22 @@ export function ActionSubmitButton({
   const { pending } = useFormStatus();
 
   return (
+    /* `loading` rather than a hand-rolled spinner. Button now owns the
+       spinner, the disable and `aria-busy`; this was duplicating the first
+       two and setting `aria-disabled` instead of the third. */
     <Button
       type="submit"
       name={name}
       value={value}
       block={block}
-      disabled={pending}
-      /* aria-disabled as well as disabled: some screen readers skip a disabled
-         control entirely, so the label change alone would go unannounced. */
+      loading={pending}
+      /* aria-disabled as well as disabled: some screen readers skip a
+         disabled control entirely, so the label change alone would go
+         unannounced. */
       aria-disabled={pending}
       className="disabled:opacity-70"
     >
-      {pending ? (
-        <>
-          <Loader2 className="h-4 w-4 animate-spin" />
-          Submitting…
-        </>
-      ) : (
-        children
-      )}
+      {pending ? "Submitting…" : children}
     </Button>
   );
 }
