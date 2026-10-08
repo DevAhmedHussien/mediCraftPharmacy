@@ -58,7 +58,7 @@ export default function CompoundingPage() {
               >
                 {/* 503A is the pharmacy's regulatory category, so the label is
                     set in the mono reserved for regulatory data. */}
-                <p className="mt-6 font-mono text-caption font-semibold uppercase tracking-wider text-cyan-300">
+                <p className="mt-6 font-mono text-caption font-medium uppercase tracking-wider text-cyan-300">
                   {compounding.customized.panel.label}
                 </p>
                 <p className="mt-2 text-meta text-white/70 text-pretty">

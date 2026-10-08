@@ -8,8 +8,13 @@ import "./globals.css";
  * Satoshi is the identity typeface — the logo deck sets the lockup in Satoshi
  * Black over Satoshi Regular, so the site uses the real thing rather than an
  * approximation. Self-hosted from public/fonts (no runtime request to a font
- * CDN, no layout shift), with the four weights the design system uses:
- * 400 body, 500 micro-labels, 700 UI emphasis, 900 display.
+ * CDN, no layout shift), in the three weights the design system uses:
+ * 400 display and body, 500 UI, 700 emphasis.
+ *
+ * The lockup itself needs none of them — components/brand/Logo.tsx is
+ * outlined paths, not live text — so dropping the 900 face changed the
+ * wordmark not at all. It only ever served HTML headings, and after the
+ * redesign moved display type to 400 there were five of those left.
  */
 const satoshi = localFont({
   src: [
@@ -35,11 +40,31 @@ const satoshi = localFont({
  * makes the "documented proof" thesis visible rather than merely claimed; it
  * is never used for prose.
  */
+/**
+ * The mono face, kept OFF the critical path.
+ *
+ * `preload: false` is the point. next/font preloads every weight it loads,
+ * and those preloads compete with the hero image for the same throttled
+ * pipe: on a slow-4G profile the home page requested six font files
+ * (105 kB) and a 46 kB hero at the same instant, and the browser — rightly —
+ * serves render-blocking resources first. The image finished at 3.8 s having
+ * spent 3.1 s of that waiting its turn for 46 kB.
+ *
+ * Mono carries micro-labels: eyebrows, counts, spec values, lot numbers.
+ * None of it is the page's primary reading, and `display: swap` means the
+ * text appears immediately in the fallback and reflows into Plex when it
+ * arrives. Nothing is invisible and nothing is blocked.
+ *
+ * 600 is gone too. It was used once, on a 12px uppercase label, where it is
+ * indistinguishable from 500 — one more file in the preload queue for one
+ * element nobody could pick out of a line-up.
+ */
 const mono = IBM_Plex_Mono({
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  weight: ["400", "500"],
   variable: "--font-mono",
   display: "swap",
+  preload: false,
 });
 
 /* Lato is no longer loaded.
