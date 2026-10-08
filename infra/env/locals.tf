@@ -4,6 +4,9 @@ locals {
   # Which branch may assume this environment's deploy role. Production is
   # reachable only from main; staging only from staging.
   deploy_branch = var.env_name == "production" ? "main" : "staging"
+  /* The GitHub Environment deploy.yml targets. It appears in the OIDC
+     subject, so it has to match the workflow exactly — see oidc.tf. */
+  deploy_environment = var.env_name == "production" ? "production" : "staging"
 
   tags = {
     Project     = "medicraft-pharmacy"

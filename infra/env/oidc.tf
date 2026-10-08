@@ -8,10 +8,16 @@
 
    WHAT THE TRUST POLICY ACTUALLY ENFORCES
    ---------------------------------------
-   `token.actions.githubusercontent.com:sub` is pinned to one repository AND
-   one branch. A fork cannot assume it. A pull request from a fork cannot
-   assume it. A run on a feature branch cannot assume it. Production's role
-   is reachable only from `main`.
+   Two conditions, together: `sub` pins the repository and the deployment
+   ENVIRONMENT, and `ref` pins the branch. A fork cannot assume it. A pull
+   request from a fork cannot assume it. A run on a feature branch cannot
+   assume it, even one that targets the production environment.
+
+   The environment is in `sub` rather than the branch because deploy.yml's
+   job declares `environment:` — GitHub issues a DIFFERENT subject for
+   those, `repo:OWNER/NAME:environment:NAME`, and matching the ordinary
+   `...:ref:refs/heads/main` form is why this role rejected every deploy
+   for days while looking perfectly configured.
 
    Getting that condition wrong is the one mistake in this file that matters:
    a `sub` of `repo:owner/name:*` would let any branch in the repository
@@ -34,11 +40,32 @@ data "aws_iam_policy_document" "github_assume" {
       values   = ["sts.amazonaws.com"]
     }
 
-    # One repository, one branch. See the note above.
+    # One repository, one ENVIRONMENT.
+    #
+    # This was `repo:OWNER/NAME:ref:refs/heads/main`, the subject GitHub
+    # issues for an ordinary job. deploy.yml's job is not ordinary: it
+    # declares `environment:`, and GitHub then issues
+    # `repo:OWNER/NAME:environment:NAME` instead. The two never matched, so
+    # every run died with "Not authorized to perform
+    # sts:AssumeRoleWithWebIdentity" while the role, the provider and the
+    # permissions were all correct — which is a hard failure to read.
     condition {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:${var.github_repo}:ref:refs/heads/${local.deploy_branch}"]
+      values   = ["repo:${var.github_repo}:environment:${local.deploy_environment}"]
+    }
+
+    # And still one branch.
+    #
+    # The subject above no longer carries the ref, so alone it would let any
+    # branch deploy provided the job targets this environment — precisely the
+    # loosening the note at the top warns about. GitHub's token carries `ref`
+    # as its own claim, so the branch pin stays here in Terraform rather than
+    # moving into a GitHub setting invisible from this file.
+    condition {
+      test     = "StringEquals"
+      variable = "token.actions.githubusercontent.com:ref"
+      values   = ["refs/heads/${local.deploy_branch}"]
     }
   }
 }
