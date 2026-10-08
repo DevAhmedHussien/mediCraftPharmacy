@@ -40,19 +40,50 @@ data "aws_iam_policy_document" "github_assume" {
       values   = ["sts.amazonaws.com"]
     }
 
-    # One repository, one ENVIRONMENT.
+    # One repository, one ENVIRONMENT — in BOTH subject formats GitHub emits.
     #
-    # This was `repo:OWNER/NAME:ref:refs/heads/main`, the subject GitHub
-    # issues for an ordinary job. deploy.yml's job is not ordinary: it
-    # declares `environment:`, and GitHub then issues
-    # `repo:OWNER/NAME:environment:NAME` instead. The two never matched, so
-    # every run died with "Not authorized to perform
-    # sts:AssumeRoleWithWebIdentity" while the role, the provider and the
-    # permissions were all correct — which is a hard failure to read.
+    # Two things were wrong here, and only the second is obvious in hindsight.
+    #
+    # 1. deploy.yml's job declares `environment:`, and GitHub issues a
+    #    different subject for those: `…:environment:NAME` rather than the
+    #    ordinary `…:ref:refs/heads/BRANCH`.
+    #
+    # 2. This repository emits the IMMUTABLE form, which embeds the numeric
+    #    owner and repository ids:
+    #
+    #      repo:DevAhmedHussien@130807970/mediCraftPharmacy@1318503403:environment:production
+    #
+    #    Not a documented default, and nothing in the error says so — STS
+    #    answers "Not authorized to perform sts:AssumeRoleWithWebIdentity"
+    #    whichever part of the subject failed to match.
+    #
+    # I found it by reading the actual claim out of CloudTrail rather than
+    # reasoning about what it ought to be. Two earlier guesses were wrong.
+    #
+    # BOTH forms are listed, as exact values rather than a wildcard: GitHub
+    # may serve either depending on repository settings, and a `*` in the id
+    # position would also match a different repository whose name merely
+    # starts the same way.
     condition {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:${var.github_repo}:environment:${local.deploy_environment}"]
+      values = [
+        "repo:${var.github_repo}:environment:${local.deploy_environment}",
+        "repo:${local.github_repo_immutable}:environment:${local.deploy_environment}",
+      ]
+    }
+
+    # And still one branch.
+    #
+    # Neither subject carries the ref, so without this any branch could
+    # deploy provided its job targets this environment — exactly the
+    # loosening the note at the top warns about. `ref` is its own claim, so
+    # the branch pin stays here in Terraform rather than moving into a GitHub
+    # setting invisible from this file.
+    condition {
+      test     = "StringEquals"
+      variable = "token.actions.githubusercontent.com:ref"
+      values   = ["refs/heads/${local.deploy_branch}"]
     }
 
     # And still one branch.

@@ -8,6 +8,13 @@ locals {
      subject, so it has to match the workflow exactly — see oidc.tf. */
   deploy_environment = var.env_name == "production" ? "production" : "staging"
 
+  /* The same repository, in GitHub's immutable id form.
+  
+     Read from CloudTrail, which records the subject a failed
+     AssumeRoleWithWebIdentity actually presented — the only reliable way to
+     learn which format a given repository emits. */
+  github_repo_immutable = "DevAhmedHussien@130807970/mediCraftPharmacy@1318503403"
+
   tags = {
     Project     = "medicraft-pharmacy"
     Environment = var.env_name
