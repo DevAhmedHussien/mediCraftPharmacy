@@ -235,8 +235,24 @@ export async function applyTransition(input: TransitionInput): Promise<Transitio
     permissions: input.permissions as never,
   });
 
-  const requestHeaders = headers();
-  const ip = (requestHeaders.get("x-forwarded-for") ?? "").split(",")[0]?.trim() || null;
+  /* The caller's IP, for the audit row — and NEVER a reason to refuse a
+     transition.
+  
+     `headers()` throws outside a request scope, so any caller that is not an
+     HTTP request — a cron advancing a stalled partner, a maintenance script,
+     a webhook replay — crashed here before touching the database. The value
+     it produces is already optional and already nullable; losing it should
+     cost an audit detail, not the status change it describes. */
+  let ip: string | null = null;
+  let userAgent: string | null = null;
+  try {
+    const h = headers();
+    ip = (h.get("x-forwarded-for") ?? "").split(",")[0]?.trim() || null;
+    userAgent = h.get("user-agent")?.slice(0, 500) ?? null;
+  } catch {
+    /* No request in scope. The transition is still real and still recorded;
+       it simply has no address to attribute. */
+  }
 
   await db.$transaction(async (tx) => {
     await tx.partner.update({
@@ -277,7 +293,7 @@ export async function applyTransition(input: TransitionInput): Promise<Transitio
           ...(input.note ? { note: input.note } : {}),
         },
         ip,
-        userAgent: requestHeaders.get("user-agent")?.slice(0, 500) ?? null,
+          userAgent,
       },
     });
 

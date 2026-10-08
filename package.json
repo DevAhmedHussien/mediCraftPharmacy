@@ -24,7 +24,8 @@
     "test:seo": "playwright test tests/e2e/seo.spec.ts --project=desktop",
     "test:a11y": "playwright test tests/e2e/a11y.spec.ts",
     "test:motion": "playwright test tests/e2e/motion.spec.ts --project=desktop",
-    "test:all": "npm run test:unit && npm run lint && npx tsc --noEmit && playwright test"
+    "test:all": "npm run test:unit && npm run lint && npx tsc --noEmit && playwright test",
+    "ghl:test": "tsx --require ./scripts/node-loader.cjs scripts/ghl-pipeline-test.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1142.0",
