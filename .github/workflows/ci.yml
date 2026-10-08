@@ -64,7 +64,7 @@ jobs:
       # Values the env schema requires to parse. Not secrets — this database
       # is destroyed with the runner.
       AUTH_SECRET: ci-only-not-a-real-secret-0000000000000000
-      FIELD_ENCRYPTION_KEY: ci0000000000000000000000000000000000000000000=
+      FIELD_ENCRYPTION_KEY: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
       APP_URL: http://localhost:3000
       NEXT_TELEMETRY_DISABLED: "1"
 
