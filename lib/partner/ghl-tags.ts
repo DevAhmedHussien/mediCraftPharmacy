@@ -1,4 +1,4 @@
-import { PROGRESS_STEPS, progressStep, type ProgressStep } from "@/lib/partner/status";
+import { PROGRESS_STEPS, TRANSITIONS, progressStep, type ProgressStep } from "@/lib/partner/status";
 
 /* ===========================================================================
    The CRM vocabulary.
@@ -137,6 +137,51 @@ export function stageTagFor(status: Parameters<typeof progressStep>[0]): string 
  */
 export function stageTagsToRemove(keep: string): string[] {
   return ALL_STAGE_TAGS.filter((tag) => tag !== keep);
+}
+
+/**
+ * The event tag for the transition that produced a given state.
+ *
+ * `EVENT_TAG_BY_LABEL` is keyed by label, and a StatusHistory row does not
+ * store one — it stores where the partner came from, where it went and who
+ * moved it, which identifies the edge uniquely. Matching on that pair
+ * recovers the label without denormalising it a second time.
+ *
+ * `from` is matched when it is known. Several edges share a `to` — every
+ * status can be REJECTED — so `to` alone would pick whichever was declared
+ * first, which for a rejection is the wrong stage entirely.
+ */
+export function eventTagForHistory(
+  from: string | null | undefined,
+  to: string
+): string | undefined {
+  const edge =
+    TRANSITIONS.find((t) => String(t.to) === to && String(t.from ?? "") === String(from ?? "")) ??
+    TRANSITIONS.find((t) => String(t.to) === to);
+  return edge ? EVENT_TAG_BY_LABEL[edge.label] : undefined;
+}
+
+/** Every event tag this application can apply, transitions and amendments. */
+export const ALL_EVENT_TAGS: string[] = [
+  ...new Set([...Object.values(EVENT_TAG_BY_LABEL), ...Object.values(AMENDMENT_TAG_BY_LABEL)]),
+];
+
+/**
+ * Which event tags come off when this one goes on.
+ *
+ * The same rule the stage tags follow, and for the same reason: GHL's upsert
+ * merges tags and never removes them, so without this a contact ends up
+ * wearing every step it has ever taken. A partner who had completed the
+ * pipeline carried fourteen `partner_*` and `admin_*` tags at once, which
+ * tells you the route travelled but not where anybody IS — and the whole
+ * point of a tag on a CRM contact is to be filterable.
+ *
+ * Nothing is lost by retiring them. The full ordered history lives in
+ * `StatusHistory`, which is the auditable record; GHL holds current state so
+ * a smart list can answer "who is waiting on us right now" in one filter.
+ */
+export function eventTagsToRemove(keep: string | undefined): string[] {
+  return ALL_EVENT_TAGS.filter((tag) => tag !== keep);
 }
 
 /**

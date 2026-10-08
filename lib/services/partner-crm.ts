@@ -6,6 +6,8 @@ import {
   SOURCE_TAGS,
   stageTagFor,
   stageTagsToRemove,
+  eventTagsToRemove,
+  eventTagForHistory,
 } from "@/lib/partner/ghl-tags";
 import type { PartnerStatus } from "@/lib/partner/status";
 import { movePartnerOpportunity } from "@/lib/services/crm-pipeline";
@@ -103,12 +105,16 @@ type SyncInput = {
 export async function syncPartnerToCrm({
   partnerId,
   label,
-  status,
+  /* `status` is the row's historical target and is deliberately NOT read.
+     Tags describe where the partner is NOW — see the note below — and the
+     note and opportunity move use `label`. It stays in the signature because
+     the outbox row carries it and callers pass it; renaming the field would
+     be churn for a value that is still the right thing to store. */
+  status: _status,
 }: SyncInput): Promise<string | null> {
   if (!ghlConfigured) return null;
 
-  const eventTag = eventTagFor(label);
-  if (!eventTag) {
+  if (!eventTagFor(label)) {
     // A gap in the map, not a transport failure — retrying cannot fix it.
     return null;
   }
@@ -118,16 +124,46 @@ export async function syncPartnerToCrm({
       where: { id: partnerId },
       select: {
         id: true,
+        status: true,
         companyName: true,
         contactName: true,
         phone: true,
         ghlContactId: true,
         user: { select: { email: true } },
+        /* The newest transition, for the event tag. See below. */
+        statusHistory: {
+          orderBy: { createdAt: "desc" },
+          take: 1,
+          select: { fromStatus: true, toStatus: true },
+        },
       },
     });
     if (!partner) return null;
 
-    const stageTag = stageTagFor(status);
+    /* THE TAGS DESCRIBE NOW, NOT THIS ROW.
+    
+       They used to come from the row: its `label` and its `status`. That is
+       wrong the moment two rows for one partner are processed out of order,
+       and they are — GHL answers 429 under load, a failed row retries on a
+       backoff, and it then lands AFTER rows that were queued later. A
+       thirteen-step walk finished with the contact tagged `stage_pricing`
+       while the partner was VERIFIED, because the pricing row happened to be
+       the last one to succeed.
+    
+       Reading the partner's CURRENT status instead makes every row converge
+       on the same answer, so the order they are drained in stops mattering.
+       That is the property this needs: the queue guarantees at-least-once
+       delivery, never ordering.
+    
+       The note and the opportunity move below still use the ROW — those are
+       genuinely per-step and belong in the order they happened. It is only
+       the tags, which answer "where is this partner", that must not. */
+    const latest = partner.statusHistory[0];
+    const currentStatus = latest?.toStatus ?? partner.status;
+    const eventTag =
+      (latest && eventTagForHistory(latest.fromStatus, latest.toStatus)) ?? eventTagFor(label)!;
+
+    const stageTag = stageTagFor(currentStatus as never);
     let contactId = partner.ghlContactId;
 
     /* First sync for this partner: upsert on their signup email so an existing
@@ -186,7 +222,18 @@ export async function syncPartnerToCrm({
 
     /* Retire the stage tags they have moved past, so exactly one `stage_*`
        survives and a GHL smart list can answer "who is here now". */
-    const stale = stageTagsToRemove(stageTag);
+    /* Retire everything they have moved past, so the contact carries exactly
+       one `stage_*` and exactly one event tag — where they are, and what just
+       happened. A smart list can then answer "who is here now" with a single
+       filter, which fourteen accumulated tags make impossible.
+
+       Both kinds go in ONE call: GHL answers 429 to a burst, and halving the
+       requests per transition halves the retries.
+
+       Nothing is lost. `StatusHistory` keeps the full ordered record and is
+       the auditable one; GHL holds current state, which is what a CRM filter
+       actually needs. */
+    const stale = [...stageTagsToRemove(stageTag), ...eventTagsToRemove(eventTag)];
     const removed = await removeGhlTags(contactId, stale);
     if (!removed.ok) return removed.reason;
 
