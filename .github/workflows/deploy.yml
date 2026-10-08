@@ -123,99 +123,105 @@ jobs:
           echo "app=$APP" >> "$GITHUB_OUTPUT"
           echo "migrate=$MIG" >> "$GITHUB_OUTPUT"
 
-      - name: Copy the compose files to the server
+      # -----------------------------------------------------------------
+      # Deploy over SSM, not SSH.
+      #
+      # SSH cannot work from here: port 22 is open to one address and a
+      # runner arrives from a different Azure IP every run. The options were
+      # thousands of GitHub CIDRs (past a security group's rule limit),
+      # opening 22 to the world, or not needing an inbound port at all.
+      #
+      # The agent is already installed and Online, so the command goes OUT
+      # through AWS. The security group now needs no deploy rule at all.
+      #
+      # The deploy files travel as a base64 tarball inside the command rather
+      # than through S3: six small files, no extra bucket, no extra IAM, and
+      # nothing left behind if the run dies halfway.
+      # -----------------------------------------------------------------
+      - name: Deploy
         env:
-          SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
-          HOST: ${{ vars.EC2_HOST }}
-        run: |
-          set -euo pipefail
-          install -m 600 /dev/stdin /tmp/deploy_key <<< "$SSH_KEY"
-
-          # A fresh runner has no ~/.ssh, so the append below created nothing
-          # and `set -e` killed the step on a redirect, not on a failed
-          # command — hence a log that says only "No such file or directory"
-          # with no clue which file mattered.
-          mkdir -p ~/.ssh && chmod 700 ~/.ssh
-
-          # Pin the host key rather than disabling the check. `|| true` so a
-          # transient keyscan failure does not kill the step before scp has
-          # had its own chance to report something useful.
-          ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
-          scp -i /tmp/deploy_key deploy/docker-compose.yml "ec2-user@${HOST}:/opt/medicraft/docker-compose.yml"
-          scp -i /tmp/deploy_key deploy/Caddyfile          "ec2-user@${HOST}:/opt/medicraft/caddy/Caddyfile"
-          scp -i /tmp/deploy_key deploy/fetch-secrets.sh   "ec2-user@${HOST}:/opt/medicraft/fetch-secrets.sh"
-          scp -i /tmp/deploy_key deploy/backup.sh          "ec2-user@${HOST}:/opt/medicraft/backup.sh"
-          scp -i /tmp/deploy_key deploy/drain-outbox.sh    "ec2-user@${HOST}:/opt/medicraft/drain-outbox.sh"
-          scp -i /tmp/deploy_key deploy/migrate.sh         "ec2-user@${HOST}:/opt/medicraft/migrate.sh"
-
-      - name: Migrate, then deploy
-        env:
-          HOST: ${{ vars.EC2_HOST }}
           APP_IMAGE: ${{ steps.image.outputs.app }}
           MIGRATE_IMAGE: ${{ steps.image.outputs.migrate }}
         run: |
           set -euo pipefail
-          ssh -i /tmp/deploy_key "ec2-user@${HOST}" APP_IMAGE="$APP_IMAGE" MIGRATE_IMAGE="$MIGRATE_IMAGE" 'bash -seuo pipefail' <<'REMOTE'
-            cd /opt/medicraft
-            source .env.infra
 
-            chmod +x fetch-secrets.sh backup.sh drain-outbox.sh migrate.sh
-            sudo install -m 755 backup.sh /usr/local/bin/medicraft-backup
-            sudo install -m 755 drain-outbox.sh /usr/local/bin/medicraft-drain-outbox
-            # Every five minutes. applyTransition enqueues rather than sends,
-            # so without this the pipeline advances and no partner is told.
-            echo "*/5 * * * * root /usr/local/bin/medicraft-drain-outbox" \
-              | sudo tee /etc/cron.d/medicraft-outbox >/dev/null
-            # 03:00 UTC daily. Rewritten every deploy so the schedule is
-            # whatever this file says, not whatever was there before.
-            echo "0 3 * * * root /usr/local/bin/medicraft-backup" | sudo tee /etc/cron.d/medicraft-backup >/dev/null
+          # By tag, not by a stored id — a replaced instance would otherwise
+          # leave a variable pointing at something that no longer exists.
+          INSTANCE_ID=$(aws ec2 describe-instances \
+            --filters "Name=tag:Name,Values=medicraft-${ENV_NAME}" \
+                      "Name=instance-state-name,Values=running" \
+            --query 'Reservations[0].Instances[0].InstanceId' --output text)
+          [ "$INSTANCE_ID" != "None" ] || { echo "::error::No running instance tagged medicraft-${ENV_NAME}"; exit 1; }
+          echo "Deploying to $INSTANCE_ID"
 
-            sudo ./fetch-secrets.sh
+          PAYLOAD=$(tar -czf - -C deploy \
+            docker-compose.yml Caddyfile fetch-secrets.sh backup.sh drain-outbox.sh migrate.sh \
+            | base64 | tr -d '\n')
 
-            # Record the image in compose's own .env so that every later
-            # `docker compose` command on this box — logs, ps, restart —
-            # works without anyone exporting anything first.
-            sudo sed -i '/^APP_IMAGE=/d' /opt/medicraft/.env
-            echo "APP_IMAGE=$APP_IMAGE" | sudo tee -a /opt/medicraft/.env >/dev/null
+          # jq builds the parameter file so the script is never mangled by
+          # shell quoting on its way into JSON.
+          jq -n --arg payload "$PAYLOAD" --arg app "$APP_IMAGE" --arg mig "$MIGRATE_IMAGE" '
+            { commands: [
+                "set -euo pipefail",
+                "cd /opt/medicraft",
+                ("echo " + $payload + " | base64 -d | tar -xzf - -C /opt/medicraft"),
+                "chmod +x fetch-secrets.sh backup.sh drain-outbox.sh migrate.sh",
+                "install -m 755 backup.sh /usr/local/bin/medicraft-backup",
+                "install -m 755 drain-outbox.sh /usr/local/bin/medicraft-drain-outbox",
+                "echo \"*/5 * * * * root /usr/local/bin/medicraft-drain-outbox\" > /etc/cron.d/medicraft-outbox",
+                "echo \"0 3 * * * root /usr/local/bin/medicraft-backup\" > /etc/cron.d/medicraft-backup",
+                "./fetch-secrets.sh",
+                # Absolute, because bash searches $PATH for a `source`
+                # argument containing no slash — so `source .env.infra`
+                # reports "file not found" while sitting in the directory
+                # that holds it.
+                ". /opt/medicraft/.env.infra",
+                "sed -i \"/^APP_IMAGE=/d\" /opt/medicraft/.env",
+                ("echo APP_IMAGE=" + $app + " >> /opt/medicraft/.env"),
+                "set -a; . /opt/medicraft/.env.app; set +a",
+                ("export APP_IMAGE=" + $app),
+                "aws ecr get-login-password --region \"$AWS_REGION\" | docker login --username AWS --password-stdin \"$ECR_REGISTRY\"",
+                "docker compose up -d postgres",
+                "for i in $(seq 1 30); do docker compose exec -T postgres pg_isready -U medicraft -d medicraft >/dev/null 2>&1 && break; sleep 2; done",
+                ("docker pull " + $mig),
+                "NET=$(docker network ls --format \"{{.Name}}\" | grep -E \"^medicraft.*_default$\" | head -1)",
+                "[ -n \"$NET\" ] || { echo \"Cannot find the compose network\"; exit 1; }",
+                ("docker run --rm --network \"$NET\" -e DATABASE_URL=\"postgresql://medicraft:${POSTGRES_PASSWORD}@postgres:5432/medicraft?sslmode=disable\" " + $mig),
+                "docker compose pull app caddy",
+                "docker compose up -d",
+                "docker image prune -f || true",
+                "echo DEPLOY_OK"
+              ] }' > /tmp/ssm.json
 
-            set -a; source .env.app; set +a
-            export APP_IMAGE
+          CMD=$(aws ssm send-command \
+            --instance-ids "$INSTANCE_ID" \
+            --document-name AWS-RunShellScript \
+            --comment "deploy ${GITHUB_SHA::12}" \
+            --timeout-seconds 600 \
+            --cli-input-json "$(jq -n --slurpfile p /tmp/ssm.json '{Parameters: $p[0]}')" \
+            --query 'Command.CommandId' --output text)
+          echo "SSM command $CMD"
 
-            aws ecr get-login-password --region "$AWS_REGION" \
-              | docker login --username AWS --password-stdin "$ECR_REGISTRY" >/dev/null
+          # Poll. `aws ssm wait` exists but gives no output on failure, and
+          # the output is the only way to see which line of the deploy broke.
+          for i in $(seq 1 90); do
+            sleep 10
+            STATUS=$(aws ssm get-command-invocation --command-id "$CMD" --instance-id "$INSTANCE_ID" \
+              --query 'Status' --output text 2>/dev/null || echo Pending)
+            case "$STATUS" in
+              Success) break ;;
+              Failed|Cancelled|TimedOut) break ;;
+            esac
+          done
 
-            # Postgres first and on its own: the migration needs it, and on a
-            # first deploy it does not exist yet.
-            docker compose up -d postgres
-            for i in $(seq 1 30); do
-              docker compose exec -T postgres pg_isready -U medicraft -d medicraft >/dev/null 2>&1 && break
-              sleep 2
-            done
+          echo "--- stdout"
+          aws ssm get-command-invocation --command-id "$CMD" --instance-id "$INSTANCE_ID" \
+            --query 'StandardOutputContent' --output text | tail -40
+          ERR=$(aws ssm get-command-invocation --command-id "$CMD" --instance-id "$INSTANCE_ID" \
+            --query 'StandardErrorContent' --output text)
+          [ -z "$ERR" ] || { echo "--- stderr"; echo "$ERR" | tail -40; }
 
-            # --- Migrations, as a gate -----------------------------------
-            # Before the new image serves anything. A failure here leaves the
-            # PREVIOUS version running and stops the deploy, which is the
-            # whole reason this is not an application-startup step.
-            echo "Running migrations…"
-            docker pull "$MIGRATE_IMAGE"
-            # The compose project is the directory name, so the network is
-            # `medicraft_default`. Read from docker rather than assumed —
-            # a renamed directory would otherwise fail with a confusing
-            # "network not found" instead of a clear one.
-            NET=$(docker network ls --format '{{.Name}}' | grep -E '^medicraft.*_default$' | head -1)
-            [ -n "$NET" ] || { echo "::error::Cannot find the compose network"; exit 1; }
-
-            if ! docker run --rm --network "$NET" \
-              -e DATABASE_URL="postgresql://medicraft:${POSTGRES_PASSWORD}@postgres:5432/medicraft?sslmode=disable" \
-              "$MIGRATE_IMAGE"; then
-              echo "::error::Migrations failed. Nothing was deployed; the previous version is still serving."
-              exit 1
-            fi
-
-            docker compose pull app caddy
-            docker compose up -d
-            docker image prune -f >/dev/null 2>&1 || true
-          REMOTE
+          [ "$STATUS" = "Success" ] || { echo "::error::Deploy failed on the instance ($STATUS)"; exit 1; }
 
       - name: Health check
         env:

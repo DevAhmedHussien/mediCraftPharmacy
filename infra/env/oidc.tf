@@ -111,13 +111,20 @@ resource "aws_iam_role" "github_deploy" {
 }
 
 data "aws_iam_policy_document" "deploy" {
-  /* Push an image. That is all CI does in AWS now.
+  /* Push an image, and ask the instance to roll itself.
 
-     The deploy itself is an SSH session to the instance, which pulls the
-     image using its own role — so the pipeline never needs permission to
-     change infrastructure. It cannot create, resize or delete anything, and
-     a compromised workflow can at worst push an image that a human still has
-     to deploy. */
+     The deploy was an SSH session, which cannot work from GitHub: port 22 is
+     open to one address and a runner arrives from a different Azure IP every
+     time. The alternatives were to publish thousands of GitHub CIDRs (beyond
+     a security group's rule limit), open 22 to the world, or stop needing
+     inbound SSH at all. This is the third.
+
+     The instance already runs the SSM agent and is Online. Commands now go
+     out through AWS rather than in through a port, so the security group
+     needs no deploy rule whatsoever — strictly less exposed than before.
+
+     The pipeline still cannot change infrastructure: it may push an image
+     and send a shell command to ONE instance, and nothing else. */
   statement {
     effect = "Allow"
     actions = [
@@ -130,6 +137,37 @@ data "aws_iam_policy_document" "deploy" {
       "ecr:BatchGetImage",
       "ecr:GetDownloadUrlForLayer",
     ]
+    resources = ["*"]
+  }
+
+  /* Find the box. Scoped to a read, because the workflow looks the instance
+     up by tag rather than carrying its id in a variable that would go stale
+     the first time the instance is replaced. */
+  statement {
+    effect    = "Allow"
+    actions   = ["ec2:DescribeInstances"]
+    resources = ["*"]
+  }
+
+  /* Run the deploy script on that one instance.
+  
+     `resources` names the instance AND the document, which is how SendCommand
+     is scoped — either alone would allow any shell command on any instance in
+     the account, which is the whole risk this is meant to bound. */
+  statement {
+    effect  = "Allow"
+    actions = ["ssm:SendCommand"]
+    resources = [
+      "arn:aws:ec2:${var.aws_region}:${data.aws_caller_identity.current.account_id}:instance/${one(aws_instance.app[*].id)}",
+      "arn:aws:ssm:${var.aws_region}::document/AWS-RunShellScript",
+    ]
+  }
+
+  /* Read back what happened. Unscoped because an invocation id is not known
+     until the command above returns one, and it carries no authority. */
+  statement {
+    effect    = "Allow"
+    actions   = ["ssm:GetCommandInvocation", "ssm:ListCommandInvocations"]
     resources = ["*"]
   }
 }
