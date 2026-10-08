@@ -40,6 +40,37 @@ const WALK = [
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+/**
+ * The contact's tags, read back from GoHighLevel itself.
+ *
+ * Reading our own database would only prove we intended something. The
+ * question is what the CRM is actually holding after each step, so this asks
+ * GHL.
+ */
+async function liveTags(contactId: string): Promise<string[]> {
+  const res = await fetch(`https://services.leadconnectorhq.com/contacts/${contactId}`, {
+    headers: {
+      Authorization: `Bearer ${process.env.GHL_API_TOKEN}`,
+      Version: "2021-07-28",
+      Accept: "application/json",
+    },
+  });
+  if (!res.ok) return [`(read failed: HTTP ${res.status})`];
+  const body = (await res.json()) as { contact?: { tags?: string[] } };
+  return body.contact?.tags ?? [];
+}
+
+/** Drain until this partner has nothing queued, or we give up. */
+async function drainFor(partnerId: string, passes = 6): Promise<void> {
+  const { processCrmOutbox } = await import("@/lib/services/partner-crm");
+  for (let i = 0; i < passes; i++) {
+    const left = await db.crmOutbox.count({ where: { partnerId, status: "PENDING" } });
+    if (left === 0) return;
+    await processCrmOutbox();
+    await sleep(1800);
+  }
+}
+
 async function cleanup() {
   const user = await db.user.findUnique({ where: { email: EMAIL }, select: { id: true } });
   if (!user) return console.log(`  nothing to remove for ${EMAIL}`);
@@ -103,12 +134,27 @@ async function main() {
            checking. */
         isSuperAdmin: step.actor === "ADMIN",
       });
-      console.log(`  ${String(step.actor).padEnd(7)} ${String(step.to).padEnd(28)} ${stageTagFor(step.to as never).padEnd(18)} ${t.label}`);
+      /* Drain and read GHL after EVERY step, not only at the end. The whole
+         claim is that each move leaves exactly one stage tag and one event
+         tag, and only a per-step read can show that — a final snapshot is
+         equally consistent with nothing having happened in between. */
+      await drainFor(partnerId);
+      const partner = await db.partner.findUnique({
+        where: { id: partnerId },
+        select: { ghlContactId: true },
+      });
+      const tags = partner?.ghlContactId ? await liveTags(partner.ghlContactId) : [];
+      const stages = tags.filter((x) => x.startsWith("stage_"));
+      const events = tags.filter((x) => !x.startsWith("stage_") && x !== "partner_application");
+      const ok = stages.length === 1 && events.length === 1 ? "OK " : "!! ";
+      console.log(
+        `  ${ok}${String(step.actor).padEnd(7)} ${String(step.to).padEnd(26)} ` +
+          `stage=[${stages.join(",")}] event=[${events.join(",")}]`
+      );
     } catch (error) {
       console.log(`  ${String(step.actor).padEnd(7)} ${String(step.to).padEnd(28)} REFUSED — ${(error as Error).message}`);
     }
-    // The drain is fire-and-forget; give it a moment before the next step.
-    await sleep(1200);
+
   }
 
   /* Drain explicitly rather than waiting on the kick.
