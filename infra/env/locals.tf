@@ -29,5 +29,14 @@ locals {
     # makes every stored analytics hash reversible by trying IP addresses —
     # which turns "cookieless, no IP retained" into a claim that is not true.
     "ANALYTICS_SALT",
+    # GoHighLevel. Optional to the APP — `ghlConfigured` is
+    # `Boolean(GHL_API_TOKEN && GHL_LOCATION_ID)` and the site runs fine
+    # without a CRM — but NOT optional here: this list is what the instance
+    # role is allowed to read, and a secret missing from it is a secret the
+    # box gets AccessDenied on. `fetch-secrets.sh` then logs "not set" and
+    # the sync silently stays off, which is exactly how it went unnoticed
+    # that no contact had ever reached GoHighLevel.
+    "GHL_API_TOKEN",
+    "GHL_LOCATION_ID",
   ]
 }
