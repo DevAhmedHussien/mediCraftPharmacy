@@ -130,7 +130,17 @@ jobs:
         run: |
           set -euo pipefail
           install -m 600 /dev/stdin /tmp/deploy_key <<< "$SSH_KEY"
-          ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts 2>/dev/null
+
+          # A fresh runner has no ~/.ssh, so the append below created nothing
+          # and `set -e` killed the step on a redirect, not on a failed
+          # command — hence a log that says only "No such file or directory"
+          # with no clue which file mattered.
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+
+          # Pin the host key rather than disabling the check. `|| true` so a
+          # transient keyscan failure does not kill the step before scp has
+          # had its own chance to report something useful.
+          ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
           scp -i /tmp/deploy_key deploy/docker-compose.yml "ec2-user@${HOST}:/opt/medicraft/docker-compose.yml"
           scp -i /tmp/deploy_key deploy/Caddyfile          "ec2-user@${HOST}:/opt/medicraft/caddy/Caddyfile"
           scp -i /tmp/deploy_key deploy/fetch-secrets.sh   "ec2-user@${HOST}:/opt/medicraft/fetch-secrets.sh"
