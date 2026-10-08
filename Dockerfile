@@ -37,6 +37,14 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/*
 
 COPY package.json package-lock.json ./
+# The schema comes with them, because `postinstall` runs `prisma generate`
+# and generate needs a schema to read. Without this `npm ci` exits 1 here
+# with a Prisma error, which reads like a dependency problem and is not one.
+#
+# It is copied separately from the rest of the source on purpose: the layer
+# cache for the install below should only break when the manifest, the
+# lockfile or the schema change, not on every edit to a component.
+COPY prisma ./prisma
 # `npm ci` not `npm install`: it installs exactly the lockfile, fails if the
 # lockfile and manifest disagree, and never writes the lockfile — so an image
 # cannot silently drift from what was committed.

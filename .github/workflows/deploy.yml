@@ -97,6 +97,7 @@ jobs:
         id: image
         env:
           REGISTRY: ${{ steps.ecr.outputs.registry }}
+          PUBLIC_URL: ${{ vars.PUBLIC_URL }}
         run: |
           set -euo pipefail
           TAG="${ENV_NAME}-${GITHUB_SHA::12}"
@@ -105,7 +106,16 @@ jobs:
 
           # Tagged by commit, never `latest`: a rollback is then naming a tag
           # that still exists rather than hoping the old image survived.
-          docker build --platform linux/arm64 -t "$APP" .
+          # `NEXT_PUBLIC_APP_URL` is baked into the CLIENT bundle at build
+          # time — that is what NEXT_PUBLIC_ means — so it cannot be supplied
+          # later from the container environment like every other value here.
+          # Without it the Dockerfile's `ARG` resolves to an empty string and
+          # the image ships with blank absolute URLs. Every manual build I
+          # made passed it; this workflow never did, so an automated deploy
+          # would have quietly produced a worse image than a hand-built one.
+          docker build --platform linux/arm64 \
+            --build-arg NEXT_PUBLIC_APP_URL="${PUBLIC_URL}" \
+            -t "$APP" .
           docker build --platform linux/arm64 --target migrator -t "$MIG" .
           docker push "$APP"
           docker push "$MIG"
