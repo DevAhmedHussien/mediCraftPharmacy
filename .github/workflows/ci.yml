@@ -86,6 +86,13 @@ jobs:
       - name: Apply migrations to the throwaway database
         run: npx prisma migrate deploy
 
+      # The end-to-end specs render real pages: a product, a category and a
+      # blog post. Migrations give the runner a SCHEMA, not rows — so without
+      # this every dynamic route 404s and the SEO and accessibility suites
+      # fail on content that was never there rather than on a regression.
+      - name: Seed it
+        run: npx prisma db seed
+
       - name: Typecheck
         run: npx tsc --noEmit
 

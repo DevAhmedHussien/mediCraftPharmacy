@@ -1,5 +1,5 @@
 import { test, expect, request as pwRequest } from "@playwright/test";
-import { PUBLIC_ROUTES, SAMPLE } from "./routes";
+import { PUBLIC_ROUTES, DISCOVER } from "./routes";
 
 /**
  * SEO, asserted against the SERVER'S HTML.
@@ -107,9 +107,14 @@ for (const route of PUBLIC_ROUTES) {
   });
 }
 
-test("product pages carry Product and BreadcrumbList schema", async ({ baseURL }) => {
+test("product pages carry Product and BreadcrumbList schema", async ({ baseURL }, testInfo) => {
+  // Discovered from /products, so a renamed or delisted compound does not
+  // fail the suite for a reason that is not a regression.
+  const slug = await DISCOVER.product(baseURL!);
+  testInfo.skip(!slug, "no products published — nothing to assert");
+
   const ctx = await pwRequest.newContext({ baseURL });
-  const html = await (await ctx.get(SAMPLE.product)).text();
+  const html = await (await ctx.get(slug!)).text();
   await ctx.dispose();
 
   const types = schemaTypes(html);
@@ -120,12 +125,56 @@ test("product pages carry Product and BreadcrumbList schema", async ({ baseURL }
   expect(types).toContain("BreadcrumbList");
 });
 
-test("blog posts carry Article schema", async ({ baseURL }) => {
+test("blog posts carry Article schema", async ({ baseURL }, testInfo) => {
+  const slug = await DISCOVER.post(baseURL!);
+  testInfo.skip(!slug, "no posts published — nothing to assert");
+
   const ctx = await pwRequest.newContext({ baseURL });
-  const html = await (await ctx.get(SAMPLE.post)).text();
+  const html = await (await ctx.get(slug!)).text();
   await ctx.dispose();
   expect(html).toMatch(/"@type":\s*"(BlogPosting|Article)"/);
 });
+
+/* The dynamic templates get the SAME full SEO pass as the static routes —
+   one h1, title and description in range, canonical, parseable JSON-LD, no
+   skipped heading levels. They are the page types with the most instances
+   (30 products, 19 categories), so a fault here is 49 bad pages, not one. */
+for (const [label, discover] of [
+  ["product", DISCOVER.product],
+  ["category", DISCOVER.category],
+  ["blog post", DISCOVER.post],
+] as const) {
+  test(`SEO: a ${label} page`, async ({ baseURL }, testInfo) => {
+    const route = await discover(baseURL!);
+    testInfo.skip(!route, `nothing published for ${label}`);
+
+    const ctx = await pwRequest.newContext({ baseURL });
+    const res = await ctx.get(route!);
+    expect(res.status(), `${route} must return 200`).toBe(200);
+    const html = await res.text();
+    await ctx.dispose();
+
+    expect(html.match(/<h1[\s>]/g) ?? [], `${route}: exactly one h1`).toHaveLength(1);
+
+    const title = html.match(/<title>(.*?)<\/title>/s)?.[1]?.trim() ?? "";
+    expect(title.length, `${route} title is ${title.length}: "${title}"`).toBeGreaterThanOrEqual(30);
+    expect(title.length, `${route} title is ${title.length}: "${title}"`).toBeLessThanOrEqual(65);
+
+    const desc = html.match(/<meta name="description" content="(.*?)"/s)?.[1] ?? "";
+    expect(desc.length, `${route} description is ${desc.length}`).toBeGreaterThanOrEqual(110);
+    expect(desc.length, `${route} description is ${desc.length}`).toBeLessThanOrEqual(170);
+
+    expect(html, `${route} has no canonical`).toContain('rel="canonical"');
+
+    for (const [, body] of html.matchAll(/type="application\/ld\+json"[^>]*>(.*?)<\/script>/gs)) {
+      expect(() => JSON.parse(body), `${route} has malformed JSON-LD`).not.toThrow();
+    }
+
+    const levels = [...html.matchAll(/<h([1-6])[\s>]/g)].map((m) => Number(m[1]));
+    const skips = levels.filter((lvl, i) => i > 0 && lvl - levels[i - 1] > 1);
+    expect(skips, `${route} skips heading levels: ${levels.join(",")}`).toHaveLength(0);
+  });
+}
 
 test("robots and sitemap: everything public, nothing private", async ({ baseURL }) => {
   const ctx = await pwRequest.newContext({ baseURL });
