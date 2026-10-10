@@ -18,7 +18,7 @@ import { categoryImage, media } from "@/lib/media";
 
 export const metadata: Metadata = pageMetadata({
   title: "Compounded Formulary",
-  description: "Browse the MediCraft formulary: 692 compounded preparations across weight management, HRT, TRT, sexual health, hair loss, pain management, skin care, wellness and supplies. Every one requires a valid prescription.",
+  description: "Browse 692 compounded preparations across weight management, HRT, TRT, sexual health, hair loss, pain management, skin care and wellness. Prescription required.",
   path: "/products",
 });
 

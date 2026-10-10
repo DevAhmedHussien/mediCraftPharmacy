@@ -59,7 +59,30 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
       ? `${product.name}${detail}`
       : product.name;
 
-  const described = `${product.detail.description} Compounded to order by ${site.name}.`;
+  /* A description for the 692 products that do not have one.
+   *
+   * `detail.description` is editorial prose, and only the twenty-nine curated
+   * entries have it — the formulary carries strengths and routes, not copy.
+   * For the rest this produced " Compounded to order by MediCraft Pharmacy.",
+   * 43 characters, identical on every page: too short for a snippet and
+   * duplicated 692 times, which is how a catalogue gets collapsed in search
+   * results rather than indexed.
+   *
+   * So where there is no prose, one is assembled from what the formulary does
+   * know. The strength, form and route make it specific to the preparation,
+   * which is both what distinguishes it from its neighbours and what a
+   * prescriber is searching for. */
+  const facts = [product.form, product.doses, product.detail.route]
+    .map((f) => f?.trim())
+    .filter(Boolean)
+    .join(" · ");
+
+  const described = product.detail.description
+    ? `${product.detail.description} Compounded to order by ${site.name}.`
+    : `${product.name}${facts ? ` — ${facts}.` : "."} A compounded ${
+        product.category.toLowerCase()
+      } preparation, made to prescription by ${site.name}, a 503A compounding pharmacy in ${site.addressShort}.`;
+
   const description =
     described.length <= 170
       ? described

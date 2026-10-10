@@ -87,7 +87,14 @@ export function Formulary({
               className={cn("chip", active === "all" && "chip-active")}
             >
               All Categories{" "}
-              <span className="font-mono text-[0.8125em] tabular-nums opacity-70">
+              {/* NO `opacity-70` HERE. It measured 3.6:1 against white — axe
+                  flagged all ten pills — because dimming a colour that only
+                  just clears AA puts it under. The count is already
+                  distinguished from the name by the mono face and the smaller
+                  size; it does not also need to be fainter, and inheriting
+                  `currentColor` keeps it correct on the active pill's navy
+                  ground as well as on white. */}
+              <span className="font-mono text-[0.8125em] tabular-nums">
                 {totalCount}
               </span>
             </button>
@@ -103,7 +110,7 @@ export function Formulary({
                 {/* Mono and tabular: the count is data sitting beside a name,
                     and ten pills whose figures do not share a column read as
                     noise. */}
-                <span className="font-mono text-[0.8125em] tabular-nums opacity-70">
+                <span className="font-mono text-[0.8125em] tabular-nums">
                   {g.category.count}
                 </span>
               </button>
