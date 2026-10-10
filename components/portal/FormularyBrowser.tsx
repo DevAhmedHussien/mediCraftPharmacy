@@ -44,6 +44,11 @@ export function FormularyBrowser({
   categories: FormularyCategory[];
   pageSize: number;
 }) {
+  /* The brief asks for "All Categories (692)" at the top of the filter.
+     Summed from the same counts the options print, so the total and its parts
+     are one number — a second query could disagree with them. */
+  const totalCategoryCount = categories.reduce((n, c) => n + c.count, 0);
+
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -136,7 +141,7 @@ export function FormularyBrowser({
             aria-label="Filter by category"
             className="rounded-[14px] border border-hair bg-white px-3 py-2 text-meta text-ink focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
           >
-            <option value="">All categories</option>
+            <option value="">All Categories ({totalCategoryCount})</option>
             {categories.map((c) => (
               <option key={c.slug} value={c.slug}>
                 {c.name} ({c.count})
@@ -274,12 +279,29 @@ export function FormularyBrowser({
                 </span>
 
                 <span className="shrink-0 text-right">
-                  <span className="block text-meta font-bold tabular-nums text-ink">
-                    ${Number(row.listPrice).toFixed(2)}
-                  </span>
-                  <span className="block font-mono text-caption text-ink-muted">
-                    per {row.unit}
-                  </span>
+                  {/* "Quote", not $0.00.
+                      Quote-only items carry a zero list price because the
+                      column is NOT NULL — `isQuoteOnly` is what says the
+                      figure is meaningless. Printing the zero would offer a
+                      free preparation; MSA §4.1 prices these by written quote
+                      or change order, which is what Schedule A-1 prints. */}
+                  {row.isQuoteOnly ? (
+                    <>
+                      <span className="block text-meta font-bold text-ink">Quote</span>
+                      <span className="block font-mono text-caption text-ink-muted">
+                        on request
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="block text-meta font-bold tabular-nums text-ink">
+                        ${Number(row.listPrice).toFixed(2)}
+                      </span>
+                      <span className="block font-mono text-caption text-ink-muted">
+                        per {row.unit}
+                      </span>
+                    </>
+                  )}
                 </span>
               </label>
             </li>

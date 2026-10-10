@@ -78,8 +78,14 @@ export default async function AdminProductsPage({
                 name: "category",
                 value: searchParams.category,
                 options: [
-                  { value: "", label: "All categories" },
-                  ...categories.map((c) => ({ value: c, label: c.replace(/-/g, " ") })),
+                  {
+                    value: "",
+                    label: `All Categories (${categories.reduce((n, c) => n + c.count, 0)})`,
+                  },
+                  ...categories.map((c) => ({
+                    value: c.slug,
+                    label: `${c.name} (${c.count})`,
+                  })),
                 ],
               },
             ]}

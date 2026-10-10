@@ -193,12 +193,37 @@ export async function getProduct(id: string) {
  * exist as far as the filter was concerned, so there was no way to look at one
  * and notice it needed filling.
  */
-export async function listCategories(): Promise<string[]> {
-  const rows = await db.productCategory.findMany({
-    orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
-    select: { slug: true },
-  });
-  return rows.map((r) => r.slug);
+export async function listCategories(): Promise<
+  { slug: string; name: string; count: number }[]
+> {
+  const [rows, counts] = await Promise.all([
+    db.productCategory.findMany({
+      /* The ten a product may be filed under. The retired marketing
+         categories are `isActive: false` and excluded, so the admin filter,
+         the partner's browser and the website offer the same list — which is
+         what the brief asks for. Their products are inactive too, so nothing
+         becomes unreachable by dropping them from the filter. */
+      where: { isActive: true },
+      orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+      select: { slug: true, name: true },
+    }),
+    db.product.groupBy({
+      by: ["categorySlug"],
+      where: { isActive: true },
+      _count: { _all: true },
+    }),
+  ]);
+
+  const countBySlug = new Map(counts.map((c) => [c.categorySlug, c._count._all]));
+
+  /* The name, not the slug with its hyphens swapped for spaces. That turned
+     "HRT" into "hrt" and "Wellness · Vitality" into "wellness vitality" in
+     the one dropdown an administrator uses to find anything. */
+  return rows.map((r) => ({
+    slug: r.slug,
+    name: r.name,
+    count: countBySlug.get(r.slug) ?? 0,
+  }));
 }
 
 /**

@@ -140,12 +140,20 @@ async function main() {
 
   /* The twenty-nine demo items live in legacy categories AND in
      weight-management, which is a formulary category — so they cannot be
-     found by category alone. They are instead the products that predate the
-     import, identified by having a description: the formulary carries none. */
+     found by category alone. They are the products that predate the import,
+     identified by carrying a description: the formulary has none.
+   *
+   * THE PREDICATE MUST NOT MENTION isPublished. It did, and that made the
+   * script wrong on its second run: step 3 republishes every active product
+   * in a formulary category, which re-publishes these nine, and the query
+   * that was meant to re-retire them had already stopped matching because
+   * they were unpublished at the time it ran. One pass gave 692 and the next
+   * gave 701. A description is a fact about the row; a flag is a thing this
+   * script changes, and identifying rows by what you are about to change is
+   * how an idempotent script stops being one. */
   const demoInSharedCategories = await prisma.product.findMany({
     where: {
       categorySlug: { in: ["weight-management", "pain-management"] },
-      isPublished: true,
       description: { not: null },
     },
     select: { slug: true, name: true },
@@ -166,6 +174,23 @@ async function main() {
         data: { isPublished: false },
       });
     }
+
+    /* Out of the pickers too, not only off the website.
+     *
+     * The brief requires the website, the admin product list and the
+     * partner's formulary browser to show the same ten categories and the
+     * same counts. Unpublishing alone left the demo items `isActive`, so the
+     * partner browser still offered them and Weight Management read 125 there
+     * against 116 on the site.
+     *
+     * `isActive: false`, never deleted: 274 price-list items and 187
+     * partner-pricing rows point at these products, and a price list is a
+     * contractual document. Deactivating hides them from anything that
+     * assembles a NEW list while every existing row keeps resolving. */
+    await prisma.product.updateMany({
+      where: { isPublished: false, isActive: true },
+      data: { isActive: false },
+    });
   }
 
   console.log("");
@@ -192,8 +217,17 @@ async function main() {
     console.log(`    ${c.name.padEnd(22)} ${String(n).padStart(3)}`);
   }
   console.log(`    ${"TOTAL".padEnd(22)} ${String(published).padStart(3)}`);
+  const orderable = await prisma.product.count({ where: { isActive: true } });
+  console.log(`    ${"orderable (portals)".padEnd(22)} ${String(orderable).padStart(3)}`);
   if (!dryRun && published !== 692) {
     throw new Error(`Expected 692 published products, got ${published}.`);
+  }
+  /* The three lists the brief requires to agree: the website's published set,
+     the portals' orderable set, and Schedule A-1 itself. */
+  if (!dryRun && orderable !== published) {
+    throw new Error(
+      `The portals would show ${orderable} products and the website ${published}. They must match.`
+    );
   }
 }
 

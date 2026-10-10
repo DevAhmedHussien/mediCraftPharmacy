@@ -41,6 +41,8 @@ export type FormularyRow = {
   coldChain: boolean;
   listPrice: string;
   unit: string;
+  /** Priced by written quote under MSA §4.1, not from the list. */
+  isQuoteOnly: boolean;
   categoryName: string | null;
   selected: boolean;
 };
@@ -51,9 +53,15 @@ function buildWhere(
 ): Prisma.ProductWhereInput {
   return {
     isActive: true,
-    // Quote-only items have no list price; showing one in a price column
-    // invites a partner to select something we cannot quote them a figure for.
-    isQuoteOnly: false,
+    /* Quote-only items are IN the list.
+     *
+     * They used to be filtered out, on the reasoning that showing one in a
+     * price column invites a partner to select something we cannot put a
+     * figure against. But MSA §4.1 and Schedule A-1 both carry them — printed
+     * as "Quote" rather than a number — so hiding them made the portal's
+     * formulary a different document from the one the partner signed, and
+     * made its category counts disagree with the website by ten items. The
+     * browser prints "Quote" in the price column instead. */
     ...(category ? { categorySlug: category } : {}),
     ...(selectedIds ? { id: { in: selectedIds } } : {}),
     ...(q
@@ -103,6 +111,7 @@ export async function listFormulary(partnerId: string, query: FormularyQuery) {
         coldChain: true,
         listPrice: true,
         unit: true,
+        isQuoteOnly: true,
         category: { select: { name: true } },
       },
     }),
@@ -123,6 +132,7 @@ export async function listFormulary(partnerId: string, query: FormularyQuery) {
         // Decimal must not become a float on the way to the browser.
         listPrice: row.listPrice.toString(),
         unit: row.unit,
+        isQuoteOnly: row.isQuoteOnly,
         categoryName: row.category?.name ?? null,
         selected: selectedSet.has(row.id),
       })
@@ -134,16 +144,32 @@ export async function listFormulary(partnerId: string, query: FormularyQuery) {
   };
 }
 
-/** Categories that actually have something orderable in them. */
+/**
+ * The ten formulary categories, each with the same count the website shows.
+ *
+ * TWO THINGS CHANGED HERE, BOTH SO THE THREE LISTS AGREE.
+ *
+ * The categories come from `ProductCategory` filtered on `isActive`, not from
+ * whatever slugs happen to appear on a product row. Grouping the products
+ * produced nineteen entries — the ten plus the nine retired marketing
+ * categories, which still had their demo items filed under them — so a
+ * partner's filter offered "IV Therapy (2)" against a website that has no
+ * such category.
+ *
+ * And the count no longer excludes quote-only items. It did, which made
+ * TRT read 93 here and 101 on the site. Schedule A-1 lists those items; it
+ * just prints "Quote" where the others have a figure, which is what the
+ * browser now does too.
+ */
 export async function listFormularyCategories() {
   const rows = await db.product.groupBy({
     by: ["categorySlug"],
-    where: { isActive: true, isQuoteOnly: false, categorySlug: { not: null } },
+    where: { isActive: true, categorySlug: { not: null } },
     _count: { _all: true },
   });
 
   const categories = await db.productCategory.findMany({
-    where: { slug: { in: rows.map((r) => r.categorySlug!).filter(Boolean) } },
+    where: { isActive: true },
     orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
     select: { slug: true, name: true },
   });
