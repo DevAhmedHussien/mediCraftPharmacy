@@ -161,11 +161,15 @@ export default function QualityPage() {
             {/* The pack station with the overhead camera in frame. The whole
                 claim of this section is "we filmed it", so the shot that shows
                 the camera is the one that belongs beside it. */}
+            {/* Numbered, like the same four checkpoints on the home page.
+                They are one sequence described in two places, and only one of
+                the two was showing which order they happen in. */}
             <CardsBesideFigure
               className="mt-10"
               items={quality.custody.recorded.steps}
               image={media.custody}
               eyebrow="On every order"
+              numbered
             />
           </div>
 

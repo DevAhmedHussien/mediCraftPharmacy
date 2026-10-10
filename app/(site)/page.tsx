@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
-import { Card, Eyebrow, Glass, SectionTitle } from "@/components/ui/glass";
+import { Eyebrow, Glass, SectionTitle } from "@/components/ui/glass";
 import { Counter } from "@/components/motion/Counter";
 import { Button } from "@/components/ui/button";
 import { hero, providers, quality } from "@/lib/content";
@@ -11,6 +11,7 @@ import { pageMetadata } from "@/lib/seo";
 import { getCategories } from "@/lib/catalogue";
 import { categoryImage } from "@/lib/media";
 import { cn } from "@/lib/utils";
+import { StepCard } from "@/components/sections/StepCard";
 
 export const metadata: Metadata = pageMetadata({
   title: `${site.name} — 503A Compounding in Tampa`,
@@ -133,14 +134,16 @@ export default async function HomePage() {
             Most pharmacies can tell you a package shipped. We can show you exactly what was in it.
           </p>
         </div>
-        <ol className="reveal-group grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {/* `.reveal-group` is the stagger: each child carries a later
+            animation-range, so the four arrive in order as the row enters.
+            It is CSS `animation-timeline: view()` rather than a JS
+            orchestrator — four cards do not need 47 kB of engine — and it is
+            inside a `prefers-reduced-motion: no-preference` block, so a
+            reader who asked for stillness gets the cards already in place. */}
+        <ol className="reveal-group grid items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {custody.map((s, i) => (
-            <li key={s.title}>
-              <Card className="flex h-full min-h-[240px] flex-col gap-3.5 p-7">
-                <span className="font-mono text-xs text-ink-muted">{String(i + 1).padStart(2, "0")}</span>
-                <h3 className="mt-auto text-[19px] font-medium leading-tight">{s.title}</h3>
-                <p className="text-[14.5px] leading-relaxed text-ink-soft text-pretty">{s.body}</p>
-              </Card>
+            <li key={s.title} className="h-full">
+              <StepCard index={i + 1} title={s.title} body={s.body} className="min-h-[240px]" />
             </li>
           ))}
         </ol>

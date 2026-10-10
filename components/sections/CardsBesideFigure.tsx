@@ -1,4 +1,5 @@
 import { IconCard } from "@/components/blocks";
+import { StepCard } from "@/components/sections/StepCard";
 import { Stagger, StaggerItem } from "@/components/motion/Motion";
 import { Reveal } from "@/components/ui/Reveal";
 import { BrandFigure } from "@/components/sections/BrandFigure";
@@ -42,12 +43,23 @@ export function CardsBesideFigure({
   eyebrow,
   /** Which side the picture sits on at `lg` and up. */
   imageSide = "left",
+  numbered = false,
   className,
 }: {
   items: readonly CardItem[];
   image: Media;
   eyebrow?: string;
   imageSide?: "left" | "right";
+  /**
+   * Render the cards as a numbered sequence.
+   *
+   * On for the chain-of-custody checkpoints, which genuinely are passed in
+   * order — and which the home page already numbers, so without this the same
+   * four steps appeared numbered on one page and not on the other. Off for
+   * the sets that are a list rather than a sequence; numbering those claims
+   * an order the content does not have.
+   */
+  numbered?: boolean;
   className?: string;
 }) {
   const figure = (
@@ -65,10 +77,17 @@ export function CardsBesideFigure({
   );
 
   const cards = (
-    <Stagger className={cn("grid gap-5", imageSide === "right" && "order-1 lg:order-1")}>
-      {items.map((item) => (
-        <StaggerItem key={item.title}>
-          <IconCard title={item.title} body={item.body} />
+    <Stagger
+      as={numbered ? "ol" : "div"}
+      className={cn("grid gap-5", imageSide === "right" && "order-1 lg:order-1")}
+    >
+      {items.map((item, i) => (
+        <StaggerItem key={item.title} as={numbered ? "li" : "div"}>
+          {numbered ? (
+            <StepCard index={i + 1} title={item.title} body={item.body} />
+          ) : (
+            <IconCard title={item.title} body={item.body} />
+          )}
         </StaggerItem>
       ))}
     </Stagger>
