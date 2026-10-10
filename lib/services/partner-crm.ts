@@ -268,7 +268,16 @@ const BATCH = 20;
  * exists rather than an inline call.
  */
 export async function processCrmOutbox(): Promise<{ sent: number; failed: number }> {
-  if (!ghlConfigured) return { sent: 0, failed: 0 };
+  if (!ghlConfigured) {
+    /* Say so, once per drain.
+     *
+     * This used to return a silent 0/0, which reads in the cron log exactly
+     * like "nothing was queued" — so a deployment missing GHL_API_TOKEN
+     * looked healthy while every transition piled up unsent. An operator
+     * reading `0 sent, 0 failed` has no way to tell the two apart. */
+    console.warn("[crm] GHL is not configured — outbox not drained");
+    return { sent: 0, failed: 0 };
+  }
 
   const due = await db.crmOutbox.findMany({
     where: { status: "PENDING", nextAttemptAt: { lte: new Date() } },
