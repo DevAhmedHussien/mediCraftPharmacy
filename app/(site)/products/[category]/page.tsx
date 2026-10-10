@@ -2,11 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ClosingCta, PageHero } from "@/components/blocks";
-import { Icon } from "@/components/icons/set";
 import { ProductCard } from "@/components/ProductCard";
-import { closingCta, formulary } from "@/lib/content";
+import { closingCta } from "@/lib/content";
 import { getCategory, getProductsByCategory } from "@/lib/catalogue";
-import { media } from "@/lib/media";
+import { categoryImage } from "@/lib/media";
 import {
   breadcrumbJsonLd,
   itemListJsonLd,
@@ -43,15 +42,11 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const category = await getCategory(params.category);
   if (!category) return { title: "Products" };
 
-  const items = await getProductsByCategory(category.slug);
-  // The count makes each of the eleven category descriptions distinct, which
+  // The count makes each of the ten category descriptions distinct, which
   // matters: near-identical descriptions get collapsed in search results.
-  const description =
-    items.length > 0
-      ? `${category.blurb}. ${items.length} compounded ${
-          items.length === 1 ? "formulation" : "formulations"
-        } available by prescription from MediCraft Pharmacy.`
-      : `${category.blurb}. Contact our provider team for current formulary availability in this category.`;
+  const description = `${category.blurb}. ${category.count} compounded ${
+    category.count === 1 ? "formulation" : "formulations"
+  } available by prescription from MediCraft Pharmacy.`;
 
   return pageMetadata({
     title: category.name,
@@ -94,7 +89,7 @@ export default async function CategoryPage({ params }: Params) {
         eyebrow="Formulary"
         title={category.name}
         lead={category.blurb}
-        media={media.formulary}
+        media={categoryImage(category.slug)}
       >
         <Link
           href="/products"
@@ -106,46 +101,26 @@ export default async function CategoryPage({ params }: Params) {
 
       <section className="section">
         <div className="container-x">
-          {items.length > 0 ? (
-            <>
-              <p className="font-mono text-caption font-medium uppercase tracking-wider text-ink-muted">
-                {items.length} {items.length === 1 ? "product" : "products"}
-              </p>
-              {/* `headingLevel={2}`: on this page the grid is the content
-                  directly under the h1, with no category heading between, so
-                  the cards' own titles are the second level. */}
-              <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {items.map((p) => (
-                  <ProductCard key={p.slug} product={p} headingLevel={2} />
-                ))}
-              </div>
-            </>
-          ) : (
-            /* Nothing published in this specialty yet. The pharmacy still
-               compounds here, so this invites the inquiry instead of reading
-               as an empty shelf. */
-            <div className="flex flex-col items-start gap-2.5 rounded-card border border-dashed border-hair-strong px-7 py-12">
-              <p className="text-[1.25rem] font-medium text-navy">
-                {formulary.comingSoon.title}
-              </p>
-              <p className="max-w-[46ch] text-[0.9375rem] text-ink-soft text-pretty">
-                {formulary.comingSoon.body}
-              </p>
-              <Link href={formulary.comingSoon.cta.href} className="btn btn-primary mt-1.5">
-                {formulary.comingSoon.cta.label}
-              </Link>
-            </div>
-          )}
+          <p className="font-mono text-caption font-medium uppercase tracking-wider text-ink-muted">
+            {items.length} {items.length === 1 ? "product" : "products"}
+          </p>
 
-          <aside className="mt-14 flex items-start gap-4 rounded-[1.25rem] border border-hair-soft bg-white px-6 py-5">
-            <Icon name="rx" className="mt-0.5 h-5 w-5 text-cyan-700" />
-            <p className="text-meta text-ink-soft text-pretty">
-              <strong className="font-bold text-ink">
-                {formulary.rxNotice.label}
-              </strong>{" "}
-              {formulary.rxNotice.body}
-            </p>
-          </aside>
+          {/* `headingLevel={2}`: on this page the grid is the content directly
+              under the h1, with no category heading between, so the cards' own
+              titles are the second level. */}
+          <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {items.map((p) => (
+              <ProductCard key={p.slug} product={p} headingLevel={2} />
+            ))}
+          </div>
+
+          {/* No "coming soon" panel and no prescription box.
+              Every published category is a formulary category and every
+              formulary category has products, so the panel could only ever
+              appear on a data fault — and the Rx notice it sat beside was the
+              third copy of a statement the site footer already makes on every
+              page. Both were removed per the 8 October brief; the footer
+              disclaimer stays. */}
         </div>
       </section>
 

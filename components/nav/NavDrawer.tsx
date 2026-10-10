@@ -64,7 +64,7 @@ export function NavDrawer({
 
   const activeCategory =
     view.level === "category" ? categories.find((c) => c.slug === view.slug) : undefined;
-  const categoryProducts = activeCategory?.products ?? [];
+  const categoryProducts = activeCategory?.previewProducts ?? [];
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>

@@ -1,32 +1,42 @@
 "use client";
 
 import { useState } from "react";
-import type { FormularyProduct } from "@/lib/catalogue";
+import Image from "next/image";
 import Link from "next/link";
-import { Icon } from "@/components/icons/set";
+import type { FormularyProduct } from "@/lib/catalogue";
 import { ProductCard } from "@/components/ProductCard";
-import { formulary } from "@/lib/content";
 import type { Category } from "@/lib/data";
+import type { CategoryMedia } from "@/lib/media";
 import { cn } from "@/lib/utils";
 
 /**
- * The formulary, laid out as the owner's document lays it out: category pills
- * across the top, then one titled section per specialty.
+ * The formulary: category pills across the top, then one titled section per
+ * category, each opening with its own image and its live product count.
  *
- * A category with nothing published yet is shown rather than hidden, with a
- * "Request Formulary" panel in place of a grid. That is deliberate — the
- * pharmacy compounds in these specialties today even where the public listing
- * isn't written, so hiding them would understate what it offers, and showing
- * an empty grid would look broken.
+ * THE PILLS WRAP. They used to sit in an `overflow-x-auto` rail, which on
+ * desktop cut the list off mid-word at "Pain Man…" and on mobile put a
+ * 1,709px row inside a 343px container with no arrow and no scroll hint —
+ * seven of the eleven categories were unreachable unless you guessed the rail
+ * could be dragged. A wrapped row is two lines at 1280px and four on a phone,
+ * and every category is visible at every width.
  *
- * Only the pill state is client-side; every section and product link is in the
- * server-rendered HTML, so the whole formulary is crawlable and works without
- * JavaScript.
+ * EACH SECTION SHOWS A SAMPLE, NOT THE WHOLE CATEGORY. Weight Management is
+ * 116 products; rendering all ten categories in full is 692 cards and about a
+ * megabyte of flight data for a page that exists to help someone choose a
+ * category. The heading carries the real count and links to the category page,
+ * which lists everything.
  */
 export function Formulary({
   groups,
+  totalCount,
 }: {
-  groups: { category: Category; items: FormularyProduct[] }[];
+  groups: {
+    category: Category;
+    items: FormularyProduct[];
+    image: CategoryMedia;
+  }[];
+  /** The "All Categories" figure — every published product, not just the shown ones. */
+  totalCount: number;
 }) {
   const [active, setActive] = useState("all");
 
@@ -41,14 +51,17 @@ export function Formulary({
           under it. */}
       <div className="sticky top-[var(--chrome-h-condensed)] z-30 border-b border-hair bg-paper/[0.94] backdrop-blur">
         <div className="container-x py-4">
-          <div className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1">
+          <div className="flex flex-wrap gap-2">
             <button
               type="button"
               onClick={() => setActive("all")}
               aria-pressed={active === "all"}
-              className={cn("chip shrink-0", active === "all" && "chip-active")}
+              className={cn("chip", active === "all" && "chip-active")}
             >
-              All Categories
+              All Categories{" "}
+              <span className="font-mono text-[0.8125em] tabular-nums opacity-70">
+                {totalCount}
+              </span>
             </button>
             {groups.map((g) => (
               <button
@@ -56,12 +69,15 @@ export function Formulary({
                 type="button"
                 onClick={() => setActive(g.category.slug)}
                 aria-pressed={active === g.category.slug}
-                className={cn(
-                  "chip shrink-0",
-                  active === g.category.slug && "chip-active"
-                )}
+                className={cn("chip", active === g.category.slug && "chip-active")}
               >
-                {g.category.name}
+                {g.category.name}{" "}
+                {/* Mono and tabular: the count is data sitting beside a name,
+                    and ten pills whose figures do not share a column read as
+                    noise. */}
+                <span className="font-mono text-[0.8125em] tabular-nums opacity-70">
+                  {g.category.count}
+                </span>
               </button>
             ))}
           </div>
@@ -73,13 +89,27 @@ export function Formulary({
         <div className="space-y-16">
           {visible.map((g) => (
             <section key={g.category.slug} id={g.category.slug} className="scroll-mt-44">
-              {/* One hairline, not a 2px rule. The heavy rule was doing the
-                  job of a heading weight; the reference gets the same
-                  separation from a 28px Satoshi 400 above a single hairline,
-                  which keeps the page quiet when eleven of these stack. */}
-              <header className="flex flex-wrap items-baseline gap-x-4 gap-y-1 border-b border-hair pb-4">
+              <header className="flex flex-wrap items-center gap-x-5 gap-y-4 border-b border-hair pb-5">
+                {/* The category's own image, at the size of a thumbnail rather
+                    than a banner: it identifies the section, it is not the
+                    subject of it. */}
+                <div
+                  className={cn(
+                    "relative hidden h-20 w-20 shrink-0 overflow-hidden rounded-2xl border border-hair-soft sm:block",
+                    g.image.fit === "contain" ? "bg-stone p-2" : "bg-stone"
+                  )}
+                >
+                  <Image
+                    src={g.image.src}
+                    alt=""
+                    fill
+                    sizes="80px"
+                    className={g.image.fit === "contain" ? "object-contain" : "object-cover"}
+                  />
+                </div>
+
                 <div className="min-w-0 flex-1">
-                  <h2 className="font-display text-[1.75rem] font-normal tracking-title text-navy">
+                  <h2 className="font-display text-[1.5rem] font-normal tracking-title text-navy sm:text-[1.75rem]">
                     <Link
                       href={`/products/${g.category.slug}`}
                       className="transition-colors hover:text-brand-600"
@@ -93,54 +123,36 @@ export function Formulary({
                 </div>
 
                 <span className="shrink-0 font-mono text-caption font-medium uppercase tracking-wider text-ink-muted">
-                  {g.items.length > 0
-                    ? `${g.items.length} ${g.items.length === 1 ? "product" : "products"}`
-                    : formulary.comingSoon.badge}
+                  {g.category.count} {g.category.count === 1 ? "product" : "products"}
                 </span>
               </header>
 
-              {g.items.length > 0 ? (
-                <div
-                  className="mt-8 grid gap-4"
-                  style={{ gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 15.625rem), 1fr))" }}
-                >
-                  {g.items.map((p) => (
-                    <ProductCard key={p.slug} product={p} />
-                  ))}
-                </div>
-              ) : (
-                /* Left-aligned, on the page ground, one dashed hairline.
-                   Centred text in a filled 2px-dashed box read as an error
-                   state; this category simply has nothing in it yet. */
-                <div className="mt-8 flex flex-col items-start gap-2.5 rounded-card border border-dashed border-hair-strong px-7 py-10">
-                  <p className="text-[1.25rem] font-medium text-navy">
-                    {formulary.comingSoon.title}
-                  </p>
-                  <p className="max-w-[46ch] text-[0.9375rem] text-ink-soft text-pretty">
-                    {formulary.comingSoon.body}
-                  </p>
-                  <Link href={formulary.comingSoon.cta.href} className="btn btn-primary mt-1.5">
-                    {formulary.comingSoon.cta.label}
+              <div
+                className="mt-8 grid gap-4"
+                style={{
+                  gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 15.625rem), 1fr))",
+                }}
+              >
+                {g.items.map((p) => (
+                  <ProductCard key={p.slug} product={p} />
+                ))}
+              </div>
+
+              {/* Only when there is more than what is shown — otherwise the
+                  link promises a page that adds nothing. */}
+              {g.category.count > g.items.length && (
+                <div className="mt-6">
+                  <Link
+                    href={`/products/${g.category.slug}`}
+                    className="btn btn-ghost"
+                  >
+                    View all {g.category.count} in {g.category.name}
                   </Link>
                 </div>
               )}
             </section>
           ))}
         </div>
-
-        {/* ---- Prescription notice ----
-            Required in substance, not decoration: this states that nothing here
-            can be bought directly and that every compound needs a patient-
-            specific prescription. */}
-        <aside className="mt-16 flex items-start gap-4 rounded-[1.25rem] border border-hair-soft bg-white px-6 py-5">
-          <Icon name="rx" className="mt-0.5 h-5 w-5 text-cyan-700" />
-          <p className="text-meta text-ink-soft text-pretty">
-            <strong className="font-bold text-ink">
-              {formulary.rxNotice.label}
-            </strong>{" "}
-            {formulary.rxNotice.body}
-          </p>
-        </aside>
       </div>
     </>
   );

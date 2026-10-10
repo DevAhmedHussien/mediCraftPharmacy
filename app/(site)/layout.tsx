@@ -2,7 +2,6 @@ import type { ReactNode } from "react";
 
 import { Footer } from "@/components/Footer";
 import { MotionProvider } from "@/components/motion/MotionProvider";
-import { categoryThumb } from "@/lib/media";
 import { Navbar } from "@/components/Navbar";
 import { CookieConsent } from "@/components/CookieConsent";
 import { site, hasRealPhone } from "@/lib/site";
@@ -54,6 +53,9 @@ import { homeForRole, homeLabelForRole } from "@/lib/home-route";
    ========================================================================= */
 export const dynamic = "force-dynamic";
 
+/** How many products the mobile drawer previews under a category. */
+const NAV_PREVIEW_PRODUCTS = 8;
+
 export default async function SiteLayout({ children }: { children: ReactNode }) {
   /* The products menu, built once per request and handed to the nav.
    *
@@ -74,23 +76,29 @@ export default async function SiteLayout({ children }: { children: ReactNode }) 
       }
     : null;
 
+  /* Five fields per category, and a capped preview — not the catalogue.
+   *
+   * This used to attach every product in every category — slug, name, form
+   * and doses — plus a thumbnail, to each of the ten entries. The menu
+   * renders none of it: it shows a name and a count. With twenty-nine
+   * products that was invisible waste; with the formulary's 692 it would be
+   * roughly 60 kB of flight data pushed into every page of the site, header
+   * and all, to render ten list items.
+   *
+   * `getCategories` already carries the count, so there is no per-category
+   * query left either — ten round trips became one. */
   const categories = await getCategories();
   const navCategories = await Promise.all(
     categories.map(async (category) => {
-      const items = await getProductsByCategory(category.slug);
       return {
         slug: category.slug,
         name: category.name,
         blurb: category.blurb,
         icon: category.icon,
-        count: items.length,
-        thumb: categoryThumb(category.slug, items[0]?.slug, items[0]?.name),
-        products: items.map((p) => ({
-          slug: p.slug,
-          name: p.name,
-          form: p.form,
-          doses: p.doses,
-        })),
+        count: category.count,
+        previewProducts: (await getProductsByCategory(category.slug))
+          .slice(0, NAV_PREVIEW_PRODUCTS)
+          .map((p) => ({ slug: p.slug, name: p.name, form: p.form, doses: p.doses })),
       };
     })
   );

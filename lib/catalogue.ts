@@ -5,11 +5,13 @@ import { cache } from "react";
 import {
   categories as editorialCategories,
   products as editorialProducts,
+  hasPackshot,
   productImage,
   type Category,
   type Product,
 } from "@/lib/data";
 import { db } from "@/lib/db";
+import { categoryImage } from "@/lib/media";
 
 /* ===========================================================================
    The public catalogue, from the database.
@@ -116,7 +118,16 @@ function toProduct(row: Row): CatalogueProduct {
     doses,
     form: row.form ?? "",
     blurb: row.blurb ?? "",
-    image: productImage(row.slug),
+    /* A packshot when this slug has one, the category's photograph when it
+       does not. `productImage` only ever concatenated a path, so before this
+       all 692 formulary products pointed at files that are not there and the
+       whole grid rendered broken-image icons. */
+    image: hasPackshot(row.slug)
+      ? productImage(row.slug)
+      : categoryImage(row.categorySlug ?? "").src,
+    imageFit: hasPackshot(row.slug)
+      ? ("contain" as const)
+      : categoryImage(row.categorySlug ?? "").fit,
     detail: {
       productId: row.slug.toUpperCase().slice(0, 24),
       brand: "MediCraft Pharmacy",
@@ -137,21 +148,44 @@ function toProduct(row: Row): CatalogueProduct {
   };
 }
 
-/** Published categories, in the order an admin set. */
+/**
+ * Published categories, in the order an admin set, each carrying its live
+ * product count.
+ *
+ * The count is a grouped query rather than a per-category one: ten categories
+ * would otherwise be ten round trips on every page that shows the menu. It
+ * counts published, active products — the same predicate `getProducts` uses —
+ * so the figure on a pill and the number of cards under it can never differ.
+ */
 export const getCategories = cache(async (): Promise<Category[]> => {
-  const rows = await db.productCategory.findMany({
-    where: { isPublished: true },
-    orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
-    select: { slug: true, name: true, blurb: true, icon: true },
-  });
+  const [rows, counts] = await Promise.all([
+    db.productCategory.findMany({
+      where: { isPublished: true },
+      orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+      select: { slug: true, name: true, blurb: true, icon: true },
+    }),
+    db.product.groupBy({
+      by: ["categorySlug"],
+      where: { isPublished: true, isActive: true },
+      _count: { _all: true },
+    }),
+  ]);
+
+  const countBySlug = new Map(counts.map((c) => [c.categorySlug, c._count._all]));
 
   return rows.map((row) => ({
     slug: row.slug,
     name: row.name,
     blurb: row.blurb ?? editorialCategoryBySlug.get(row.slug)?.blurb ?? "",
     icon: (row.icon ?? editorialCategoryBySlug.get(row.slug)?.icon ?? "vial") as Category["icon"],
+    count: countBySlug.get(row.slug) ?? 0,
   }));
 });
+
+/** Every published product, across every category. The "All Categories" figure. */
+export const getProductCount = cache(
+  async (): Promise<number> => db.product.count({ where: { isPublished: true, isActive: true } })
+);
 
 /** Published products, whatever their category. */
 export const getProducts = cache(async (): Promise<CatalogueProduct[]> => {
@@ -196,11 +230,11 @@ export const getProductsByCategory = cache(
  * came to 249 kB of which 120 kB was that payload, and on throttled mobile
  * the transfer alone was most of a 3.7 s first paint.
  *
- * Seven fields, which is what `ProductCard` reads.
+ * Eight fields, which is what `ProductCard` reads.
  */
 export type FormularyProduct = Pick<
   CatalogueProduct,
-  "slug" | "name" | "category" | "categorySlug" | "doses" | "form" | "blurb" | "image"
+  "slug" | "name" | "category" | "categorySlug" | "doses" | "form" | "blurb" | "image" | "imageFit"
 >;
 
 /** Narrow a catalogue entry to what crosses to the client. */
@@ -214,19 +248,36 @@ export function toFormularyProduct(p: CatalogueProduct): FormularyProduct {
     form: p.form,
     blurb: p.blurb,
     image: p.image,
+    imageFit: p.imageFit,
   };
 }
 
+/**
+ * The catalogue grouped by category, with each group capped.
+ *
+ * WHY A CAP. /products renders every group at once, and the formulary is 692
+ * products — Weight Management alone is 116. The page that shows them is a
+ * client component so the category filter needs no round trip, which means
+ * every product handed to it is serialised into the HTML twice: once as
+ * markup, once as RSC flight data. Uncapped that was ~1.1 MB of payload for a
+ * page nobody scrolls to the bottom of.
+ *
+ * So the index shows a sample per category and links to the category page for
+ * the rest, which is server-rendered and pays for only the one category
+ * somebody asked for. `category.count` is the real total either way, so the
+ * heading and the pill still read 116 while twelve cards sit under them.
+ */
 export const getProductsGrouped = cache(
-  async (): Promise<{ category: Category; items: CatalogueProduct[] }[]> => {
+  async (
+    perCategory = Number.POSITIVE_INFINITY
+  ): Promise<{ category: Category; items: CatalogueProduct[] }[]> => {
     const [categories, products] = await Promise.all([getCategories(), getProducts()]);
 
-    /* Empty groups are kept deliberately: the formulary page shows every
-       therapeutic area and offers "request formulary" where nothing is
-       published yet, which is what the owner's own document does. */
     return categories.map((category) => ({
       category,
-      items: products.filter((p) => p.categorySlug === category.slug),
+      items: products
+        .filter((p) => p.categorySlug === category.slug)
+        .slice(0, perCategory),
     }));
   }
 );
@@ -243,12 +294,20 @@ export const getRelatedProducts = cache(
   }
 );
 
-/** "6 formulations", or the honest thing to say when there are none. */
+/**
+ * "116 products", for the Products menu and the home-page cards.
+ *
+ * Every published category now has a count, because the ten are the formulary
+ * and the formulary has no empty category. The old "Available on request"
+ * fallback is gone — the brief asks for the count in its place, and a count
+ * of zero would mean a category published with nothing in it, which is a data
+ * fault to fix rather than a phrase to print.
+ */
 export const getCategoryMetaLabel = cache(async (slugOrHref: string): Promise<string> => {
   const slug = slugOrHref.replace(/^\/products\//, "");
-  const items = await getProductsByCategory(slug);
-  if (items.length === 0) return "Available on request";
-  return `${items.length} ${items.length === 1 ? "formulation" : "formulations"}`;
+  const categories = await getCategories();
+  const count = categories.find((c) => c.slug === slug)?.count ?? 0;
+  return `${count} ${count === 1 ? "product" : "products"}`;
 });
 
 /** The home page's featured line. */

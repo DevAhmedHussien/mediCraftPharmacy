@@ -8,6 +8,9 @@ import { Button } from "@/components/ui/button";
 import { hero, providers, quality } from "@/lib/content";
 import { site, telHref } from "@/lib/site";
 import { pageMetadata } from "@/lib/seo";
+import { getCategories } from "@/lib/catalogue";
+import { categoryImage } from "@/lib/media";
+import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = pageMetadata({
   title: `${site.name} — 503A Compounding in Tampa`,
@@ -22,10 +25,13 @@ export const metadata: Metadata = pageMetadata({
 const container = "mx-auto w-full max-w-[1120px] px-5";
 const section = "pt-24 lg:pt-40";
 
-export default function HomePage() {
+export default async function HomePage() {
   const custody = quality.custody.recorded.steps;
   const tests = quality.testing.banner.specs;
-  const areas = providers.therapeuticAreas.items;
+  /* Counted, not written down. The cards, the filter pills on /products and
+     the Products menu all read the same figures from the product table, which
+     is the brief's requirement that the three never disagree. */
+  const categories = await getCategories();
   const onboarding = providers.onboarding;
   const tel = telHref();
 
@@ -175,29 +181,46 @@ export default function HomePage() {
           </div>
           <Link href="/products" className="text-[15px] font-medium text-brand-500 hover:text-navy">View the full formulary →</Link>
         </div>
-        <ul className="reveal-group grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
-          {areas.map((a) => (
-            <li key={a.href}>
-              {/* `.reveal-media` settles the packshot out of a 1.05 scale as
-                  the tile enters. The frame does not move — it clips — so
-                  the grid never reflows and CLS stays at 0. */}
-              <Link
-                href={a.href}
-                className="reveal-media group relative block aspect-[3/4] overflow-hidden rounded-card bg-stone"
-              >
-                <Image
-                  src={`/images/site/mc-area-${a.href.split("/").pop()}-4x3-2x.webp`}
-                  alt=""
-                  fill
-                  sizes="(min-width: 1024px) 210px, 45vw"
-                  className="object-cover transition-transform duration-300 group-hover:scale-[1.03] motion-reduce:transition-none"
-                />
-                <Glass as="span" className="absolute inset-x-3 top-3 rounded-[14px] px-3.5 py-[11px] text-[14.5px] font-medium shadow-none">
-                  {a.title}
-                </Glass>
-              </Link>
-            </li>
-          ))}
+        {/* Ten, not five. Five of the ten used to be missing from the home
+            page altogether, and the src was built by string-concatenation
+            from the href — which silently 404'd for any category without
+            therapeutic-area artwork. `categoryImage` names the file for each
+            of the ten instead. */}
+        <ul className="reveal-group grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+          {categories.map((c) => {
+            const art = categoryImage(c.slug);
+            return (
+              <li key={c.slug}>
+                {/* `.reveal-media` settles the packshot out of a 1.05 scale as
+                    the tile enters. The frame does not move — it clips — so
+                    the grid never reflows and CLS stays at 0. */}
+                <Link
+                  href={`/products/${c.slug}`}
+                  className="reveal-media group relative block aspect-[3/4] overflow-hidden rounded-card bg-stone"
+                >
+                  <Image
+                    src={art.src}
+                    alt=""
+                    fill
+                    sizes="(min-width: 1024px) 210px, (min-width: 640px) 30vw, 45vw"
+                    className={cn(
+                      "transition-transform duration-300 group-hover:scale-[1.03] motion-reduce:transition-none",
+                      art.fit === "contain" ? "object-contain p-3" : "object-cover"
+                    )}
+                  />
+                  <Glass as="span" className="absolute inset-x-3 top-3 flex items-baseline justify-between gap-2 rounded-[14px] px-3.5 py-[11px] text-[14.5px] font-medium shadow-none">
+                    <span className="min-w-0 truncate">{c.name}</span>
+                    {/* The count is data beside a name, so mono and tabular —
+                        ten tiles whose figures do not share a column read as
+                        noise rather than as a set. */}
+                    <span className="shrink-0 font-mono text-[12px] tabular-nums text-ink-muted">
+                      {c.count}
+                    </span>
+                  </Glass>
+                </Link>
+              </li>
+            );
+          })}
         </ul>
         <p className="text-[13.5px] text-ink-muted">
           All formulations require a valid prescription from a licensed provider for a specific, identified patient.

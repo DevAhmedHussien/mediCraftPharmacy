@@ -17,6 +17,7 @@
     "email:test": "tsx --require ./scripts/node-loader.cjs scripts/test-email.ts",
     "test:e2e": "node tests/e2e.mjs",
     "test:pipeline": "node tests/pipeline.mjs",
+    "catalogue:adopt": "tsx scripts/adopt-formulary-categories.ts",
     "import:catalogue": "tsx prisma/import-catalogue.ts",
     "generate:map": "node scripts/generate-us-map.mjs",
     "test:unit": "tsx tests/masks.test.ts && tsx tests/parity.test.ts && tsx tests/msa.test.ts && tsx tests/outbox.test.ts",

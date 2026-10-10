@@ -248,15 +248,98 @@ const card = (file: string, alt: string, width = 1200, height = 900): Media => (
   alt,
 });
 
-/** Therapeutic-area cards, keyed by the card's href. 4:3. */
-export const areaMedia: Record<string, Media> = {
-  "/products/weight-management": card("mc-area-weight-management-4x3-2x.webp", "MediCraft semaglutide and tirzepatide flex-dose vials"),
-  "/products/hormone-therapy": card("mc-area-hormone-therapy-4x3-2x.webp", "MediCraft testosterone cypionate and HCG vials beside an estradiol / progesterone cream pump"),
-  "/products/peptide-therapy": card("mc-area-peptide-therapy-4x3-2x.webp", "MediCraft BPC-157, sermorelin and PT-141 vials"),
-  "/products/dermatology": card("mc-area-dermatology-4x3-2x.webp", "MediCraft tretinoin combination and hair restoration airless pumps"),
-  "/products/pain-management": card("mc-area-pain-management-4x3-2x.webp", "A MediCraft custom-formulation pump and vial, compounded to prescription"),
-  "/products/vitality-longevity": card("mc-area-vitality-longevity-4x3-2x.webp", "MediCraft glutathione, Myers' Cocktail and NAD+ vials"),
+
+/**
+ * The ten formulary categories, each with its own image.
+ *
+ * The developer brief asks for a distinct image per category, in the branded
+ * vial style, used on the home-page card, the /products section header, and
+ * beside each product filed under it.
+ *
+ * Five are the therapeutic-area photographs already shot for the old
+ * categories, which survive the renaming because the contents match: the
+ * hormone-therapy plate is testosterone, HCG and an estradiol / progesterone
+ * pump, which is HRT; the dermatology plate is tretinoin, which is Skin Care.
+ * Four are the packshot of a preparation that category actually carries, cut
+ * out on transparency. One — Supplies — has no photograph of its own, and
+ * takes a brand vial rather than borrowing another category's.
+ *
+ * WHY NOT A PACKSHOT PER PRODUCT. Every packshot carries a rendered label
+ * showing its own name and strength, and the 692 formulary entries are named
+ * and dosed differently from the twenty-nine demo products the renders were
+ * made for — "Semaglutide Flex-Dose 3 mL at 2.5 mg/mL" against "Semaglutide
+ * 5mg/ml 2ml vial". Attaching one to the other would print a strength on a
+ * clinical card that the card's own spec row contradicts. A category image is
+ * honest at that distance; a mislabelled vial is not.
+ */
+export type CategoryMedia = Media & {
+  /** Photographs fill the tile; cut-out packshots sit on its ground. */
+  fit: "cover" | "contain";
 };
+
+const areaCard = (file: string, alt: string): CategoryMedia => ({
+  ...card(file, alt),
+  fit: "cover",
+});
+
+const packshotCard = (slug: string, alt: string): CategoryMedia => ({
+  src: `/images/products/${slug}.webp`,
+  width: 1600,
+  height: 1600,
+  alt,
+  fit: "contain",
+});
+
+export const categoryMedia: Record<string, CategoryMedia> = {
+  "weight-management": areaCard(
+    "mc-area-weight-management-4x3-2x.webp",
+    "MediCraft semaglutide and tirzepatide flex-dose vials"
+  ),
+  hrt: areaCard(
+    "mc-area-hormone-therapy-4x3-2x.webp",
+    "MediCraft testosterone cypionate and HCG vials beside an estradiol / progesterone cream pump"
+  ),
+  trt: packshotCard(
+    "testosterone-cypionate-intramuscular-injection-50-200-mg-ml",
+    "A MediCraft testosterone cypionate intramuscular injection vial"
+  ),
+  "sexual-health": packshotCard(
+    "pt-141-bremelanotide-subcutaneous-injection-custom",
+    "A MediCraft PT-141 bremelanotide subcutaneous injection vial"
+  ),
+  "hair-loss": packshotCard(
+    "hair-restoration-blend-topical-oral-custom",
+    "A MediCraft hair restoration blend airless pump"
+  ),
+  "pain-management": areaCard(
+    "mc-area-pain-management-4x3-2x.webp",
+    "A MediCraft custom-formulation pump and vial, compounded to prescription"
+  ),
+  "skin-care": areaCard(
+    "mc-area-dermatology-4x3-2x.webp",
+    "MediCraft tretinoin combination and hair restoration airless pumps"
+  ),
+  "wellness-vitality": areaCard(
+    "mc-area-vitality-longevity-4x3-2x.webp",
+    "MediCraft glutathione, Myers' Cocktail and NAD+ vials"
+  ),
+  "wellness-longevity": areaCard(
+    "mc-area-peptide-therapy-4x3-2x.webp",
+    "MediCraft BPC-157, sermorelin and PT-141 vials"
+  ),
+  supplies: {
+    src: "/images/brand/vial-clear-pair-glass.webp",
+    width: 1600,
+    height: 1200,
+    alt: "A pair of MediCraft clear glass vials",
+    fit: "cover",
+  },
+};
+
+/** A category's image, or the brand vial if a new category has none yet. */
+export function categoryImage(slug: string): CategoryMedia {
+  return categoryMedia[slug] ?? categoryMedia.supplies;
+}
 
 /** Delivery-method cards on /compounding, keyed by title. 4:3. */
 export const deliveryMedia: Record<string, Media> = {
@@ -276,42 +359,3 @@ export const automationMedia: Record<string, Media> = {
   "Video-Verified Fulfillment": card("mc-quality-auto-fulfillment-16x10-2x.webp", "Rendering of a pack station with an overhead camera filming a cold-chain shipper of MediCraft vials", 1200, 750),
 };
 
-/**
- * A square thumbnail for a product category, for the Products menu.
- *
- * Six categories have their own therapeutic-area artwork; the other five that
- * carry products do not. Rather than show a thumbnail on some rows and a gap on
- * the rest, those fall back to the packshot of their first product — which is
- * the right image anyway: it is that category's own container wearing its own
- * label, not a stand-in.
- *
- * Returns null only when a category has neither, which is a category with no
- * products in it. The menu renders those without a thumbnail.
- */
-export type CategoryThumb = {
-  src: string;
-  alt: string;
-  /**
-   * How to seat the image in its tile. The area artwork is a full photograph
-   * and fills the tile; the packshots are cut out on transparency, so they are
-   * contained on the tile's own ground instead of being cropped into it.
-   */
-  fit: "cover" | "contain";
-};
-
-export function categoryThumb(
-  slug: string,
-  firstProductSlug: string | undefined,
-  firstProductName: string | undefined
-): CategoryThumb | null {
-  const area = areaMedia[`/products/${slug}`];
-  if (area) return { src: area.src, alt: area.alt, fit: "cover" };
-  if (firstProductSlug) {
-    return {
-      src: `/images/products/${firstProductSlug}.webp`,
-      alt: firstProductName ?? "",
-      fit: "contain",
-    };
-  }
-  return null;
-}

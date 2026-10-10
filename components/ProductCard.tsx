@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { FormularyProduct } from "@/lib/catalogue";
+import { cn } from "@/lib/utils";
 
 /**
  * Formulary tile.
@@ -64,7 +65,14 @@ export function ProductCard({
             alt={`${p.name} — ${p.form}, ${p.doses}`}
             fill
             sizes="(min-width: 1120px) 16rem, (min-width: 640px) 45vw, 90vw"
-            className="object-contain p-[6%] transition-transform duration-300 group-hover:scale-[1.03] motion-reduce:transition-none"
+            className={cn(
+              "transition-transform duration-300 group-hover:scale-[1.03] motion-reduce:transition-none",
+              /* A cut-out packshot is contained so the whole container shows;
+                 a category photograph standing in for a product with no
+                 render of its own fills the plate instead, because contained
+                 it is a 4:3 strip between two grey bands. */
+              p.imageFit === "contain" ? "object-contain p-[6%]" : "object-cover"
+            )}
           />
         </div>
 
@@ -77,7 +85,13 @@ export function ProductCard({
             {p.doses} · {p.form}
           </p>
 
-          <Heading className="text-[1.0625rem] font-medium leading-[1.3] text-navy text-balance">
+          {/* `break-words` and no `text-balance`.
+              The formulary is full of names like "B-Complex
+              Niacinamide/Pyridoxine/Thiamine/Dexpanthenol/Riboflavin" — one
+              unbroken 46-character token as far as the layout is concerned,
+              which overflowed the card and printed across its neighbour.
+              Balancing made it worse by preferring fewer, longer lines. */}
+          <Heading className="break-words text-[1.0625rem] font-medium leading-[1.3] text-navy">
             {p.name}
           </Heading>
 

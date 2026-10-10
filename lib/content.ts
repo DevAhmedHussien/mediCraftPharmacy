@@ -708,6 +708,13 @@ export const providers = {
   therapeuticAreas: {
     eyebrow: "Therapeutic Areas",
     title: "Formulations Across Every Specialty",
+    /* The ten categories of the 2026 Partner Formulary, Schedule A-1 of the
+       MSA, in its order. This list used to hold eleven marketing categories
+       of which three — Peptide Therapy, Dermatology, Vitality & Longevity —
+       no longer resolve to a published category page, so the cards linking to
+       them had become 404s. Counts are not written here: they come from the
+       product table at render time, so this list and the formulary cannot
+       drift apart. */
     items: [
       {
         icon: "scale" as IconName,
@@ -716,40 +723,68 @@ export const providers = {
         body: "GLP-1 receptor agonists, lipotropic injectables, and metabolic support compounds for evidence-based weight loss programs.",
         href: "/products/weight-management",
       },
-      // {
-      //   icon: "dna" as IconName,
-      //   tone: "cyan" as const,
-      //   title: "Hormone Therapy",
-      //   body: "Bioidentical hormone replacement for men and women, including testosterone, estradiol, progesterone, and thyroid formulations.",
-      //   href: "/products/hormone-therapy",
-      // },
       {
-        icon: "vial" as IconName,
+        icon: "dna" as IconName,
+        tone: "cyan" as const,
+        title: "HRT",
+        body: "Bioidentical hormone replacement compounded to the individual — estradiol, progesterone, thyroid and combination preparations.",
+        href: "/products/hrt",
+      },
+      {
+        icon: "dumbbell" as IconName,
+        tone: "navy" as const,
+        title: "TRT",
+        body: "Testosterone replacement in grape seed and cottonseed oil, with the ancillary preparations a protocol needs alongside it.",
+        href: "/products/trt",
+      },
+      {
+        icon: "tablet" as IconName,
         tone: "blue" as const,
-        title: "Peptide Therapy",
-        body: "Research-supported peptides for anti-aging, recovery, immune function, and performance — compounded to your exact patient specifications.",
-        href: "/products/peptide-therapy",
+        title: "Sexual Health",
+        body: "Troches, nasal sprays, creams and capsules supporting sexual function for men and women.",
+        href: "/products/sexual-health",
       },
       {
         icon: "leaf" as IconName,
-        tone: "navy" as const,
-        title: "Dermatology",
-        body: "Custom topical formulations for acne, hyperpigmentation, rosacea, and anti-aging — tailored by concentration, base, and delivery mechanism.",
-        href: "/products/dermatology",
+        tone: "cyan" as const,
+        title: "Hair Loss",
+        body: "Topical foams, solutions and oral preparations for hair and scalp health, compounded by concentration and base.",
+        href: "/products/hair-loss",
       },
       {
         icon: "stethoscope" as IconName,
-        tone: "cyan" as const,
+        tone: "navy" as const,
         title: "Pain Management",
-        body: "Topical analgesics, nerve blocks, and compounded pain formulations designed to reduce systemic exposure while maximizing local efficacy.",
+        body: "Topical analgesics, nerve agents, and custom pain formulations that place the drug where the pain is.",
         href: "/products/pain-management",
       },
       {
-        icon: "heart" as IconName,
+        icon: "flower" as IconName,
         tone: "blue" as const,
-        title: "Vitality & Longevity",
-        body: "NAD+, glutathione, IV formulations, and functional wellness compounds for longevity-focused practices and concierge medicine.",
-        href: "/products/vitality-longevity",
+        title: "Skin Care",
+        body: "Custom topicals for acne, hyperpigmentation, rosacea and anti-aging — tailored by concentration, base, and delivery mechanism.",
+        href: "/products/skin-care",
+      },
+      {
+        icon: "heart" as IconName,
+        tone: "cyan" as const,
+        title: "Wellness · Vitality",
+        body: "Injectable and oral wellness preparations — glutathione, amino blends, and vitamin formulations.",
+        href: "/products/wellness-vitality",
+      },
+      {
+        icon: "vial" as IconName,
+        tone: "navy" as const,
+        title: "Wellness · Longevity",
+        body: "Longevity-focused compounds including NAD+, sermorelin and peptide preparations.",
+        href: "/products/wellness-longevity",
+      },
+      {
+        icon: "mortar" as IconName,
+        tone: "blue" as const,
+        title: "Supplies",
+        body: "Syringes, needles, alcohol pads and the administration supplies a practice orders alongside a prescription.",
+        href: "/products/supplies",
       },
     ],
   },
@@ -837,13 +872,13 @@ export const formulary = {
   eyebrow: "Our Formulary",
   title: "Precision-Compounded Medications Across Every Specialty",
   lead: "MediCraft offers a growing formulary of patient-specific compounded medications. All formulations require a valid prescription from a licensed provider. Select a category below to explore available compounds.",
-  /** Shown where a category has no published items yet. */
-  comingSoon: {
-    badge: "Products Coming Soon",
-    title: "Product listings coming soon",
-    body: "Contact our provider team for current formulary availability in this category.",
-    cta: { label: "Request Formulary", href: "/contact" },
-  },
+  /* `comingSoon` was removed on 10 October 2026. It said "Product listings
+     coming soon — contact our provider team for current formulary
+     availability", and it appeared on nine of the eleven categories because
+     those categories had nothing published in them. The ten formulary
+     categories all carry products, so the phrase had nothing left to
+     describe. The developer brief asks for the count in its place. */
+  /** Still rendered on a product's own page — just not on the listings. */
   rxNotice: {
     label: "Prescription Required.",
     body: "All MediCraft compounds are prepared in response to a valid prescription from a licensed healthcare provider for a specific, identified patient. Products displayed are for provider reference only and are not available for direct consumer purchase. Contact our provider team to open an account and access the full formulary.",

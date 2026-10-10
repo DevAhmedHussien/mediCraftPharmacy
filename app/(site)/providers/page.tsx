@@ -12,7 +12,7 @@ import {
 } from "@/components/blocks";
 import { Stagger, StaggerItem } from "@/components/motion/Motion";
 import { CardsBesideFigure } from "@/components/sections/CardsBesideFigure";
-import { areaMedia } from "@/lib/media";
+import { categoryImage } from "@/lib/media";
 import { Reveal } from "@/components/ui/Reveal";
 import { providers } from "@/lib/content";
 import { getCategoryMetaLabel } from "@/lib/catalogue";
@@ -121,14 +121,14 @@ export default async function ProvidersPage() {
           <Stagger className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {providers.therapeuticAreas.items.map((area) => (
               <StaggerItem key={area.title} className="h-full">
-                {/* `areaMedia` has artwork for six of the eleven areas,
-                    keyed by the same href the card links to. Passing
-                    `undefined` for the rest is the correct outcome: InfoCard
-                    simply renders without a picture rather than reserving an
-                    empty well. */}
+                {/* Every one of the ten has its own image now — five
+                    therapeutic-area photographs and five packshots — so the
+                    old "six of eleven have artwork, the rest render without a
+                    picture" case is gone. `categoryImage` is keyed by slug,
+                    which the href ends with. */}
                 <IconCard
                   {...area}
-                  media={areaMedia[area.href]}
+                  media={categoryImage(area.href.replace("/products/", ""))}
                   meta={areaMeta[area.href]}
                   className="h-full"
                 />

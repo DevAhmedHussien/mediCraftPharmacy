@@ -10,7 +10,6 @@ import type { IconName } from "@/components/icons/set";
 import { NavDrawer } from "@/components/nav/NavDrawer";
 import { headerNav, type HeaderNavItem } from "@/lib/site";
 
-import type { CategoryThumb } from "@/lib/media";
 import { cn } from "@/lib/utils";
 
 /**
@@ -51,9 +50,15 @@ export type NavCategory = {
   blurb: string;
   icon: IconName;
   count: number;
-  /** Square thumbnail for the menu. Null where the category has no products. */
-  thumb: CategoryThumb | null;
-  products: { slug: string; name: string; form: string; doses: string }[];
+  /**
+   * A few products, for the mobile drawer's third level.
+   *
+   * Capped, not the category. The drawer used to receive every product in
+   * every category, which the formulary turned into 692 entries serialised
+   * into every page of the site — for a list a phone shows eight of before
+   * anyone scrolls. The "View all" link above it goes to the full page.
+   */
+  previewProducts: { slug: string; name: string; form: string; doses: string }[];
 };
 
 /** Who is signed in, as much of it as the header needs. */
@@ -634,12 +639,13 @@ function MegaPanel({
                   className="flex items-center justify-between gap-2.5 rounded-[14px] px-4 py-3 text-[0.90625rem] text-navy transition-colors hover:bg-stone focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand-500 motion-reduce:transition-none"
                 >
                   <span className="min-w-0">{c.name}</span>
-                  {/* Counts are data, so mono — and "On request" rather than
-                      a bare zero where nothing is published yet. */}
+                  {/* Counts are data, so mono. "On request" used to stand in
+                      where a category had nothing published — which was nine
+                      of the eleven, so the menu read as a pharmacy with no
+                      formulary. The ten published categories are the
+                      formulary and none of them is empty. */}
                   <span className="shrink-0 font-mono text-[0.625rem] uppercase tracking-[0.06em] text-ink-muted">
-                    {c.count > 0
-                      ? `${c.count} ${c.count === 1 ? "product" : "products"}`
-                      : "On request"}
+                    {c.count} {c.count === 1 ? "product" : "products"}
                   </span>
                 </Link>
               </li>

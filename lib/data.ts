@@ -23,7 +23,19 @@ export type Category = {
   blurb: string;
   /** Icon from the drawn set, chosen to match the specialty. */
   icon: IconName;
+  /**
+   * How many published products are filed under it.
+   *
+   * Counted from the product table on every request rather than written down,
+   * so adding or retiring an item moves the figure on the filter pill, the
+   * section heading, the home-page card and the Products menu at once. The
+   * brief is explicit that these four must never disagree.
+   */
+  count: number;
 };
+
+/** A category's wording and pictogram, before its live count is attached. */
+export type CategoryEditorial = Omit<Category, "count">;
 
 /** Spec-sheet fields rendered on a product detail page. */
 export type ProductDetail = {
@@ -50,28 +62,37 @@ export type Product = {
   form: string;
   blurb: string;
   image: string;
+  /**
+   * How the image seats in the card's plate.
+   *
+   * `contain` for a packshot — it is cut out on transparency and the whole
+   * container must be visible. `cover` for a category photograph standing in
+   * where a product has no render of its own; contained, a 4:3 photograph in
+   * a square plate is a letterboxed strip with two grey bands.
+   */
+  imageFit: "cover" | "contain";
   detail: ProductDetail;
 };
 
-/** Catalog entry before slug/detail derivation. */
-type RawProduct = Omit<Product, "slug" | "detail">;
+/** Catalog entry before slug, detail and image seating are derived. */
+type RawProduct = Omit<Product, "slug" | "detail" | "imageFit">;
 
 /**
- * The therapeutic categories, in the order and wording of the owner's
- * formulary page. Names, blurbs and pictograms are his.
+ * Blurb and pictogram for each formulary category.
  *
- * A category with nothing published yet is not an error and is not hidden: the
- * catalog renders a "Request Formulary" panel in its place, which is exactly
- * what his document does. So `pain-management` legitimately has no products.
+ * Not the source of truth for which categories exist — that is the
+ * `ProductCategory` table, and `getCategories` in lib/catalogue.ts reads it.
+ * This supplies the wording and the drawn icon when a row has none, and it is
+ * what the static `catalogByCategory` export below groups against.
  *
- * `custom-formulations` is the one addition to his ten. Three real catalog
- * items — compounded eye drops, an ondansetron troche, and an open custom
- * formulation — have no clinically honest home among the ten, and filing a
- * sterile ophthalmic under Dermatology to force a fit would be worse than
- * adding a category. His own provider FAQ ("Can I request a custom formulation
- * not listed in your formulary? Yes.") supports it.
+ * The eleven marketing categories that used to live here — Hormone Therapy,
+ * Peptide Therapy, Dermatology, Sexual Wellness, Vitality & Longevity,
+ * Women's Health, Men's Health, IV Therapy, Custom Formulations — were
+ * retired on 10 October 2026 in favour of the ten in Schedule A-1 of the MSA,
+ * which is the only list the formulary, the website and both portals now
+ * share. See scripts/adopt-formulary-categories.ts.
  */
-export const categories: Category[] = [
+export const categories: CategoryEditorial[] = [
   {
     slug: "weight-management",
     name: "Weight Management",
@@ -79,35 +100,28 @@ export const categories: Category[] = [
     icon: "scale",
   },
   {
-    slug: "hormone-therapy",
-    name: "Hormone Therapy",
-    blurb:
-      "Bioidentical hormone replacement — testosterone, estradiol, progesterone, thyroid",
+    slug: "hrt",
+    name: "HRT",
+    blurb: "Hormone replacement formulations for individualized therapy",
     icon: "dna",
   },
   {
-    slug: "peptide-therapy",
-    name: "Peptide Therapy",
-    blurb: "Anti-aging, recovery, immune function, and performance peptides",
-    icon: "vial",
+    slug: "trt",
+    name: "TRT",
+    blurb: "Testosterone replacement and related men's health formulations",
+    icon: "dumbbell",
   },
   {
-    slug: "dermatology",
-    name: "Dermatology",
-    blurb: "Custom topicals for acne, hyperpigmentation, rosacea, and anti-aging",
-    icon: "leaf",
-  },
-  {
-    slug: "sexual-wellness",
-    name: "Sexual Wellness",
-    blurb: "Customized formulations for sexual health and function",
+    slug: "sexual-health",
+    name: "Sexual Health",
+    blurb: "Customized formulations supporting sexual wellness",
     icon: "tablet",
   },
   {
-    slug: "vitality-longevity",
-    name: "Vitality & Longevity",
-    blurb: "NAD+, glutathione, IV formulations, and functional wellness compounds",
-    icon: "heart",
+    slug: "hair-loss",
+    name: "Hair Loss",
+    blurb: "Targeted compounded formulations for hair and scalp health",
+    icon: "leaf",
   },
   {
     slug: "pain-management",
@@ -116,28 +130,27 @@ export const categories: Category[] = [
     icon: "stethoscope",
   },
   {
-    slug: "womens-health",
-    name: "Women's Health",
-    blurb: "Hormonal, reproductive, and wellness compounds for women",
+    slug: "skin-care",
+    name: "Skin Care",
+    blurb: "Dermatology and aesthetic formulations",
     icon: "flower",
   },
   {
-    slug: "mens-health",
-    name: "Men's Health",
-    blurb: "TRT, performance, and wellness compounds for men",
-    icon: "dumbbell",
+    slug: "wellness-vitality",
+    name: "Wellness · Vitality",
+    blurb: "Injectable and oral wellness formulations supporting vitality",
+    icon: "heart",
   },
   {
-    slug: "iv-therapy",
-    name: "IV Therapy",
-    blurb: "NAD+, glutathione, vitamin blends, and custom IV formulations",
-    icon: "droplet",
+    slug: "wellness-longevity",
+    name: "Wellness · Longevity",
+    blurb: "Longevity-focused and general wellness products",
+    icon: "vial",
   },
   {
-    slug: "custom-formulations",
-    name: "Custom Formulations",
-    blurb:
-      "Sterile and non-sterile preparations built to a prescriber's exact specification",
+    slug: "supplies",
+    name: "Supplies",
+    blurb: "Administration, injection, and pharmacy-support supplies",
     icon: "mortar",
   },
 ];
@@ -180,6 +193,22 @@ export const PRODUCT_IMAGE = {
  */
 export function productImage(slug: string): string {
   return `/images/products/${slug}.webp`;
+}
+
+/**
+ * Whether a slug has a packshot on disk.
+ *
+ * Only the twenty-nine editorial entries below were ever rendered, and the
+ * file name is the slug — so the editorial catalog IS the list, and it cannot
+ * fall out of step with `public/images/products/` the way a hand-written set
+ * would.
+ *
+ * This exists because `productImage` is pure string concatenation: it happily
+ * returned a path for all 692 formulary products, none of which has a file,
+ * and every card in the grid rendered a broken image. Callers now ask first.
+ */
+export function hasPackshot(slug: string): boolean {
+  return packshotSlugs.has(slug);
 }
 
 /**
@@ -741,6 +770,7 @@ function buildProduct(raw: RawProduct, index: number): Product {
     // The per-product render, not the shared `img` placeholder the raw entry
     // carries — every entry has its own packshot keyed by this slug.
     image: productImage(slug),
+    imageFit: "contain" as const,
     detail: {
       // Deterministic catalog number — no randomness, so builds stay reproducible.
       productId: String(8510900 + index * 13),
@@ -761,11 +791,14 @@ function buildProduct(raw: RawProduct, index: number): Product {
 
 export const products: Product[] = rawProducts.map(buildProduct);
 
+/** Slugs with a render in public/images/products/ — see `hasPackshot`. */
+const packshotSlugs = new Set(products.map((p) => p.slug));
+
 export function productsByCategory(slug: string): Product[] {
   return products.filter((p) => p.categorySlug === slug);
 }
 
-export function getCategory(slug: string): Category | undefined {
+export function getCategory(slug: string): CategoryEditorial | undefined {
   return categories.find((c) => c.slug === slug);
 }
 
@@ -820,14 +853,14 @@ export function categoryMetaLabel(slugOrHref: string): string {
 /** Products featured on the home page (the flex-dose weight-management line). */
 export const featuredProducts: Product[] = productsByCategory("weight-management");
 
-/** Catalog grouped by category — used by the home-page product browser. */
 /**
- * Catalog grouped by category, INCLUDING categories with nothing published
- * yet. Empty groups are deliberately retained: the formulary shows a
- * "Request Formulary" panel for them, so filtering them out here would hide
- * specialties the pharmacy genuinely offers.
+ * The static catalog grouped by category.
+ *
+ * Editorial data only — the live grouping the website renders is
+ * `getProductsGrouped` in lib/catalogue.ts, which reads the product table
+ * and carries each category's real count.
  */
-export const productsGrouped: { category: Category; items: Product[] }[] =
+export const productsGrouped: { category: CategoryEditorial; items: Product[] }[] =
   categories.map((category) => ({
     category,
     items: productsByCategory(category.slug),
