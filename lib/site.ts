@@ -109,10 +109,10 @@ export const site = {
    */
   geo: { lat: 28.0725, lng: -82.6062 },
 
-  hoursShort: "Mon–Fri 8 AM–6 PM ET  ·  Sat 9 AM–1 PM ET",
+  hoursShort: "Mon–Fri 9 AM–6 PM ET  ·  Sat 9 AM–12 PM ET",
   hours: [
-    { days: "Monday – Friday", time: "8:00 AM – 6:00 PM ET" },
-    { days: "Saturday", time: "9:00 AM – 1:00 PM ET" },
+    { days: "Monday – Friday", time: "9:00 AM – 6:00 PM ET" },
+    { days: "Saturday", time: "9:00 AM – 12:00 PM ET" },
     { days: "Sunday", time: "Closed", closed: true },
   ],
   afterHours:
@@ -139,7 +139,7 @@ export const site = {
 /** The utility strip above the header. */
 export const topbar = {
   location: "Tampa, Florida",
-  hours: "Mon–Fri 8 AM–6 PM  ·  Sat 9 AM–1 PM",
+  hours: "Mon–Fri 9 AM–6 PM  ·  Sat 9 AM–12 PM",
 };
 
 /**
@@ -226,7 +226,9 @@ export const footerColumns = [
       { label: "About MediCraft", href: "/about" },
       { label: "Compounding Notes", href: "/blog" },
       { label: "Quality Standards", href: "/quality" },
-      { label: "Our Team", href: "/quality#leadership" },
+      /* "Our Team" pointed at /quality#leadership, which no longer
+         exists — the six bio cards were removed on 10 October 2026 and
+         the anchor went with them, so the link scrolled nowhere. */
       { label: "Careers", href: "/careers" },
       { label: "Contact Us", href: "/contact" },
     ],

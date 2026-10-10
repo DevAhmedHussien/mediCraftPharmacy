@@ -40,7 +40,7 @@ function channels(): Channel[] {
       // No `tel:` to a number that does not exist yet: a dead call is a worse
       // outcome than being sent to the form.
       value: hasRealPhone ? site.phone : "Use the form or email us",
-      note: "Mon–Fri 8 AM–6 PM ET",
+      note: "Mon–Fri 9 AM–6 PM ET",
       href: telHref() ?? "/contact",
     },
     {

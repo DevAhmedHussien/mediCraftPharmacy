@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
+import { Check } from "lucide-react";
 import { breadcrumbJsonLd, jsonLdProps, pageMetadata } from "@/lib/seo";
 import {
   CheckList,
@@ -110,7 +113,13 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* ---- Facility heritage ---- */}
+      {/* ---- Our facility, beside what we test ----
+          The right-hand panel used to be "Facility Heritage", about the
+          building's past as an oncology infusion pharmacy. It is Quality
+          Assurance now: what MediCraft does to a batch before it ships. The
+          left column still tells the building's story, so the pair reads as
+          the premises and the practice rather than two claims about the
+          premises. */}
       <section className="band section">
         <div className="container-x">
           <TwoCol>
@@ -133,13 +142,52 @@ export default function AboutPage() {
                 badge={about.facility.panel.badge}
                 title={about.facility.panel.title}
               >
-                <p className="mt-4 text-meta text-white/70 text-pretty">
+                {/* An image, because the brief asks the panel to carry one and
+                    because a list of five assurances is a wall of text
+                    otherwise. The quality hero is the right frame: sealed
+                    vials on a bench beside batch data on a monitor, which is
+                    what the five lines below describe. */}
+                <div className="relative mt-5 aspect-[16/9] overflow-hidden rounded-2xl">
+                  <Image
+                    src={media.lab.src}
+                    alt={media.lab.alt}
+                    fill
+                    sizes="(min-width: 1024px) 34rem, 92vw"
+                    className="object-cover"
+                  />
+                </div>
+
+                <p className="mt-5 text-meta text-white/70 text-pretty">
                   {about.facility.panel.body}
                 </p>
-                <p className="mt-4 text-caption leading-relaxed text-white/50 text-pretty">
+
+                <ul className="mt-5 space-y-2.5">
+                  {about.facility.panel.checks.map((check) => (
+                    <li key={check} className="flex gap-2.5 text-caption text-white/70">
+                      {/* The tick is decoration beside its own text, so it is
+                          hidden rather than announced — a screen reader
+                          already has the list semantics. */}
+                      <Check
+                        className="mt-0.5 size-3.5 shrink-0 text-cyan-400"
+                        strokeWidth={2.6}
+                        aria-hidden
+                      />
+                      <span className="text-pretty">{check}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <p className="mt-5 text-caption leading-relaxed text-white/50 text-pretty">
                   {about.facility.panel.note}
                 </p>
-                <PanelMetrics items={about.facility.panel.metrics} />
+
+                <Link
+                  href={about.facility.panel.cta.href}
+                  className="btn-primary mt-6 inline-flex"
+                >
+                  {about.facility.panel.cta.label}{" "}
+                  <span aria-hidden>→</span>
+                </Link>
               </NavyPanel>
             </Reveal>
           </TwoCol>

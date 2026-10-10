@@ -71,7 +71,7 @@ export default function QualityPage() {
                 </p>
                 <Link
                   href={quality.sops.panel.cta.href}
-                  className="btn-pill mt-7"
+                  className="btn-primary mt-7"
                 >
                   {quality.sops.panel.cta.label} <span aria-hidden>→</span>
                 </Link>
@@ -80,26 +80,6 @@ export default function QualityPage() {
           </TwoCol>
 
         
-        </div>
-      </section>
-
-      {/* ---- Leadership ---- */}
-      <section id="leadership" className="band section scroll-mt-32">
-        <div className="container-x">
-          <Reveal>
-            <SectionHead
-              eyebrow={quality.leadership.eyebrow}
-              title={quality.leadership.title}
-              lead={quality.leadership.lead}
-            />
-          </Reveal>
-          <Stagger className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {quality.leadership.team.map((member) => (
-              <StaggerItem key={member.title} className="h-full">
-                <IconCard {...member} className="h-full" />
-              </StaggerItem>
-            ))}
-          </Stagger>
         </div>
       </section>
 

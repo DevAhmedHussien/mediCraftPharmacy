@@ -149,14 +149,14 @@ export default async function SiteLayout({ children }: { children: ReactNode }) 
       {
         "@type": "OpeningHoursSpecification",
         dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-        opens: "08:00",
+        opens: "09:00",
         closes: "18:00",
       },
       {
         "@type": "OpeningHoursSpecification",
         dayOfWeek: "Saturday",
         opens: "09:00",
-        closes: "13:00",
+        closes: "12:00",
       },
     ],
     sameAs: [site.social.linkedin, site.social.instagram, site.social.facebook],

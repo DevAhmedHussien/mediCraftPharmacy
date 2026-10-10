@@ -238,15 +238,25 @@ export const about = {
       "Cold storage, HVAC, and utility systems engineered for pharmaceutical-grade operations",
       "MediCraft continues to operate and upgrade this infrastructure to serve its growing compounding mission",
     ],
+    /* The "Facility Heritage" panel that stood here until 10 October 2026 —
+       "When the Building Has Already Proven Itself", with its Oncology /
+       Inherited metrics — was removed at the client's request. What replaces
+       it says what MediCraft does rather than what the building used to
+       house, and every line of it is a claim the /quality page already makes
+       and documents. */
     panel: {
-      badge: "Facility Heritage",
-      title: "When the Building Has Already Proven Itself",
-      body: "Most compounding pharmacies start from a blank slate and work up to the infrastructure they need. MediCraft started from infrastructure that was already built to handle the hardest compounding work in medicine — and we are using that advantage to deliver a level of quality that most pharmacies our size simply cannot offer.",
-      note: "That legacy of clinical rigor and operational scale now forms the foundation of MediCraft's mission: precision compounding, crafted for every patient.",
-      metrics: [
-        { value: "Oncology", label: "Grade cleanroom infrastructure" },
-        { value: "Inherited", label: "HVAC, utilities & cold storage" },
+      badge: "Quality Assurance",
+      title: "Every Batch Tested Before It Ships",
+      body: "Potency verified at labeled concentration, USP ⟨71⟩ sterility testing on every sterile preparation, and bacterial endotoxin (LAL) testing on every injectable — all by an independent FDA-registered laboratory, not in-house.",
+      note: "Every compound is linked to a complete batch record, from raw material lot numbers to final test results. A pharmacist reviews that record and the passing results before anything is released, and the carton is filmed as it is packed.",
+      checks: [
+        "Potency, USP ⟨71⟩ sterility and LAL endotoxin testing on every batch",
+        "Independent, FDA-registered third-party laboratory",
+        "Full batch-record traceability, lot numbers to dispensing record",
+        "Pharmacist release before shipment — out-of-specification product is destroyed",
+        "Video-verified fulfillment on every order",
       ],
+      cta: { label: "How we prove it", href: "/quality" },
     },
   },
 };
@@ -290,70 +300,29 @@ export const quality = {
   //   body: "MediCraft operates from a facility that previously supported one of the largest oncology infusion pharmacies in the nation — an operation recognized as one of the nation's largest oncology infusion pharmacies. The physical infrastructure — cleanrooms, HVAC, environmental controls, cold storage — was engineered for the most demanding form of sterile pharmaceutical compounding that exists. That is the foundation MediCraft is built on.",
   // },
 
-  leadership: {
-    eyebrow: "The People Behind the Quality",
-    title: "A Leadership Team Built for the Highest Standard",
-    lead: "Our quality infrastructure wasn't designed by consultants — it was built by people who have spent careers setting the rules others follow. Every SOP, every protocol, every quality checkpoint at MediCraft traces back to this team.",
-    team: [
-      {
-        icon: "institution" as IconName,
-        tone: "blue" as const,
-        title: "Ex–Board of Pharmacy Inspector",
-        body: "Our Quality Partner spent years as an official Board of Pharmacy inspector — the same role responsible for auditing and enforcing compliance at pharmacies across the state. He now brings that regulatory perspective inside our walls, helping us build SOPs that don't just meet inspection standards — they reflect how inspectors think.",
-        credential: "SOP Architecture · Regulatory Preparedness · Compliance Auditing",
-      },
-      {
-        icon: "ruler" as IconName,
-        tone: "cyan" as const,
-        title: "Director of Quality & Compliance Officer",
-        body: "Our Director of Quality oversees every standard operating procedure from cleanroom entry protocols to batch release criteria. As our internal Compliance Officer, they ensure every process — from raw material receiving to patient shipment — is documented, defensible, and consistently executed to the letter.",
-        credential: "SOP Management · Batch Oversight · Regulatory Compliance",
-      },
-      {
-        icon: "flask" as IconName,
-        tone: "navy" as const,
-        title: "Formulation Expert",
-        body: "Formulation is a science, not a template. Our in-house Formulation Expert brings deep pharmaceutical chemistry expertise to every compound we develop — evaluating excipient compatibility, delivery mechanism optimization, stability data, and beyond-use dating with the rigor of a research laboratory.",
-        credential: "Formula Development · Stability Analysis · Excipient Science",
-      },
-      {
-        icon: "factory" as IconName,
-        tone: "blue" as const,
-        title: "Senior Production Engineer — Big Pharma Background",
-        body: "Most compounding pharmacies have never had a production engineer on their team. MediCraft does. Our Senior Production Engineer comes from one of the largest pharmaceutical manufacturing companies in the world — bringing large-scale GMP production experience, process automation expertise, and a manufacturing mindset that most pharmacies our size simply don't have access to. They are responsible for engineering the production workflows, equipment validation, and process controls that ensure every batch is produced consistently, efficiently, and to the highest possible standard.",
-        credential:
-          "GMP Production · Process Automation · Equipment Validation · Manufacturing Quality · Batch Process Engineering",
-      },
-      {
-        icon: "graduation" as IconName,
-        tone: "blue" as const,
-        title:
-          "Lead Pharmacist & Formulation Expert — Quality Engineering Background",
-        body: "At the clinical and scientific core of MediCraft is a licensed pharmacist who is also a trained formulation expert with deep roots in quality engineering and pharmaceutical production. This isn't a background built in a single setting — it spans 503A compounding, 503B outsourcing, and cGMP manufacturing environments, giving MediCraft's formulation and quality leadership a perspective that most compounding pharmacies can't replicate. Every compound we produce, every SOP we follow, and every quality decision we make reflects that multi-disciplinary foundation.",
-        credential:
-          "Licensed Pharmacist · Formulation Science · Quality Engineering · 503A · 503B · cGMP · Production Background",
-      },
-      {
-        icon: "terminal" as IconName,
-        tone: "cyan" as const,
-        title: "Chief Technology Officer & API Integration Specialist",
-        body: "Technology should remove friction, not create it. Our CTO is also a seasoned API specialist with the capability to integrate MediCraft's systems with virtually any practice management software, pharmacy platform, or EMR/EHR system on the market. Whether your practice runs on Epic, Athenahealth, DrChrono, or a custom system — our CTO can build the connection and make the data flow seamlessly. From provider onboarding to real-time prescription tracking to automated refill workflows, every touchpoint is engineered to work within the tools your team already uses.",
-        credential:
-          "EMR/EHR Integration · API Development · Provider Onboarding · Order Workflow · Software Interoperability",
-      },
-    ],
-  },
+  /* The six leadership bio cards that stood here until 10 October 2026 were
+     removed at the client's request: Ex–Board of Pharmacy Inspector, Director
+     of Quality & Compliance Officer, Formulation Expert, Senior Production
+     Engineer, Lead Pharmacist & Formulation Expert, and Chief Technology
+     Officer & API Integration Specialist, with their credential tag lines.
+
+     Three places referred to them and were cleaned up in the same change, so
+     nothing describes a profile a reader cannot find: the footer's "Our Team"
+     link to /quality#leadership, the "former Board of Pharmacy inspector"
+     sentences under SOPs & Accreditation, and the several "our own CTO"
+     claims in Technology-Enabled Quality and the FAQ — which now credit the
+     in-house engineering team rather than one unnamed officer. */
 
   sops: {
     eyebrow: "SOPs & Accreditation",
     title: "Written by Regulators. Executed by Pharmacists.",
     body: [
-      "Standard Operating Procedures at MediCraft were not purchased from a template library. They were written from the ground up by a team that includes a former Board of Pharmacy inspector — someone who has personally evaluated SOP systems at dozens of pharmacies across the state.",
+      "Standard Operating Procedures at MediCraft were not purchased from a template library. They were written from the ground up by a team with regulatory inspection experience — people who have personally evaluated SOP systems at pharmacies across the state.",
       "Every SOP reflects not just what the rules require, but what an inspector looks for, what failure modes look like, and how to build systems that hold up under the most rigorous scrutiny. We are currently working through the formal PCAB accreditation submission process. MediCraft has not yet received PCAB accreditation — but our SOP library, quality team, and cleanroom practices are already written and operating to that standard. Accreditation is the formal recognition of a quality system we are already running.",
     ],
     checks: [
       "Full SOP library spanning compounding, cleaning, QA, and dispensing",
-      "Written with active input from ex–Board of Pharmacy inspector",
+      "Written with active input from regulatory inspection experience",
       "Reviewed and updated quarterly by our Compliance Officer",
       "PCAB-aligned protocols ahead of formal accreditation submission",
       "Every staff member trained and documented on applicable SOPs",
@@ -550,10 +519,10 @@ export const quality = {
 
   technology: {
     eyebrow: "The Technology Layer",
-    title: "A Seamless Process, Built by Our Own CTO",
+    title: "A Seamless Process, Built In House",
     body: [
-      "Most pharmacies stitch together off-the-shelf software and hope it works. MediCraft has an in-house CTO who is also a skilled API specialist — someone who doesn't just manage technology, but builds the integrations that make your practice's workflow truly seamless.",
-      "Whatever software your practice runs — Epic, Athenahealth, DrChrono, Kareo, Jane, a custom EHR, or anything else — our CTO can build the API connection to integrate MediCraft directly into your existing systems. No double entry, no manual status checks, no friction.",
+      "Most pharmacies stitch together off-the-shelf software and hope it works. MediCraft has an in-house engineering team of skilled API specialists — people who don't just manage technology, but build the integrations that make your practice's workflow truly seamless.",
+      "Whatever software your practice runs — Epic, Athenahealth, DrChrono, Kareo, Jane, a custom EHR, or anything else — we build the API connection to integrate MediCraft directly into your existing systems. No double entry, no manual status checks, no friction.",
     ],
     checks: [
       "EMR/EHR integration with any major or custom platform",
@@ -566,7 +535,7 @@ export const quality = {
     panel: {
       badge: "Technology-Enabled Quality",
       title: "From Rx Received to Package Shipped — Seamlessly Tracked",
-      body: "Our in-house CTO has built a digital workflow that eliminates paper-based handoffs and gives every team member — from receiving to compounding to QA to shipping — a clear, real-time picture of every order's status.",
+      body: "Our in-house engineering team has built a digital workflow that eliminates paper-based handoffs and gives every team member — from receiving to compounding to QA to shipping — a clear, real-time picture of every order's status.",
       metrics: [
         { value: "100%", label: "Orders digitally tracked" },
         { value: "0", label: "Paper-based handoffs" },
@@ -929,7 +898,7 @@ export const resources = {
     items: [
       {
         q: "How do I send a prescription to MediCraft?",
-        a: "Once your provider account is approved, you can send prescriptions electronically through our provider portal, via e-prescribing through your EMR (if integrated), by fax, or by secure message. Our CTO can set up direct EMR/EHR integration with virtually any platform so prescriptions flow directly from your system to ours — eliminating manual steps entirely.",
+        a: "Once your provider account is approved, you can send prescriptions electronically through our provider portal, via e-prescribing through your EMR (if integrated), by fax, or by secure message. We can set up direct EMR/EHR integration with virtually any platform so prescriptions flow directly from your system to ours — eliminating manual steps entirely.",
       },
       {
         q: "Can I request a custom formulation not listed in your formulary?",
@@ -941,7 +910,7 @@ export const resources = {
       },
       {
         q: "Can MediCraft integrate with my EMR system?",
-        a: "Yes. Our in-house CTO and API specialist can build integrations with virtually any EMR, EHR, or practice management platform — including Epic, Athenahealth, DrChrono, Kareo, Jane, and custom systems. API-level integration means prescriptions, refill requests, and order status flow directly between your system and ours without manual re-entry. Setup typically takes less than a week. Contact us to get started.",
+        a: "Yes. Our in-house engineering and API specialists can build integrations with virtually any EMR, EHR, or practice management platform — including Epic, Athenahealth, DrChrono, Kareo, Jane, and custom systems. API-level integration means prescriptions, refill requests, and order status flow directly between your system and ours without manual re-entry. Setup typically takes less than a week. Contact us to get started.",
       },
       {
         q: "What states does MediCraft ship to?",
