@@ -56,10 +56,19 @@ export function Footer() {
   return (
     <footer className="mx-auto flex w-full max-w-[1120px] flex-col gap-9 px-5 pb-12 pt-24">
       {/* ---- Four columns ---- */}
-      {/* `.reveal-group` — the four columns arrive in order with no
-          JavaScript. The footer is on all twenty-four pages, so anything
-          that costs bytes here costs them everywhere. */}
-      <div className="reveal-group grid gap-8 text-[14px] sm:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1fr_1fr]">
+      {/* NO `.reveal-group` HERE, AND THERE CANNOT BE ONE.
+       *
+       * These columns used to stagger in on a scroll-driven timeline. A
+       * scroll-driven range only completes if there is scroll left to give,
+       * and the footer is by definition the last thing on the page — so the
+       * later columns never finished. Measured at 375px on /products, the
+       * fourth column (Patients: Patient Refill, Shipping Info, FAQs, Safety
+       * Information) sat at opacity 0.07 at the bottom of the page. Every
+       * link a patient needs was invisible, on every page of the site.
+       *
+       * Shortening the range only moves which column it happens to. The
+       * footer simply is not a place for an entrance. */}
+      <div className="grid gap-8 text-[14px] sm:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1fr_1fr]">
         <div className="flex flex-col gap-3.5">
           <Logo className="h-7 w-auto self-start" />
           <address className="not-italic leading-relaxed text-ink-soft">

@@ -7,18 +7,23 @@ import type { FormularyProduct } from "@/lib/catalogue";
 import { ProductCard } from "@/components/ProductCard";
 import type { Category } from "@/lib/data";
 import type { CategoryMedia } from "@/lib/media";
+import { fieldClass } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 /**
  * The formulary: category pills across the top, then one titled section per
  * category, each opening with its own image and its live product count.
  *
- * THE PILLS WRAP. They used to sit in an `overflow-x-auto` rail, which on
- * desktop cut the list off mid-word at "Pain Man…" and on mobile put a
- * 1,709px row inside a 343px container with no arrow and no scroll hint —
- * seven of the eleven categories were unreachable unless you guessed the rail
- * could be dragged. A wrapped row is two lines at 1280px and four on a phone,
- * and every category is visible at every width.
+ * THE PILLS WRAP, AND BECOME A SELECT ON A PHONE. They used to sit in an
+ * `overflow-x-auto` rail, which on desktop cut the list off mid-word at
+ * "Pain Man…" and on mobile put a 1,709px row inside a 343px container with
+ * no arrow and no scroll hint — seven of the eleven categories were
+ * unreachable unless you guessed the rail could be dragged.
+ *
+ * Wrapping fixes the desktop case in one line. It does not fix the phone:
+ * eleven pills wrap to six rows at 375px, and this rail is sticky, so that
+ * is 300px of a 667px screen permanently occupied. Below `sm` the same state
+ * drives a `<select>` instead — one row, every category, no sideways scroll.
  *
  * EACH SECTION SHOWS A SAMPLE, NOT THE WHOLE CATEGORY. Weight Management is
  * 116 products; rendering all ten categories in full is 692 cards and about a
@@ -51,7 +56,30 @@ export function Formulary({
           under it. */}
       <div className="sticky top-[var(--chrome-h-condensed)] z-30 border-b border-hair bg-paper/[0.94] backdrop-blur">
         <div className="container-x py-4">
-          <div className="flex flex-wrap gap-2">
+          {/* A select below `sm`, pills above it.
+           *
+           * Wrapping fixed the sideways scroll, but eleven pills wrap to six
+           * rows on a 375px phone — roughly 300px of a 667px screen, stuck to
+           * the top because this rail is sticky. The brief allows a drop-down
+           * on mobile for exactly this reason. One control, one row, same
+           * state. */}
+          <label className="sm:hidden">
+            <span className="sr-only">Filter the formulary by category</span>
+            <select
+              value={active}
+              onChange={(event) => setActive(event.target.value)}
+              className={fieldClass}
+            >
+              <option value="all">All Categories ({totalCount})</option>
+              {groups.map((g) => (
+                <option key={g.category.slug} value={g.category.slug}>
+                  {g.category.name} ({g.category.count})
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <div className="hidden flex-wrap gap-2 sm:flex">
             <button
               type="button"
               onClick={() => setActive("all")}

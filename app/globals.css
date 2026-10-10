@@ -118,8 +118,19 @@ h3 {
      left edge were 30px apart on a desktop.
      
      One class, 41 call sites across 19 files. */
+  /* One measure, one flat gutter — and 160px more of it on a very large
+     monitor.
+   *
+   * 1120 was the whole site at every width, which on a 1920 screen left 400px
+   * of empty paper down each side. The step is at `2xl` (1536px) only, so
+   * 1280 and 1440 laptops are untouched, and the gutter stays 20px — which
+   * matters because the sections that bleed past this container pay back
+   * exactly 20px to line their last child up.
+   *
+   * Prose does not widen with it: `.prose-body` caps its own measure below,
+   * because a 1280px-wide paragraph is 150 characters to a line. */
   .container-x {
-    @apply mx-auto w-full max-w-[1120px] px-5;
+    @apply mx-auto w-full max-w-[1120px] px-5 2xl:max-w-[1280px];
   }
   /* Reading measure — long-form regulatory prose stays under ~72 characters. */
   .container-narrow {
@@ -241,8 +252,12 @@ h3 {
     @apply flex flex-col items-start gap-4;
   }
 
+  /* The measure is capped HERE, not by the container.
+     Long-form prose stays readable whatever width it is given — which is the
+     design system's own rule: cap the measure inside the container rather
+     than centring a narrower one and giving the page two left edges. */
   .prose-body {
-    @apply space-y-4 text-body text-ink-soft;
+    @apply max-w-[68ch] space-y-4 text-body text-ink-soft;
   }
 
   /* ---------------------------------------------------------------------
@@ -1229,7 +1244,22 @@ h3 {
    panels, the JS leaves — because there the curve IS the motion.
 --------------------------------------------------------------------------- */
 :root {
-  --reveal-range: entry 0% cover 45%;
+  /* The range ENDS INSIDE `entry`, not in `cover`.
+   *
+   * It was `entry 0% cover 45%`, and anything in the last screenful of a page
+   * never finished: reaching "cover 45%" requires scrolling the element
+   * towards the top of the viewport, and at the bottom of a document there is
+   * no scroll left to give. Measured across five pages at three widths, that
+   * left footer and last-section content sitting at 0.63, 0.71, 0.83 — and on
+   * /products at 375px one <nav> stranded at opacity 0, which is content the
+   * reader simply never saw.
+   *
+   * `entry` completes the moment the element has finished entering the
+   * viewport, which is reachable for anything that can be scrolled into view
+   * at all. Ending at 60% of it settles the element before it is even fully
+   * on screen, which is also what the brief asked for: visible quickly, never
+   * half-faded. */
+  --reveal-range: entry 0% entry 60%;
   --reveal-ease: cubic-bezier(0.33, 0, 0.67, 1);
 }
 
@@ -1281,11 +1311,11 @@ h3 {
       /* The stagger is a later START with the same length of runway, so a
          card further along the row is not also slower — it begins later and
          settles at the same rate, which is what a stagger is. */
-      .reveal-group > *:nth-child(2) { animation-range: entry 8% cover 38%; }
-      .reveal-group > *:nth-child(3) { animation-range: entry 16% cover 46%; }
-      .reveal-group > *:nth-child(4) { animation-range: entry 24% cover 54%; }
-      .reveal-group > *:nth-child(5) { animation-range: entry 32% cover 62%; }
-      .reveal-group > *:nth-child(n + 6) { animation-range: entry 40% cover 70%; }
+      .reveal-group > *:nth-child(2) { animation-range: entry 8% entry 68%; }
+      .reveal-group > *:nth-child(3) { animation-range: entry 16% entry 76%; }
+      .reveal-group > *:nth-child(4) { animation-range: entry 24% entry 84%; }
+      .reveal-group > *:nth-child(5) { animation-range: entry 32% entry 92%; }
+      .reveal-group > *:nth-child(n + 6) { animation-range: entry 40% entry 100%; }
 
       /* Media, which gets depth instead of travel.
       
@@ -1301,7 +1331,7 @@ h3 {
       .reveal-media > picture > img {
         animation: reveal-media var(--reveal-ease) both;
         animation-timeline: view();
-        animation-range: entry 0% cover 45%;
+        animation-range: entry 0% entry 60%;
       }
     }
   }
