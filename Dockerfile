@@ -121,6 +121,16 @@ COPY prisma ./prisma
 # it is here so the one image can do both jobs.
 COPY lib ./lib
 
+# The catalogue adoption, which publishes the ten formulary categories and
+# retires the eleven demo ones. `prisma/import-catalogue.ts` already ships
+# with the directory above; this was the half of the pair that did not, so a
+# production database could be loaded with 692 products and still show a
+# count of zero on every category — imported rows are `isPublished: false`
+# by design and this is what publishes them. One file rather than `scripts/`:
+# the rest of that directory is Python extractors and a local __pycache__,
+# none of which belongs in a layer.
+COPY scripts/adopt-formulary-categories.ts ./scripts/
+
 # The client the seed and any data script talk through. `migrate deploy`
 # itself does not need it; sharing one stage for both does.
 RUN DATABASE_URL="postgresql://build:build@127.0.0.1:5432/build" npx prisma generate
