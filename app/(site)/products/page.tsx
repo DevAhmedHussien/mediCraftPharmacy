@@ -7,13 +7,19 @@ import {
 } from "@/lib/seo";
 import { ClosingCta, PageHero } from "@/components/blocks";
 import { Formulary } from "@/components/sections/Formulary";
+import {
+  FormularyCategoryList,
+  FormularyLock,
+} from "@/components/sections/FormularyLock";
 import { closingCta, formulary } from "@/lib/content";
 import {
+  getCategories,
   getProductCount,
   getProducts,
   getProductsGrouped,
   toFormularyProduct,
 } from "@/lib/catalogue";
+import { canBrowseFormulary } from "@/lib/guard";
 import { categoryImage, media } from "@/lib/media";
 
 export const metadata: Metadata = pageMetadata({
@@ -29,7 +35,68 @@ export const metadata: Metadata = pageMetadata({
  */
 const SAMPLE_PER_CATEGORY = 12;
 
+/* Rendered per request, like the category pages beside it. The page now has
+   two forms depending on who is asking, and a prerendered one would serve
+   whichever form the build happened to produce to everybody. */
+export const dynamic = "force-dynamic";
+
 export default async function ProductsPage() {
+  /* Two pages behind one route.
+   *
+   * Signed out, or signed in as anything short of a verified partner, this is
+   * a directory: ten categories, their artwork, their blurbs and their live
+   * counts, and one panel saying who the preparations are for. Verified, it
+   * is the formulary.
+   *
+   * The product queries are inside the branch rather than above it. Hoisting
+   * them would read 692 rows and hand them to a client component on a page
+   * that renders none of them — and `Formulary` serialises everything it is
+   * given into the HTML, so a gate built that way would publish the list in
+   * view-source while hiding it on screen. */
+  const unlocked = await canBrowseFormulary();
+
+  if (!unlocked) {
+    const [categories, totalCount] = await Promise.all([
+      getCategories(),
+      getProductCount(),
+    ]);
+
+    return (
+      <>
+        <script
+          {...jsonLdProps(breadcrumbJsonLd([{ name: "Products", path: "/products" }]))}
+        />
+        {/* No ItemList. The products are not on this page, and marking up
+            692 of them anyway is structured data that contradicts its own
+            document. The individual /product pages stay public, indexable
+            and in the sitemap, so the catalogue's search surface is intact. */}
+        <PageHero
+          eyebrow={formulary.eyebrow}
+          title={formulary.title}
+          lead={formulary.lead}
+          media={media.formulary}
+        />
+
+        <section className="section">
+          <div className="container-x flex flex-col gap-10">
+            <FormularyCategoryList
+              categories={categories.map((c) => ({
+                slug: c.slug,
+                name: c.name,
+                blurb: c.blurb,
+                count: c.count,
+                image: categoryImage(c.slug),
+              }))}
+            />
+            <FormularyLock count={totalCount} returnTo="/products" />
+          </div>
+        </section>
+
+        <ClosingCta {...closingCta} />
+      </>
+    );
+  }
+
   const [products, grouped, totalCount] = await Promise.all([
     getProducts(),
     getProductsGrouped(SAMPLE_PER_CATEGORY),

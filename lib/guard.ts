@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cache } from "react";
 import { redirect } from "next/navigation";
 import type { Role } from "@prisma/client";
 import type { Session } from "next-auth";
@@ -192,3 +193,45 @@ export async function requireOwnPartner(): Promise<{ session: Session; partnerId
   if (!partner) throw forbidden("No partner record is linked to this account.");
   return { session, partnerId: partner.id };
 }
+
+/**
+ * May the caller browse the public formulary listings?
+ *
+ * The brief of 12 October 2026 takes the product grids off the public site:
+ * `/products` and `/products/[category]` keep every category, its artwork and
+ * its live count, and show the preparations themselves only to a partner the
+ * pharmacy has actually verified.
+ *
+ * WHY THE DATABASE AND NOT THE TOKEN. `PartnerStatus` is not in the JWT, and
+ * putting it there would mean a partner suspended this morning keeps browsing
+ * until their token expires. This is one indexed lookup on `Partner.userId`,
+ * on a page that is already `force-dynamic` and already queries the
+ * catalogue, so it costs a round trip that overlaps with the ones beside it.
+ *
+ * Wrapped in React's `cache`: the index page asks once for the page body and
+ * the layout may ask again, and both get one query.
+ *
+ * ADMINS PASS. Not a courtesy — an admin who cannot see the public formulary
+ * cannot check that the thing they just published renders, and would have to
+ * sign out of their own console to do it.
+ *
+ * LISTINGS ONLY. An individual `/product/[slug]` page stays public and
+ * indexable; 692 of them are the site's search surface and hiding them would
+ * trade the pharmacy's organic reach for a gate that the formulary index
+ * already provides.
+ */
+export const canBrowseFormulary = cache(async (): Promise<boolean> => {
+  const session = await auth();
+  const user = session?.user;
+  if (!user?.id) return false;
+
+  if (user.role === "ADMIN" || user.role === "SUPER_ADMIN") return true;
+  if (user.role !== "PARTNER") return false;
+
+  const partner = await db.partner.findUnique({
+    where: { userId: user.id },
+    select: { status: true },
+  });
+
+  return partner?.status === "VERIFIED";
+});

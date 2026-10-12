@@ -7,6 +7,7 @@ import { CookieConsent } from "@/components/CookieConsent";
 import { site, hasRealPhone } from "@/lib/site";
 import { auth } from "@/lib/auth";
 import { getCategories, getProductsByCategory } from "@/lib/catalogue";
+import { canBrowseFormulary } from "@/lib/guard";
 import { homeForRole, homeLabelForRole } from "@/lib/home-route";
 
 /**
@@ -87,7 +88,17 @@ export default async function SiteLayout({ children }: { children: ReactNode }) 
    *
    * `getCategories` already carries the count, so there is no per-category
    * query left either — ten round trips became one. */
-  const categories = await getCategories();
+  /* The drawer's product preview is part of the formulary, so it answers to
+     the same gate the listings do. Eight names per category, serialised into
+     every page of the site, would hand an unverified visitor eighty
+     preparations in view-source on a site that shows them none — the count
+     is public, the catalogue is not. See `canBrowseFormulary` in
+     lib/guard.ts. */
+  const [categories, unlocked] = await Promise.all([
+    getCategories(),
+    canBrowseFormulary(),
+  ]);
+
   const navCategories = await Promise.all(
     categories.map(async (category) => {
       return {
@@ -96,9 +107,11 @@ export default async function SiteLayout({ children }: { children: ReactNode }) 
         blurb: category.blurb,
         icon: category.icon,
         count: category.count,
-        previewProducts: (await getProductsByCategory(category.slug))
-          .slice(0, NAV_PREVIEW_PRODUCTS)
-          .map((p) => ({ slug: p.slug, name: p.name, form: p.form, doses: p.doses })),
+        previewProducts: unlocked
+          ? (await getProductsByCategory(category.slug))
+              .slice(0, NAV_PREVIEW_PRODUCTS)
+              .map((p) => ({ slug: p.slug, name: p.name, form: p.form, doses: p.doses }))
+          : [],
       };
     })
   );

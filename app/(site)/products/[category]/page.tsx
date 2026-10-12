@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ClosingCta, PageHero } from "@/components/blocks";
+import { FormularyLock } from "@/components/sections/FormularyLock";
 import { ProductCard } from "@/components/ProductCard";
 import { closingCta } from "@/lib/content";
 import { getCategory, getProductsByCategory } from "@/lib/catalogue";
+import { canBrowseFormulary } from "@/lib/guard";
 import { categoryImage } from "@/lib/media";
 import {
   breadcrumbJsonLd,
@@ -59,7 +61,14 @@ export default async function CategoryPage({ params }: Params) {
   const category = await getCategory(params.category);
   if (!category) notFound();
 
-  const items = await getProductsByCategory(category.slug);
+  /* The preparations themselves are for verified partners; the count is for
+     everybody. See `canBrowseFormulary` in lib/guard.ts.
+
+     The query is skipped outright when the gate is closed rather than fetched
+     and discarded — a locked page should not read 116 rows to render a panel
+     that names a number `category.count` already carries. */
+  const unlocked = await canBrowseFormulary();
+  const items = unlocked ? await getProductsByCategory(category.slug) : [];
 
   return (
     <>
@@ -71,7 +80,12 @@ export default async function CategoryPage({ params }: Params) {
           ])
         )}
       />
-      {items.length > 0 && (
+      {/* Only when the grid is actually on the page. An ItemList naming 116
+          products on a screen that shows none of them is structured data that
+          contradicts its own document, which is the definition Google gives
+          for a manual action. The individual /product pages stay public and
+          indexable, so nothing is lost from the site's search surface. */}
+      {unlocked && items.length > 0 && (
         <script
           {...jsonLdProps(
             itemListJsonLd({
@@ -101,18 +115,32 @@ export default async function CategoryPage({ params }: Params) {
 
       <section className="section">
         <div className="container-x">
+          {/* `category.count` rather than `items.length`: the figure must read
+              the same whether or not the grid below it rendered, and when the
+              gate is closed there are no items to count. Both numbers come
+              from the same predicate in lib/catalogue.ts, so they agree. */}
           <p className="font-mono text-caption font-medium uppercase tracking-wider text-ink-muted">
-            {items.length} {items.length === 1 ? "product" : "products"}
+            {category.count} {category.count === 1 ? "product" : "products"}
           </p>
 
-          {/* `headingLevel={2}`: on this page the grid is the content directly
-              under the h1, with no category heading between, so the cards' own
-              titles are the second level. */}
-          <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {items.map((p) => (
-              <ProductCard key={p.slug} product={p} headingLevel={2} />
-            ))}
-          </div>
+          {unlocked ? (
+            /* `headingLevel={2}`: on this page the grid is the content directly
+               under the h1, with no category heading between, so the cards' own
+               titles are the second level. */
+            <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {items.map((p) => (
+                <ProductCard key={p.slug} product={p} headingLevel={2} />
+              ))}
+            </div>
+          ) : (
+            <FormularyLock
+              className="mt-6"
+              headingLevel={2}
+              count={category.count}
+              categoryName={category.name}
+              returnTo={`/products/${category.slug}`}
+            />
+          )}
 
           {/* No "coming soon" panel and no prescription box.
               Every published category is a formulary category and every

@@ -150,6 +150,25 @@ export function NavDrawer({
 
               {categories.map((c) => {
                 const count = c.count;
+
+                /* No preview means the formulary gate is closed for this
+                   visitor — see app/(site)/layout.tsx. Drilling in would open
+                   a panel holding one link, so the row becomes that link. The
+                   count still shows either way: it is the public figure. */
+                if (c.previewProducts.length === 0) {
+                  return (
+                    <SheetClose asChild key={c.slug}>
+                      <Link
+                        href={`/products/${c.slug}`}
+                        className="flex items-center justify-between gap-3 rounded-xl px-3 py-3.5 text-left transition-colors hover:bg-brand-50"
+                      >
+                        <span className="text-base font-medium text-ink-soft">{c.name}</span>
+                        <span className="shrink-0 text-xs text-ink-muted">{count}</span>
+                      </Link>
+                    </SheetClose>
+                  );
+                }
+
                 return (
                   <button
                     key={c.slug}
