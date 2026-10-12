@@ -153,7 +153,9 @@ export default async function AdminLayout({ children }: { children: ReactNode })
               }
             />
           </div>
-          <div className="flex w-full max-w-[86rem] flex-col gap-5">{children}</div>
+          {/* `--measure`, not a number of its own: the console, the portal and the
+              public site are one width. See app/globals.css. */}
+          <div className="flex w-full max-w-[var(--measure)] flex-col gap-5">{children}</div>
         </main>
       </div>
     </div>

@@ -54,7 +54,7 @@ export function Footer() {
   const tel = telHref();
 
   return (
-    <footer className="mx-auto flex w-full max-w-[1120px] flex-col gap-9 px-5 pb-12 pt-24">
+    <footer className="container-x flex flex-col gap-9 pb-12 pt-24">
       {/* ---- Four columns ---- */}
       {/* NO `.reveal-group` HERE, AND THERE CANNOT BE ONE.
        *

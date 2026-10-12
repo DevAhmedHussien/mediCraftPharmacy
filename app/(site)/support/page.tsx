@@ -59,33 +59,40 @@ export default function ResourcesPage() {
 
       {/* ---- Patient FAQ ---- */}
       <section className="section">
-        <div className="container-narrow">
-          <Reveal>
-            <SectionHead
-              title={resources.patientFaqs.title}
-              lead={resources.patientFaqs.lead}
-              size="sm"
-            />
-          </Reveal>
-          <Reveal delay={0.05} className="mt-8">
-            <Faq items={resources.patientFaqs.items} />
-          </Reveal>
+        <div className="container-x">
+          {/* Capped inside the measure rather than centred beside it: this
+              column shares its left edge with the masthead above and the
+              cards below, so the page has one left edge and not two. */}
+          <div className="max-w-[820px]">
+            <Reveal>
+              <SectionHead
+                title={resources.patientFaqs.title}
+                lead={resources.patientFaqs.lead}
+                size="sm"
+              />
+            </Reveal>
+            <Reveal delay={0.05} className="mt-8">
+              <Faq items={resources.patientFaqs.items} />
+            </Reveal>
+          </div>
         </div>
       </section>
 
       {/* ---- Provider FAQ ---- */}
       <section className="band section">
-        <div className="container-narrow">
-          <Reveal>
-            <SectionHead
-              title={resources.providerFaqs.title}
-              lead={resources.providerFaqs.lead}
-              size="sm"
-            />
-          </Reveal>
-          <Reveal delay={0.05} className="mt-8">
-            <Faq items={resources.providerFaqs.items} />
-          </Reveal>
+        <div className="container-x">
+          <div className="max-w-[820px]">
+            <Reveal>
+              <SectionHead
+                title={resources.providerFaqs.title}
+                lead={resources.providerFaqs.lead}
+                size="sm"
+              />
+            </Reveal>
+            <Reveal delay={0.05} className="mt-8">
+              <Faq items={resources.providerFaqs.items} />
+            </Reveal>
+          </div>
         </div>
       </section>
 

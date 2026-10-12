@@ -38,7 +38,7 @@ export function PageHeader({
   className?: string;
 }) {
   return (
-    <section className={cn("mx-auto flex w-full max-w-[1120px] flex-col gap-5 px-5 pt-24", className)}>
+    <section className={cn("container-x flex flex-col gap-5 pt-24", className)}>
       {eyebrow && <p className="eyebrow">{eyebrow}</p>}
       <h1 className="max-w-[920px] font-display text-[clamp(2.5rem,5.6vw,4.5rem)] font-normal leading-[1.04] tracking-display text-navy text-balance">
         {title}
@@ -74,7 +74,7 @@ export function PageHeaderImage({
   className?: string;
 }) {
   return (
-    <section className={cn("mx-auto w-full max-w-[1120px] px-5 pt-14", className)}>
+    <section className={cn("container-x pt-14", className)}>
       <div className="relative h-[clamp(18.75rem,42vw,32.5rem)] overflow-hidden rounded-hero bg-stone">
         <Image
           src={src}

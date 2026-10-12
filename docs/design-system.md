@@ -81,10 +81,22 @@ short value set at the same size — bolding it does not.
 | `rounded-[14px]` | 14px | Form fields |
 | `rounded-full` | — | Every button, every pill |
 
-**`.container-x` is `max-w-[1120px] px-5`** — one measure, one flat gutter, no
-breakpoint steps. The nav pill, the home page and `PageHeader` are all 1120.
-Anything that bleeds past it with a negative margin must pay back exactly
-20px, or it slices its last child down the middle.
+**`.container-x` is `max-w-[var(--measure)] px-5`** — one measure, one flat
+gutter. `--measure` is 1280px, stepping to 1440 at `2xl` (1536px), and it is
+declared once at the top of `globals.css`. The nav pill, the home page,
+`PageHeader`, the footer, the 404, the portal and the admin console all read
+it; none of them carries a width of its own. Anything that bleeds past the
+container with a negative margin must pay back exactly 20px, or it slices its
+last child down the middle.
+
+The two consoles take the variable rather than the class, because each has its
+own asymmetric gutter and cannot accept `px-5` from a shared rule.
+
+Long-form prose caps its measure **inside** `.container-x` — see `/support`,
+`/quality` and `/product/[slug]`. `.container-narrow` (820px) is only for a
+page that is entirely prose, like a legal page or a blog post: it centres
+itself, so using it beside a `container-x` section gives one page two left
+edges.
 
 Section rhythm: the home page is 96/160px and sets its own with a local
 constant. Interior pages are `.section` at 80/112, because they open with a

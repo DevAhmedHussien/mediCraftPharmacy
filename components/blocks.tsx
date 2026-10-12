@@ -548,7 +548,7 @@ export function ClosingCta({
        above it. The band was the last piece of the alternating-stripe rhythm
        the redesign removes. */
     <section className="section">
-      <div className="mx-auto w-full max-w-[1120px] px-5">
+      <div className="container-x">
         <div className="flex flex-col items-center gap-5 rounded-hero border border-hair-soft bg-gradient-to-b from-white to-[#f1f3f8] px-6 py-[clamp(2.5rem,6vw,5.5rem)] text-center">
         <h2 className="mx-auto max-w-3xl font-display text-[clamp(2.1rem,4.6vw,3.6rem)] font-normal leading-[1.06] tracking-display text-navy text-balance">
           {title}

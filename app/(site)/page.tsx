@@ -23,7 +23,7 @@ export const metadata: Metadata = pageMetadata({
    from lib/content.ts. Section rhythm: 160px between sections on desktop,
    96px on mobile. Container 1120px. */
 
-const container = "mx-auto w-full max-w-[1120px] px-5";
+const container = "container-x";
 const section = "pt-24 lg:pt-40";
 
 export default async function HomePage() {

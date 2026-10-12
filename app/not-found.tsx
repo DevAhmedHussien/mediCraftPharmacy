@@ -41,7 +41,7 @@ export const metadata: Metadata = {
 export default function NotFound() {
   return (
     <div className="flex min-h-screen flex-col bg-paper text-navy">
-      <header className="mx-auto w-full max-w-[1120px] px-5 pt-8">
+      <header className="container-x pt-8">
         <Link
           href="/"
           aria-label={`${site.name} — home`}
@@ -53,7 +53,7 @@ export default function NotFound() {
 
       <main
         id="main"
-        className="mx-auto flex w-full max-w-[1120px] flex-1 flex-col items-start gap-5 px-5 py-24 lg:py-32"
+        className="container-x flex flex-1 flex-col items-start gap-5 py-24 lg:py-32"
       >
         <p className="eyebrow">Error 404</p>
         <h1 className="max-w-[760px] font-display text-[clamp(2.25rem,5vw,3.75rem)] font-normal leading-[1.05] tracking-display text-balance">

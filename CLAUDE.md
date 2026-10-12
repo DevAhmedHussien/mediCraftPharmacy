@@ -35,9 +35,16 @@ grep -rlw ComponentName app components lib
 
 ## Geometry
 
-`.container-x` is `max-w-[1120px] px-5` — one measure, one flat gutter.
-Anything that bleeds past it with a negative margin must pay back **exactly
-20px**, or it slices its last child down the middle.
+`.container-x` is `max-w-[var(--measure)] px-5` — one measure, one flat
+gutter. The width lives in `--measure` (1280px, 1440 at `2xl`) at the top of
+`globals.css`, and the portal and admin shells read the same variable.
+**Never type a width into a component.** Eight of them carried
+`max-w-[1120px]` by hand, which is a copy of the measure that does not follow
+when the measure moves — that is how a header came to float at one width above
+sections set at another.
+
+Anything that bleeds past the container with a negative margin must pay back
+**exactly 20px**, or it slices its last child down the middle.
 
 Never use `container-narrow` for prose on a page whose other sections use
 `container-x`. It centres itself, which gives one page two left edges. Cap the

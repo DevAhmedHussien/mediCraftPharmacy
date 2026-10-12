@@ -45,6 +45,27 @@
      filter, the product bar — do not each need editing to say the same thing.
      They sit flush under a bar that no longer changes height. */
   --chrome-h-condensed: var(--chrome-h);
+
+  /* THE MEASURE, as a value rather than a class.
+   *
+   * `.container-x` is the class, and the public site uses it everywhere. The
+   * two consoles cannot: the portal's content column carries an asymmetric
+   * gutter (24px on the rail side, 40px on the free side) and the admin's
+   * carries its own, so neither can take `px-5` from a shared class. They
+   * were therefore left to their own numbers — 1180px in the portal, 86rem
+   * (1376px) in the admin — and the three surfaces disagreed by up to 256px.
+   *
+   * This is the one number all three read. Change it here and the site, the
+   * portal and the console move together. */
+  --measure: 1280px;
+}
+
+/* The step is at `2xl` (1536px) only, so 1280 and 1440 laptops are untouched
+   and only a genuinely large monitor gets the extra 160px. */
+@media (min-width: 1536px) {
+  :root {
+    --measure: 1440px;
+  }
 }
 
 html {
@@ -108,33 +129,46 @@ h3 {
   /* ---------------------------------------------------------------------
      Layout shell
      ------------------------------------------------------------------ */
-  /* 1120px, flat 20px gutters — the reference's measure, and the one the nav
-     pill, the hero and PageHeader already use.
-     
-     It was max-w-[1280px] with px-5/sm:px-8/lg:px-10, so every section built
-     on `container-x` sat 160px wider than the header floating above it and
-     the gutters stepped at two breakpoints the design does not have. Nothing
-     lined up vertically: the nav pill's left edge and the first paragraph's
-     left edge were 30px apart on a desktop.
-     
-     One class, 41 call sites across 19 files. */
-  /* One measure, one flat gutter — and 160px more of it on a very large
-     monitor.
+  /* THE MEASURE as a class — `--measure` wide, with a flat 20px gutter.
    *
-   * 1120 was the whole site at every width, which on a 1920 screen left 400px
-   * of empty paper down each side. The step is at `2xl` (1536px) only, so
-   * 1280 and 1440 laptops are untouched, and the gutter stays 20px — which
-   * matters because the sections that bleed past this container pay back
-   * exactly 20px to line their last child up.
+   * The width itself is `--measure` at the top of this file, because the
+   * portal and the admin console need the number without the gutter. It was
+   * 1120/1280; the whole site moved out by 160px on 12 October, because a
+   * 1120 column on a 1440 laptop leaves more paper than page.
    *
-   * Prose does not widen with it: `.prose-body` caps its own measure below,
-   * because a 1280px-wide paragraph is 150 characters to a line. */
+   * CHANGE IT HERE AND NOWHERE ELSE. Eight components used to carry
+   * `mx-auto w-full max-w-[1120px] px-5` written out by hand — the nav pill,
+   * the footer, both page headers, the home page, the 404 and ClosingCta —
+   * which is a copy of this rule that does not follow when this rule
+   * changes. That is how a header came to float at one width above sections
+   * set at another. They all call this class now, and so do the portal and
+   * admin shells. A width typed into a component is the bug, not the fix.
+   *
+   * THE GUTTER STAYS 20px at every breakpoint. Sections that bleed past this
+   * container with a negative margin pay back exactly 20px — widen the
+   * gutter and every one of them slices its last child down the middle.
+   *
+   * PROSE DOES NOT WIDEN WITH IT. `.prose-body` caps its own measure below,
+   * because a 1280px paragraph runs to 150 characters a line. Long-form
+   * pages cap the measure INSIDE this container rather than centring a
+   * narrower one beside it, so a page has one left edge and not two. */
   .container-x {
-    @apply mx-auto w-full max-w-[1120px] px-5 2xl:max-w-[1280px];
+    @apply mx-auto w-full px-5;
+    max-width: var(--measure);
   }
-  /* Reading measure — long-form regulatory prose stays under ~72 characters. */
+  /* Reading measure — long-form regulatory prose stays under ~72 characters.
+   *
+   * For a page that is ENTIRELY prose (a legal page, a blog post), where the
+   * centred column is the whole document. A page whose other sections use
+   * `.container-x` must not reach for this: it centres itself, so its left
+   * edge lands inboard of theirs and the page reads as two documents. Cap
+   * the measure inside `.container-x` instead — see /support and /quality.
+   *
+   * The gutter is flat 20px, matching the measure. It used to step to 32px
+   * at `sm`, which put a narrow section's edge 12px inside every other
+   * section's on the same page at exactly one breakpoint. */
   .container-narrow {
-    @apply mx-auto w-full max-w-[820px] px-5 sm:px-8;
+    @apply mx-auto w-full max-w-[820px] px-5;
   }
   /* Vertical rhythm. One class per band so section padding can never be
      fought over by two competing selectors. */

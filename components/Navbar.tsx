@@ -140,7 +140,7 @@ export function Navbar({
      *
      * Everything inside — the dropdowns, the mega-panel, the mobile drawer,
      * the active-route logic — is untouched. This is a restyle of the shell. */
-    <header className="sticky top-4 z-50 mx-auto mt-4 w-full max-w-[1120px] px-5">
+    <header className="container-x sticky top-4 z-50 mt-4">
       {/* ---- The pill ---- */}
       {/* `relative` so BOTH dropdowns position against the pill rather than
           against their own button. The reference spans its panels edge to

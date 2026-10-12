@@ -86,7 +86,9 @@ export default function QualityPage() {
       {/* ---- SOPs ---- */}
       <section className="section">
         <div className="container-x">
-          <div className="container-narrow px-0">
+          {/* Capped, not centred — `container-narrow` inside `container-x`
+              centres itself and gives the section a second left edge. */}
+          <div className="max-w-[820px]">
             <Reveal>
               <SectionHead
                 eyebrow={quality.sops.eyebrow}
