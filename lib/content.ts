@@ -148,11 +148,6 @@ export const about = {
     /** A genuine sequence — order carries information, so it is numbered by year. */
     timeline: [
       {
-        year: "2025",
-        title: "MediCraft LLC Established — Tampa, FL",
-        body: "MediCraft is incorporated with a clear mission: precision-compounded medications built on a quality engineering foundation spanning 503A, 503B, and cGMP environments. Quality systems, SOPs, and facility infrastructure are built and validated before the pharmacy opens its doors.",
-      },
-      {
         year: "2026",
         title: "Pharmacy Opens — Built Right from Day One",
         body: "MediCraft officially opens as a licensed 503A compounding pharmacy in Tampa, FL — operating from a facility previously home to one of the largest oncology infusion pharmacies in the nation, with USP 795/797/800 compliant processes, a full quality leadership team, and a proven infrastructure already in place.",
