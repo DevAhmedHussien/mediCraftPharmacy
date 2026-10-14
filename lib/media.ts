@@ -107,7 +107,7 @@ export const media = {
     src: `${R}/mc-home-hero-vials-cutout.webp`,
     width: 1112,
     height: 884,
-    alt: "Rendering of MediCraft Pharmacy injectable vials — semaglutide, tirzepatide, NAD+ and glutathione — in labelled multiple-dose vials",
+    alt: "Rendering of MediCraft Pharmacy injectable preparations in labelled multiple-dose vials",
   },
   /** Formulary / category heroes — one of each dosage form. */
   formulary: {
@@ -293,7 +293,7 @@ const packshotCard = (slug: string, alt: string): CategoryMedia => ({
 export const categoryMedia: Record<string, CategoryMedia> = {
   "weight-management": areaCard(
     "mc-area-weight-management-4x3-2x.webp",
-    "MediCraft semaglutide and tirzepatide flex-dose vials"
+    "MediCraft compounded GLP-1 weight management vials"
   ),
   hrt: areaCard(
     "mc-area-hormone-therapy-4x3-2x.webp",

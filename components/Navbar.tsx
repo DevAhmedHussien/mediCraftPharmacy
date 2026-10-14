@@ -614,7 +614,7 @@ function MegaPanel({
               eleven rows, which is the last place someone scanning
               categories is looking for "show me all of them". */}
           <div className="flex items-baseline justify-between gap-4 px-4 pb-1 pt-2">
-            <p className="eyebrow">Shop by category</p>
+            <p className="eyebrow">Browse the formulary</p>
             <Link
               href="/products"
               onClick={onNavigate}

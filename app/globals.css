@@ -500,19 +500,37 @@ h3 {
    * bare utility (0,1,0), which is what lets a container override a utility
    * without !important. Change `.panel-navy` back to a dark ground and these
    * rules come out; nothing in the pages has to move either way. */
-  .panel-navy :is(
-    .text-white,
-    .text-white\/50,
-    .text-white\/60,
-    .text-white\/70,
-    .text-white\/85
-  ) {
+  /* MATCHED ON THE ATTRIBUTE, NOT ON THE CLASS — AND THAT IS LOAD-BEARING.
+
+     These rules used to name the utilities directly:
+     `.panel-navy :is(.text-white, .text-white\\/70, …)`. Tailwind rewrites a
+     selector that NAMES a utility which other rules also `@apply`, and
+     substitutes one of those other rules' selectors into the list. Compiled
+     from this file on 13 October 2026 it came out as
+     `:is(.btn-primary, .text-white\\/50, …)` — `.text-white` had become
+     `.btn-primary`, because `.btn-primary` is one of the rules that applies
+     `text-white`. The consequence was that every primary button inside one of
+     these panels was painted ink-soft: on /contact the "Start Onboarding"
+     label rendered #46536F on #0D193E, which is 2.23:1 against the 4.5:1 this
+     codebase requires. The same build turned `.text-cyan-400` into
+     `.band-navy .eyebrow`, and recompiling produced a different substitution
+     each time.
+
+     `[class*="text-white"]` carries the same specificity (0,2,0), matches the
+     same elements, and names no utility — so there is nothing for Tailwind to
+     rewrite. It also cannot catch a component class like `.btn-primary`,
+     whose white text comes from `@apply` rather than from a class in the
+     markup, which is the bug it is replacing.
+
+     Change `.panel-navy` back to a dark ground and these rules come out;
+     nothing in the pages has to move either way. */
+  .panel-navy [class*="text-white"] {
     @apply text-ink-soft;
   }
-  .panel-navy :is(.text-cyan-200, .text-cyan-300, .text-cyan-400) {
+  .panel-navy [class*="text-cyan"] {
     @apply text-brand-600;
   }
-  .panel-navy :is(.border-white\/10, .border-white\/15, .border-white\/20) {
+  .panel-navy [class*="border-white"] {
     @apply border-brand-100;
   }
   /* The eyebrow treatment, as a pill. Mono, tracked out, hairline border —
@@ -770,15 +788,11 @@ h3 {
   .gradient-plate {
     @apply relative isolate overflow-hidden rounded-panel border border-brand-100 bg-brand-50/60;
   }
-  .gradient-plate :is(
-    .text-white,
-    .text-white\/45,
-    .text-white\/60,
-    .text-white\/70
-  ) {
+  /* Attribute-matched, for the reason given on `.panel-navy` above. */
+  .gradient-plate [class*="text-white"] {
     @apply text-ink-soft;
   }
-  .gradient-plate :is(.text-cyan-200, .text-cyan-300, .text-cyan-400) {
+  .gradient-plate [class*="text-cyan"] {
     @apply text-brand-600;
   }
   /*

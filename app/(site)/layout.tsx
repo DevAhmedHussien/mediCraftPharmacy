@@ -199,7 +199,7 @@ export default async function SiteLayout({ children }: { children: ReactNode }) 
       "USP <795> non-sterile compounding",
       "USP <797> sterile compounding",
       "USP <800> hazardous drug handling",
-      "Compounded semaglutide and tirzepatide flex-dose vials",
+      "Compounded GLP-1 weight management preparations",
       "Bioidentical hormone replacement therapy compounding",
       "Peptide therapy compounding",
       "Compounded topical and troche dosage forms",

@@ -57,13 +57,24 @@ export default async function OpengraphImage() {
         />
 
         {/* Scrim. Satori supports linear-gradient, so the dissolve is real
-            rather than a stack of stepped rectangles. */}
+            rather than a stack of stepped rectangles.
+
+            EXPLICIT BOX, NOT `inset: 0`. Satori lays out an empty absolutely
+            positioned div with no width or height as 0×0, so this gradient
+            was painting nothing at all — which went unnoticed for as long as
+            the image underneath it was the navy vial render and the card
+            looked dark anyway. Against the laboratory photograph that
+            replaced it, white text on an unscrimmed bright background was
+            illegible. top/left/width/height is what Satori honours. */}
         <div
           style={{
             position: "absolute",
-            inset: 0,
+            top: 0,
+            left: 0,
+            width: 1200,
+            height: 630,
             background:
-              "linear-gradient(90deg, rgba(13,25,62,0.97) 0%, rgba(13,25,62,0.92) 38%, rgba(13,25,62,0.55) 62%, rgba(13,25,62,0.12) 100%)",
+              "linear-gradient(90deg, rgba(13,25,62,0.97) 0%, rgba(13,25,62,0.93) 42%, rgba(13,25,62,0.72) 68%, rgba(13,25,62,0.42) 100%)",
           }}
         />
 
@@ -119,10 +130,15 @@ export default async function OpengraphImage() {
             </div>
           </div>
 
+          {/* The USP line that stood here is withheld with the stat block and
+              the footer badge — client brief, 13 October 2026. A share card is
+              the one surface that gets screenshotted and forwarded, so leaving
+              the claim here would have outlived its removal everywhere else.
+              What replaces it is the licence fact, which is not in question. */}
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div style={{ display: "flex", width: 22, height: 4, borderRadius: 2, background: OG_COLORS.cyan }} />
             <div style={{ fontSize: 18, color: "rgba(255,255,255,0.65)", letterSpacing: 1.4 }}>
-              USP 795 · 797 · 800 COMPLIANT
+              LICENSED IN FLORIDA
             </div>
           </div>
         </div>
