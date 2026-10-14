@@ -106,8 +106,11 @@ export const metadata: Metadata = {
     "Hillsborough County pharmacy",
     "custom medications",
     "sterile compounding",
-    "semaglutide",
-    "tirzepatide",
+    /* "semaglutide" and "tirzepatide" removed 13 October 2026 at the
+       client's request — a compounding pharmacy naming the molecules it
+       compounds in its keywords is the exact surface FDA and the state
+       boards read as advertising a specific drug. The therapeutic
+       category stays, which is what the brief asked to keep. */
     "GLP-1 weight management",
     "hormone replacement therapy",
     "peptide therapy",

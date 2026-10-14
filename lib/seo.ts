@@ -14,11 +14,34 @@ import { site } from "@/lib/site";
    `pageMetadata` produces both from one call, so a new page cannot forget.
    ========================================================================= */
 
+/**
+ * The card every page falls back to.
+ *
+ * WHY THIS EXISTS. `app/(site)/opengraph-image.tsx` renders a branded card,
+ * and the comment here used to say interior pages inherited it. They did not.
+ * Measured on a production build, 13 October 2026: every page except `/`
+ * served `twitter:card=summary_large_image` with NO image — a page declaring
+ * a large-image card and supplying no image is rendered by LinkedIn, Slack,
+ * X and iMessage as a bare line of text. Setting `openGraph` in a child
+ * segment's metadata is what drops the file-convention image, and every page
+ * on this site goes through this function.
+ *
+ * It is a neutral laboratory photograph, not the vial render: that render
+ * carries product labels, and the 13 October brief takes drug names off the
+ * marketing surfaces. Versioned filename, per the rule in next.config.js.
+ */
+const DEFAULT_OG_IMAGE = {
+  src: "/images/site/mc-og-default-2026.jpg",
+  width: 1200,
+  height: 630,
+  alt: "MediCraft Pharmacy — precision compounding, crafted for every patient",
+} as const;
+
 export function pageMetadata({
   title,
   description,
   path,
-  /** Omit to inherit the site-wide card from app/opengraph-image.tsx. */
+  /** Omit for the default card below. */
   image,
   noIndex = false,
 }: {
@@ -55,12 +78,31 @@ export function pageMetadata({
       siteName: site.name,
       title: ogTitle,
       description,
-      ...(image ? { images: [{ url: image }] } : {}),
+      /* `/` is left alone: `app/(site)/opengraph-image.tsx` renders a branded
+         card for that one route and Next attaches it automatically, but only
+         where nothing else sets `images` — setting a fallback unconditionally
+         replaced the branded card with this flat photograph. Every other page
+         has no generated card of its own, which is the gap this fills. */
+      ...(path === "/" && !image
+        ? {}
+        : {
+            images: [
+              {
+                url: `${site.url}${image ?? DEFAULT_OG_IMAGE.src}`,
+                width: DEFAULT_OG_IMAGE.width,
+                height: DEFAULT_OG_IMAGE.height,
+                alt: DEFAULT_OG_IMAGE.alt,
+              },
+            ],
+          }),
     },
     twitter: {
       card: "summary_large_image",
       title: ogTitle,
       description,
+      ...(path === "/" && !image
+        ? {}
+        : { images: [`${site.url}${image ?? DEFAULT_OG_IMAGE.src}`] }),
     },
     ...(noIndex ? { robots: { index: false, follow: true } } : {}),
   };

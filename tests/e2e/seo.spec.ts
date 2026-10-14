@@ -203,9 +203,14 @@ test("a missing page is a real 404, branded, and not indexed", async ({ baseURL 
   const html = await res.text();
   await ctx.dispose();
 
-  // Next's built-in 404 is ~11 kB with no chrome. Ours carries the footer.
+  /* Next's built-in 404 is ~11 kB with no chrome. Ours carries the footer.
+     The sentinel was /LegitScript|PCAB/ until 13 October 2026, when both
+     badges were withheld at the client's request — so the assertion failed
+     on a footer that was perfectly intact. It now looks for the footer's
+     Rx disclaimer, which is a legal line rather than a credential: it is on
+     every page by law and cannot be withheld the way a badge can. */
   expect(html, "404 lost its footer — is app/not-found.tsx still there?")
-    .toMatch(/LegitScript|PCAB/);
+    .toMatch(/503A compounding pharmacy/i);
   expect(html.match(/<h1[\s>]/g) ?? []).toHaveLength(1);
   expect(html).toContain("noindex");
 });

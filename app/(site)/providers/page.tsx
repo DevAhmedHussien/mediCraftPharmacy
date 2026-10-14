@@ -94,7 +94,7 @@ export default async function ProvidersPage() {
             items={providers.onboarding.steps}
             image={{
               src: "/images/brand/vial-clear-glass-shelf.webp",
-              alt: "A MediCraft semaglutide vial on a glass shelf",
+              alt: "A MediCraft compounded preparation vial on a glass shelf",
               width: 1086,
               height: 1448,
             }}

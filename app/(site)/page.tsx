@@ -65,13 +65,50 @@ export default async function HomePage() {
       {/* ---- Hero image + glass specification plate ---- */}
       <section aria-label={hero.spec.docLabel} className={`${container} pt-12 lg:pt-20`}>
         <div className="relative h-[clamp(22.5rem,52vw,38.75rem)] overflow-hidden rounded-hero bg-stone">
-          <Image
-            src="/images/brand/vial-blue-ice.webp"
-            alt="A MediCraft semaglutide injection vial, double strength 5 mg/mL, resting in ice"
-            fill
-            priority
-            sizes="(min-width: 1120px) 1080px, 100vw"
-            className="object-cover"
+          {/* THE LCP IMAGE, AND THE ONE IMAGE ON THIS SITE THAT DOES NOT GO
+              THROUGH THE OPTIMISER.
+
+              What it was: a portrait photograph of a MediCraft-labelled
+              "Semaglutide Injection" vial, cropped into a 16:9 box — so it
+              named a drug in the hero, and shipped roughly twice the pixels
+              the box could show. Measured on production at 1440px: 75KB that
+              took 679ms to arrive, and an LCP of 1232ms.
+
+              Why a plain <img>. `next/image` routes through /_next/image,
+              which encodes on demand — AVIF first, and AVIF encoding on the
+              two-vCPU ARM instance this runs on is the slow part. The result
+              is cached for thirty days (see next.config.js), but the cache
+              lives in the container, so the FIRST visitor after every deploy
+              pays that encode on the largest element of the landing page.
+              These four derivatives are generated ahead of time and served
+              straight off /images, which next.config.js already gives a day
+              of freshness and a week of stale-while-revalidate.
+
+              `sizes` follows the measure: the container is `--measure` wide
+              less the 20px gutter each side — 1240 at 1280, 1400 at 2xl. The
+              old value said 1080, which is what the plate was before the
+              layout widened, so every desktop was being served an image
+              narrower than the box and upscaling it.
+
+              Versioned filename, per the rule in next.config.js: a replaced
+              file under a name that already shipped would be served stale
+              from a browser cache for a day. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/site/mc-home-hero-lab-2026-1280.webp"
+            srcSet={[
+              "/images/site/mc-home-hero-lab-2026-640.webp 640w",
+              "/images/site/mc-home-hero-lab-2026-960.webp 960w",
+              "/images/site/mc-home-hero-lab-2026-1280.webp 1280w",
+              "/images/site/mc-home-hero-lab-2026-1600.webp 1600w",
+            ].join(", ")}
+            sizes="(min-width: 1536px) 1400px, (min-width: 1280px) 1240px, 100vw"
+            alt="A laboratory bench run with conical flasks, reagent bottles and shelving under daylight"
+            width={1600}
+            height={900}
+            fetchPriority="high"
+            decoding="async"
+            className="absolute inset-0 h-full w-full object-cover"
           />
           <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-white/30 to-transparent" />
           {/* Pinned to the FOOT of the image, not the head. At the top the
@@ -103,12 +140,28 @@ export default async function HomePage() {
                the note itself is hidden only under 380px, where there is
                genuinely no room for a third line and the figure above it
                already carries the fact. */
-            className="absolute inset-x-2.5 bottom-2.5 grid grid-cols-2 gap-px overflow-hidden rounded-2xl shadow-float motion-safe:animate-[reveal-up-sm_600ms_cubic-bezier(0.22,1,0.36,1)_200ms_both] sm:inset-x-5 sm:bottom-5 sm:rounded-[20px] lg:grid-cols-4"
+            /* COLUMNS FOLLOW THE FIELD COUNT. The USP field is commented out in
+               lib/content.ts at the client's request, and a hard `lg:grid-cols-4`
+               left the fourth cell empty — a quarter of the plate showing the
+               gap colour, which reads as a broken tile rather than as three
+               facts. Uncommenting that field puts the fourth column back with
+               no further edit. */
+            className={cn(
+              "absolute inset-x-2.5 bottom-2.5 grid grid-cols-2 gap-px overflow-hidden rounded-2xl shadow-float motion-safe:animate-[reveal-up-sm_600ms_cubic-bezier(0.22,1,0.36,1)_200ms_both] sm:inset-x-5 sm:bottom-5 sm:rounded-[20px]",
+              hero.spec.fields.length === 3 ? "lg:grid-cols-3" : "lg:grid-cols-4"
+            )}
           >
-            {hero.spec.fields.map((f) => (
+            {hero.spec.fields.map((f, index) => (
               <div
                 key={f.field}
-                className="flex flex-col gap-0.5 bg-white/35 px-3 py-2.5 text-left sm:gap-1 sm:px-[18px] sm:py-4"
+                className={cn(
+                  "flex flex-col gap-0.5 bg-white/35 px-3 py-2.5 text-left sm:gap-1 sm:px-[18px] sm:py-4",
+                  // Odd count, last cell: span both mobile columns rather than
+                  // leaving a half-width hole beside it.
+                  hero.spec.fields.length % 2 === 1 &&
+                    index === hero.spec.fields.length - 1 &&
+                    "col-span-2 lg:col-span-1"
+                )}
               >
                 <dt className="font-mono text-[9px] uppercase tracking-[0.08em] text-ink-soft sm:text-[10.5px] sm:tracking-[0.1em]">
                   {f.field}
@@ -240,10 +293,24 @@ export default async function HomePage() {
         <ol className="reveal-group grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
           {onboarding.steps.map((s, i) => (
             <li key={s.title} className="flex flex-col gap-3 border-t border-hair-strong pt-5">
-              {/* `tabular-nums` so the box does not reflow as the digit
+              {/* THE SAME NUMERAL AS `StepCard`, which is what the chain of
+                  custody above uses: display face, clamp(2.5rem,4vw,3.5rem),
+                  weight 500, leading 0.9, in the brand blue. It was 12px mono
+                  grey, which reads as a label on the item rather than as a
+                  position in a sequence — the two numbered blocks on this one
+                  page were set at 12px and 56px.
+
+                  `tabular-nums` so the box does not reflow as the digit
                   changes — a counter that nudges its neighbours is a layout
-                  shift, and the target here is CLS 0. */}
-              <span className="font-mono text-xs tabular-nums text-ink-muted">
+                  shift, and the target here is CLS 0.
+
+                  `aria-hidden` for the same reason `StepCard` does it: the
+                  position is already carried by the `<ol>`, and announced it
+                  reads as "zero one" before every title. */}
+              <span
+                aria-hidden
+                className="font-display text-[clamp(2.5rem,4vw,3.5rem)] font-medium leading-[0.9] tracking-display tabular-nums text-brand-500"
+              >
                 0<Counter value={i + 1} />
               </span>
               <h3 className="text-lg font-medium leading-snug">{s.title}</h3>

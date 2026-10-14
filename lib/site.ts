@@ -264,10 +264,16 @@ export const footerColumns = [
  * held credentials.
  */
 export const footerBadges = [
-  { label: "PCAB — In Progress", inProgress: true },
   { label: "503A Compounding", inProgress: false },
+  /* THE OTHER THREE ARE WITHHELD, NOT DELETED — client brief, 13 October 2026.
+     PCAB and LegitScript come back "once granted"; the USP pill comes back
+     when the client says so, together with the hero spec field in
+     lib/content.ts that makes the same claim. Uncomment to restore.
+
+  { label: "PCAB — In Progress", inProgress: true },
   { label: "USP 795 · 797 · 800 Compliant", inProgress: false },
   { label: "LegitScript — In Progress", inProgress: true },
+  */
 ];
 
 /** Flat list kept for any consumer that just wants every route. */

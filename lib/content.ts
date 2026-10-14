@@ -34,7 +34,7 @@ export const hero = {
    * "Manufactured." Keeping the comma attached makes that break impossible.
    */
   headline: { before: "Wellness Is ", accent: "Crafted,", after: "Not Manufactured." },
-  lead: "MediCraft Pharmacy delivers precision compounding solutions tailored to every patient's unique biology. Based in Tampa, Florida, we partner with providers nationwide to move medicine beyond the mass-manufactured standard model.",
+  lead: "MediCraft Pharmacy delivers precision compounding solutions tailored to every patient's unique biology. Based in Tampa, Florida, we partner with providers nationwide to provide patient-specific formulations when commercially available options aren't the right fit.",
   actions: {
     primary: { label: "Open a Provider Account", href: "/providers" },
     secondary: { label: "Learn About Compounding", href: "/compounding" },
@@ -76,23 +76,28 @@ export const hero = {
       {
         field: "Quality engineering",
         value: "10+",
-        note: "Years across 503A, 503B and cGMP",
+        note: "Years of team experience across 503A, 503B and cGMP",
       },
       {
         field: "Licensure",
-        value: "49",
-        note: "State target — Florida licensed today",
+        value: "FL",
+        note: "Licensed in Florida, expanding nationally",
       },
       {
         field: "Scope",
         value: "503A",
         note: "Patient-specific compounding",
       },
+      /* HIDDEN AT THE CLIENT'S REQUEST, 13 October 2026 — restore by
+         uncommenting, together with the matching footer badge in
+         lib/site.ts. The plate's grid counts these fields, so it reflows
+         from three columns back to four on its own.
       {
         field: "Standards",
         value: "USP",
         note: "795 · 797 · 800 compliant",
       },
+      */
     ],
   },
 };
@@ -219,19 +224,32 @@ export const about = {
 
   facility: {
     eyebrow: "Our Facility",
-    title:
-      "Operating From Infrastructure Built for the Most Demanding Compounding in Medicine",
+    /* REPLACED 13 October 2026, at the client's request and in the client's
+       own words. What stood here described the building's history — "formerly
+       home to what was once recognized as one of the largest oncology
+       infusion pharmacies in the nation", with five checks built on that
+       claim. Every one of those sentences was a statement about a previous
+       occupant's operation, which is not MediCraft's to make and not
+       something a reader can verify. What replaces it describes what
+       MediCraft itself designed and runs.
+
+       NOTE: the 2024 timeline entry further up this file still carries the
+       oncology-infusion sentence, and lib/content.ts holds a commented-out
+       `facilityCallout` on /quality that repeats it. Both were left alone
+       because the brief named this section only — flagged for a decision. */
+    title: "Built From the Ground Up for Precision Compounding",
     body: [
-      "MediCraft is housed in a facility with a remarkable history. This space was formerly home to what was once recognized as one of the largest oncology infusion pharmacies in the nation — a high-complexity sterile compounding operation that served some of the most critical patient populations in the country — at a scale and standard of care that demanded pharmaceutical-grade infrastructure.",
-      "Oncology infusion is widely considered the most exacting form of sterile pharmaceutical compounding. The infrastructure required to operate at that scale and that standard of care — cleanrooms, HVAC systems, utility architecture, cold storage, environmental controls — was engineered and built accordingly.",
-      "When MediCraft moved in, we did not inherit a generic commercial space. We inherited the bones of a world-class sterile compounding facility — and we are building MediCraft's future on top of them.",
+      "MediCraft was designed around one principle: every preparation should meet the same exacting standard, every time. Rather than adapting to someone else's infrastructure, we are building our facility, systems, and processes specifically for modern 503A sterile and non-sterile compounding, aligned with current USP ⟨795⟩, ⟨797⟩, and ⟨800⟩ requirements from day one.",
+      "Our approach goes beyond the cleanroom. Quality at MediCraft is a system: documented procedures, trained and competency-assessed personnel, continuous environmental monitoring, and pharmacist oversight at every step from order verification to final release.",
     ],
     checks: [
-      "Facility engineered for one of the highest-volume oncology infusion operations in the nation",
-      "Infrastructure designed for high-volume, high-complexity sterile compounding",
-      "Cleanroom architecture built to oncology-grade standards — the most demanding in the field",
-      "Cold storage, HVAC, and utility systems engineered for pharmaceutical-grade operations",
-      "MediCraft continues to operate and upgrade this infrastructure to serve its growing compounding mission",
+      "Purpose-designed cleanroom suite engineered to current USP ⟨797⟩ and ⟨800⟩ standards",
+      "Dedicated sterile and non-sterile compounding areas with controlled workflow separation",
+      "Continuous environmental monitoring of temperature, humidity, pressure differentials, and viable/non-viable particulates",
+      "Validated cold-chain storage with alarmed, 24/7 temperature monitoring",
+      "Rigorous personnel training, garbing, and aseptic technique competency programs",
+      "Pharmacist-led quality assurance, with every compounded preparation verified before release",
+      "Infrastructure designed to scale as our compounding mission grows",
     ],
     /* The "Facility Heritage" panel that stood here until 10 October 2026 —
        "When the Building Has Already Proven Itself", with its Oncology /
@@ -641,7 +659,7 @@ export const providers = {
       {
         icon: "document" as IconName,
         title: "Submit Your Provider Application",
-        body: "Complete our short online form with your DEA number, NPI, and practice information. No lengthy paperwork — just the essentials to verify your credentials.",
+        body: "Complete our short online form with your NPI, DEA number (if applicable), and practice information. No lengthy paperwork — just the essentials to verify your credentials.",
       },
       {
         icon: "phone" as IconName,
@@ -651,12 +669,12 @@ export const providers = {
       {
         icon: "terminal" as IconName,
         title: "Access the Provider Portal",
-        body: "Receive your secure login credentials. Send your first e-prescription, browse the formulary, and set up your preferred shipping preferences.",
+        body: "Receive your secure login credentials. Send your first e-prescription, browse the formulary, and set your shipping preferences.",
       },
       {
         icon: "rx" as IconName,
         title: "Start Prescribing",
-        body: "Your first order is processed with white-glove attention. We'll follow up to confirm delivery and ensure your patient's experience exceeded expectations.",
+        body: "Your first order is processed with white-glove attention. We'll follow up to confirm delivery and ensure your patient's experience met or exceeded expectations.",
       },
     ],
     panel: {

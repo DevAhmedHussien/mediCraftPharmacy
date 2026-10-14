@@ -27,7 +27,7 @@ function publicFileAsDataUri(publicPath: string, mime: string): string {
  * served WebP through next/image; only this build-time crop stays JPEG.
  */
 export const PRODUCT_IMAGE_TIGHT = {
-  src: "/images/products/semaglutide-double-strength-flex-dose-3ml-tight.jpg",
+  src: "/images/site/mc-product-card-lab-2026-tight.jpg",
   width: 470,
   height: 880,
 } as const;
@@ -41,7 +41,7 @@ export const PRODUCT_IMAGE_TIGHT = {
  * card without the renderer having to scale up.
  */
 export const HERO_OG_IMAGE = {
-  src: "/images/site/mc-home-hero-vials-og.jpg",
+  src: "/images/site/mc-home-hero-lab-2026-og.jpg",
   width: 1600,
   height: 900,
 } as const;

@@ -117,7 +117,7 @@ export function PartnerInquiryForm() {
             label="Medications of interest"
             rows={3}
             optional
-            placeholder="Semaglutide, tirzepatide, testosterone cypionate…"
+            placeholder="GLP-1 weight management, hormone therapy, peptides…"
           />
           <TextAreaField<LeadValues>
             name="notes"
