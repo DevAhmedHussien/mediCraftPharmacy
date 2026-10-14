@@ -170,7 +170,11 @@ export function Navbar({
             href="/"
             className="logo-lockup flex shrink-0 items-center rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
           >
-            <Logo className="h-[30px] w-auto" />
+            {/* 36px, up from 30. The pill's height is set by the "Open an
+                Account" button (43px) plus the nav's 10px padding, not by the
+                mark — so the logo has 43px of room before anything moves, and
+                at 36 the pill is still exactly 65px tall. */}
+            <Logo className="h-9 w-auto" />
           </Link>
 
           {/* ---- Desktop navigation ---- */}

@@ -70,7 +70,8 @@ export function Footer() {
        * footer simply is not a place for an entrance. */}
       <div className="grid gap-8 text-[14px] sm:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1fr_1fr]">
         <div className="flex flex-col gap-3.5">
-          <Logo className="h-7 w-auto self-start" />
+          {/* 32px, up from 28 — the footer mark tracks the header's. */}
+          <Logo className="h-8 w-auto self-start" />
           <address className="not-italic leading-relaxed text-ink-soft">
             {site.addressParts.street}
             <br />
