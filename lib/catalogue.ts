@@ -285,19 +285,3 @@ export const getRelatedProducts = cache(
   }
 );
 
-/**
- * "116 products", for the Products menu and the home-page cards.
- *
- * Every published category now has a count, because the ten are the formulary
- * and the formulary has no empty category. The old "Available on request"
- * fallback is gone — the brief asks for the count in its place, and a count
- * of zero would mean a category published with nothing in it, which is a data
- * fault to fix rather than a phrase to print.
- */
-export const getCategoryMetaLabel = cache(async (slugOrHref: string): Promise<string> => {
-  const slug = slugOrHref.replace(/^\/products\//, "");
-  const categories = await getCategories();
-  const count = categories.find((c) => c.slug === slug)?.count ?? 0;
-  return `${count} ${count === 1 ? "product" : "products"}`;
-});
-

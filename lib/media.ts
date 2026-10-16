@@ -11,6 +11,7 @@
      public/images/hero/        1920x1080 (16:9) page heroes
      public/images/cards/       1200x900  (4:3) cards and section figures
      public/images/categories/  1200x900  (4:3) one per formulary category
+     public/images/portrait/    1024x1536 (2:3) the login aside
 
    One file per photo, served as-is: there is no image optimiser (see
    next.config.js), so a replacement must already be WebP at the slot's size.
@@ -139,11 +140,13 @@ export const media = {
     "card-08-pharmacy-shelves",
     "A pharmacist in a white coat checking a package between rows of pharmacy shelving"
   ),
-  /** Login — the tall aside. */
-  login: hero(
-    "hero-04-about",
-    "A cleanroom seen through an observation window, with a gowned technician working at a bench in the next room"
-  ),
+  /** Login — the tall aside, 2:3 portrait. */
+  login: {
+    src: "/images/portrait/login-lab-reports.webp",
+    width: 1024,
+    height: 1536,
+    alt: "Gloved hands holding printed laboratory reports with charts, beside an analytical balance and rows of sample vials",
+  },
 } satisfies Record<string, Media>;
 
 /**

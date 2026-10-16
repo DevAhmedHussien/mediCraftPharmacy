@@ -12,10 +12,10 @@ import {
 } from "@/components/blocks";
 import { Stagger, StaggerItem } from "@/components/motion/Motion";
 import { CardsBesideFigure } from "@/components/sections/CardsBesideFigure";
-import { categoryImage } from "@/lib/media";
+import { CategoryTiles } from "@/components/sections/CategoryTiles";
 import { Reveal } from "@/components/ui/Reveal";
 import { providers } from "@/lib/content";
-import { getCategoryMetaLabel } from "@/lib/catalogue";
+import { getCategories } from "@/lib/catalogue";
 
 export const metadata: Metadata = pageMetadata({
   title: "For Providers",
@@ -25,16 +25,7 @@ export const metadata: Metadata = pageMetadata({
 });
 
 export default async function ProvidersPage() {
-  /* One label per therapeutic area, resolved before the render.
-     `getCategoryMetaLabel` reads the database now, and JSX cannot await — so
-     the counts are looked up once here rather than pretending to be sync. */
-  const areaMeta = Object.fromEntries(
-    await Promise.all(
-      providers.therapeuticAreas.items.map(
-        async (area) => [area.href, await getCategoryMetaLabel(area.href)] as const
-      )
-    )
-  );
+  const categories = await getCategories();
 
   return (
     <>
@@ -113,23 +104,11 @@ export default async function ProvidersPage() {
               title={providers.therapeuticAreas.title}
             />
           </Reveal>
-          <Stagger className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {providers.therapeuticAreas.items.map((area) => (
-              <StaggerItem key={area.title} className="h-full">
-                {/* Every one of the ten has its own image now — five
-                    therapeutic-area photographs and five packshots — so the
-                    old "six of eleven have artwork, the rest render without a
-                    picture" case is gone. `categoryImage` is keyed by slug,
-                    which the href ends with. */}
-                <IconCard
-                  {...area}
-                  media={categoryImage(area.href.replace("/products/", ""))}
-                  meta={areaMeta[area.href]}
-                  className="h-full"
-                />
-              </StaggerItem>
-            ))}
-          </Stagger>
+          {/* The home page's tiles, not a second card design: the same ten
+              categories, the same photographs, the same counts. */}
+          <div className="mt-12">
+            <CategoryTiles categories={categories} />
+          </div>
         </div>
       </section>
 

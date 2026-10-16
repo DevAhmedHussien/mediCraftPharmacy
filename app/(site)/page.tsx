@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 
 import { Eyebrow, Glass, SectionTitle } from "@/components/ui/glass";
@@ -9,7 +8,8 @@ import { hero, providers, quality } from "@/lib/content";
 import { site, telHref } from "@/lib/site";
 import { pageMetadata } from "@/lib/seo";
 import { getCategories } from "@/lib/catalogue";
-import { categoryImage, media } from "@/lib/media";
+import { CategoryTiles } from "@/components/sections/CategoryTiles";
+import { media } from "@/lib/media";
 import { cn } from "@/lib/utils";
 import { StepCard } from "@/components/sections/StepCard";
 
@@ -212,49 +212,7 @@ export default async function HomePage() {
           </div>
           <Link href="/products" className="text-[15px] font-medium text-brand-500 hover:text-navy">View the full formulary →</Link>
         </div>
-        {/* Ten, not five. Five of the ten used to be missing from the home
-            page altogether, and the src was built by string-concatenation
-            from the href — which silently 404'd for any category without
-            therapeutic-area artwork. `categoryImage` names the file for each
-            of the ten instead. */}
-        <ul className="reveal-group grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-          {categories.map((c) => {
-            const art = categoryImage(c.slug);
-            return (
-              <li key={c.slug}>
-                {/* The photograph at its own 4:3, whole, with the name under
-                    it. These tiles used to be 3:4 with the name on glass over
-                    the image: a landscape photo cropped to a portrait frame
-                    lost nearly half its width, and a hover zoom then scaled
-                    what was left. A photo shown at its own shape and size is
-                    the one that looks sharp. */}
-                <Link
-                  href={`/products/${c.slug}`}
-                  className="group flex flex-col gap-3 rounded-card focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-500"
-                >
-                  <span className="relative block aspect-[4/3] overflow-hidden rounded-card border border-hair-soft bg-stone">
-                    <Image
-                      src={art.src}
-                      alt=""
-                      fill
-                      sizes="(min-width: 1536px) 270px, (min-width: 1024px) 240px, (min-width: 640px) 30vw, 45vw"
-                      className={art.fit === "contain" ? "object-contain p-3" : "object-cover"}
-                    />
-                  </span>
-                  <span className="flex items-baseline justify-between gap-2 px-1 text-[14.5px] font-medium text-navy transition-colors group-hover:text-brand-600 motion-reduce:transition-none">
-                    <span className="min-w-0 truncate">{c.name}</span>
-                    {/* The count is data beside a name, so mono and tabular —
-                        ten tiles whose figures do not share a column read as
-                        noise rather than as a set. */}
-                    <span className="shrink-0 font-mono text-[12px] tabular-nums text-ink-muted">
-                      {c.count}
-                    </span>
-                  </span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+        <CategoryTiles categories={categories} />
         <p className="text-[13.5px] text-ink-muted">
           All formulations require a valid prescription from a licensed provider for a specific, identified patient.
         </p>

@@ -71,7 +71,7 @@ export default async function LoginPage({
       <main id="main" className="flex items-center justify-center px-5 py-16">
         <div className="flex w-full max-w-[400px] flex-col">
           <Link href="/" aria-label={`${site.name} home`} className="mb-12 flex self-start">
-            <Logo className="h-8 w-auto" />
+            <Logo className="h-14 w-auto" />
           </Link>
 
           <h1 className="font-display text-[40px] font-normal leading-[1.08] tracking-title text-navy">
@@ -93,12 +93,11 @@ export default async function LoginPage({
       </main>
 
       {/* ---- The picture ----
-          Full-bleed inside a 32px-radius box with 16px of page padding, and a
-          glass caption sitting on it — not a contained card with the caption
-          underneath. `object-cover` is right here because the box is tall and
-          the crop is intended. */}
-      <aside aria-hidden className="hidden p-4 lg:flex">
-        <div className="relative min-h-[560px] flex-1 overflow-hidden rounded-hero bg-stone">
+          The card takes the photograph's own 2:3 and is sized by the
+          viewport's height, so the whole frame shows instead of a crop of
+          it. It centres in the column, with the glass caption on its foot. */}
+      <aside aria-hidden className="hidden items-center justify-center p-4 lg:flex">
+        <div className="relative aspect-[2/3] h-[calc(100svh-2rem)] max-h-[1100px] max-w-full overflow-hidden rounded-hero bg-stone">
           <Image
             src={media.login.src}
             alt=""
