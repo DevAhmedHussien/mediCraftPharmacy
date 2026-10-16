@@ -144,13 +144,12 @@ export default function AboutPage() {
               >
                 {/* An image, because the brief asks the panel to carry one and
                     because a list of five assurances is a wall of text
-                    otherwise. The quality hero is the right frame: sealed
-                    vials on a bench beside batch data on a monitor, which is
-                    what the five lines below describe. */}
+                    otherwise. Gowned staff at a cleanroom bench is what the
+                    five lines below describe. */}
                 <div className="relative mt-5 aspect-[16/9] overflow-hidden rounded-2xl">
                   <Image
-                    src={media.lab.src}
-                    alt={media.lab.alt}
+                    src={media.facilityPanel.src}
+                    alt={media.facilityPanel.alt}
                     fill
                     sizes="(min-width: 1024px) 34rem, 92vw"
                     className="object-cover"

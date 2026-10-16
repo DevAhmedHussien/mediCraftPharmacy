@@ -9,7 +9,7 @@ import { hero, providers, quality } from "@/lib/content";
 import { site, telHref } from "@/lib/site";
 import { pageMetadata } from "@/lib/seo";
 import { getCategories } from "@/lib/catalogue";
-import { categoryImage } from "@/lib/media";
+import { categoryImage, heroSrcSet, media } from "@/lib/media";
 import { cn } from "@/lib/utils";
 import { StepCard } from "@/components/sections/StepCard";
 
@@ -95,17 +95,12 @@ export default async function HomePage() {
               from a browser cache for a day. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/images/site/mc-home-hero-lab-2026-1280.webp"
-            srcSet={[
-              "/images/site/mc-home-hero-lab-2026-640.webp 640w",
-              "/images/site/mc-home-hero-lab-2026-960.webp 960w",
-              "/images/site/mc-home-hero-lab-2026-1280.webp 1280w",
-              "/images/site/mc-home-hero-lab-2026-1600.webp 1600w",
-            ].join(", ")}
+            src={media.homeHero.src.replace(/\.webp$/, "-1280.webp")}
+            srcSet={heroSrcSet(media.homeHero)}
             sizes="(min-width: 1536px) 1400px, (min-width: 1280px) 1240px, 100vw"
-            alt="A laboratory bench run with conical flasks, reagent bottles and shelving under daylight"
-            width={1600}
-            height={900}
+            alt={media.homeHero.alt}
+            width={media.homeHero.width}
+            height={media.homeHero.height}
             fetchPriority="high"
             decoding="async"
             className="absolute inset-0 h-full w-full object-cover"

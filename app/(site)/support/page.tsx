@@ -54,7 +54,7 @@ export default function ResourcesPage() {
         eyebrow={resources.intro.eyebrow}
         title={resources.intro.title}
         lead={resources.intro.lead}
-        media={media.reception}
+        media={media.supportCover}
       />
 
       {/* ---- Patient FAQ ---- */}

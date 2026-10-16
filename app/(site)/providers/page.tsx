@@ -39,7 +39,7 @@ export default async function ProvidersPage() {
   return (
     <>
       <script {...jsonLdProps(breadcrumbJsonLd([{ name: "For Providers", path: "/providers" }]))} />
-      {/* Reception, rendered — the reception slot in lib/media.ts. */}
+      {/* The reception slot in lib/media.ts. */}
       <PageHero
         eyebrow={providers.intro.eyebrow}
         title={providers.intro.title}
@@ -92,12 +92,7 @@ export default async function ProvidersPage() {
           <CardsBesideFigure
             className="mt-16"
             items={providers.onboarding.steps}
-            image={{
-              src: "/images/brand/vial-clear-glass-shelf.webp",
-              alt: "A MediCraft compounded preparation vial on a glass shelf",
-              width: 1086,
-              height: 1448,
-            }}
+            image={media.consult}
           />
 
           <div className="mt-16 flex justify-center">

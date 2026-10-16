@@ -5,8 +5,6 @@ import { cache } from "react";
 import {
   categories as editorialCategories,
   products as editorialProducts,
-  hasPackshot,
-  productImage,
   type Category,
   type Product,
 } from "@/lib/data";
@@ -118,16 +116,9 @@ function toProduct(row: Row): CatalogueProduct {
     doses,
     form: row.form ?? "",
     blurb: row.blurb ?? "",
-    /* A packshot when this slug has one, the category's photograph when it
-       does not. `productImage` only ever concatenated a path, so before this
-       all 692 formulary products pointed at files that are not there and the
-       whole grid rendered broken-image icons. */
-    image: hasPackshot(row.slug)
-      ? productImage(row.slug)
-      : categoryImage(row.categorySlug ?? "").src,
-    imageFit: hasPackshot(row.slug)
-      ? ("contain" as const)
-      : categoryImage(row.categorySlug ?? "").fit,
+    /* The category's photograph — no product has a picture of its own. */
+    image: categoryImage(row.categorySlug ?? "").src,
+    imageFit: categoryImage(row.categorySlug ?? "").fit,
     detail: {
       productId: row.slug.toUpperCase().slice(0, 24),
       brand: "MediCraft Pharmacy",

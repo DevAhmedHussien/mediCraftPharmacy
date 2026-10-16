@@ -17,9 +17,8 @@ function publicFileAsDataUri(publicPath: string, mime: string): string {
 }
 
 /**
- * A crop of the packshot taken tight around the vial. The full render carries
- * wide white margins, which leave the vial looking small inside a share card,
- * so the card uses this version instead.
+ * A portrait crop of the vials photograph (cards/card-04-vials), sized for
+ * the packshot panel of a product share card.
  *
  * Deliberately a JPEG, not the WebP used elsewhere: the OG renderer (Satori)
  * cannot decode WebP — feeding it one fails the build with
@@ -27,7 +26,7 @@ function publicFileAsDataUri(publicPath: string, mime: string): string {
  * served WebP through next/image; only this build-time crop stays JPEG.
  */
 export const PRODUCT_IMAGE_TIGHT = {
-  src: "/images/site/mc-product-card-lab-2026-tight.jpg",
+  src: "/images/og/og-product-2026-10.jpg",
   width: 470,
   height: 880,
 } as const;
@@ -41,7 +40,7 @@ export const PRODUCT_IMAGE_TIGHT = {
  * card without the renderer having to scale up.
  */
 export const HERO_OG_IMAGE = {
-  src: "/images/site/mc-home-hero-lab-2026-og.jpg",
+  src: "/images/og/og-hero-2026-10.jpg",
   width: 1600,
   height: 900,
 } as const;

@@ -7,6 +7,7 @@ import { Logo } from "@/components/brand/Logo";
 import { LoginForm } from "@/components/admin/LoginForm";
 import { auth } from "@/lib/auth";
 import { homeForRole } from "@/lib/home-route";
+import { media } from "@/lib/media";
 import { pageMetadata } from "@/lib/seo";
 import { site } from "@/lib/site";
 
@@ -99,7 +100,7 @@ export default async function LoginPage({
       <aside aria-hidden className="hidden p-4 lg:flex">
         <div className="relative min-h-[560px] flex-1 overflow-hidden rounded-hero bg-stone">
           <Image
-            src="/images/brand/vial-clear-glass-shelf.webp"
+            src={media.login.src}
             alt=""
             fill
             priority

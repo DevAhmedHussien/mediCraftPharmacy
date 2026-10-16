@@ -1,4 +1,5 @@
 import type { IconName } from "@/components/icons/set";
+import { categoryImage } from "@/lib/media";
 
 /* ---------------------------------------------------------------------------
  * Product catalog
@@ -75,7 +76,7 @@ export type Product = {
 };
 
 /** Catalog entry before slug, detail and image seating are derived. */
-type RawProduct = Omit<Product, "slug" | "detail" | "imageFit">;
+type RawProduct = Omit<Product, "slug" | "detail" | "image" | "imageFit">;
 
 /**
  * Blurb and pictogram for each formulary category.
@@ -155,76 +156,6 @@ export const categories: CategoryEditorial[] = [
   },
 ];
 
-/**
- * Product packshots.
- *
- * MediCraft renders replaced the stock photos that used to stand in here, and
- * the catalog no longer shares one file across every dosage form: each entry
- * resolves its own render through `productImage(slug)` below. The container
- * matches the one the entry's spec sheet names — clear glass vial sized to the
- * fill for injectables, 30 g airless pump for creams and topicals, amber Rx
- * bottle for capsules, blister card for troches, dropper bottle for the sterile
- * ophthalmic — so a prescriber comparing tiles is comparing real packaging.
- *
- * The renders are transparent, so they sit on the sand tile in ProductCard and
- * on the white plate of a product page without a visible box.
- */
-export const PRODUCT_IMAGE = {
-  /** Representative packshot, used where a single product image is needed. */
-  src: "/images/products/semaglutide-double-strength-flex-dose-3-ml-injectable-5-mg-ml.webp",
-  /** Intrinsic size of every packshot — required by next/image to reserve space. */
-  width: 1600,
-  height: 1600,
-} as const;
-
-/**
- * Path of a product's own packshot.
- *
- * Every catalog entry now has a render at `public/images/products/<slug>.webp`
- * of the container that entry actually ships in — the same container its spec
- * sheet names under "Package" — with a label generated from its own fields, so
- * a packshot never shows another product's name or strength. Where the catalog
- * lists a strength as Custom or Patient-specific the label reads "Strength per
- * Rx" rather than inventing a figure; CMP / BUD / LOT values are illustrative,
- * as on the VialMotif.
- *
- * Keyed by slug, so adding a product means adding one file at the matching
- * name. Nothing else needs to change.
- */
-export function productImage(slug: string): string {
-  return `/images/products/${slug}.webp`;
-}
-
-/**
- * Whether a slug has a packshot on disk.
- *
- * Only the twenty-nine editorial entries below were ever rendered, and the
- * file name is the slug — so the editorial catalog IS the list, and it cannot
- * fall out of step with `public/images/products/` the way a hand-written set
- * would.
- *
- * This exists because `productImage` is pure string concatenation: it happily
- * returned a path for all 692 formulary products, none of which has a file,
- * and every card in the grid rendered a broken image. Callers now ask first.
- */
-export function hasPackshot(slug: string): boolean {
-  return packshotSlugs.has(slug);
-}
-
-/**
- * Dosage-form hint carried by each raw entry. `buildProduct` overrides it with
- * the entry's own packshot, so these keys only document which container a form
- * ships in; nothing renders them.
- */
-const img = {
-  vial: PRODUCT_IMAGE.src,
-  syringe: PRODUCT_IMAGE.src,
-  cream: PRODUCT_IMAGE.src,
-  topical: PRODUCT_IMAGE.src,
-  capsule: PRODUCT_IMAGE.src,
-  drip: PRODUCT_IMAGE.src,
-};
-
 const rawProducts: RawProduct[] = [
   // Weight Management — flex-dose GLP-1 / dual-agonist line-up
   {
@@ -234,7 +165,6 @@ const rawProducts: RawProduct[] = [
     doses: "5 mg/mL",
     form: "Injectable",
     blurb: "Double-strength GLP-1 in a flexible 3 mL flex-dose vial.",
-    image: img.vial,
   },
   {
     name: "Semaglutide Flex-Dose 4 mL",
@@ -243,7 +173,6 @@ const rawProducts: RawProduct[] = [
     doses: "2.5 mg/mL",
     form: "Injectable",
     blurb: "GLP-1 therapy in a 4 mL titration-friendly flex-dose vial.",
-    image: img.vial,
   },
   {
     name: "Semaglutide Flex-Dose 3 mL",
@@ -252,7 +181,6 @@ const rawProducts: RawProduct[] = [
     doses: "2.5 mg/mL",
     form: "Injectable",
     blurb: "GLP-1 therapy in a 3 mL titration-friendly flex-dose vial.",
-    image: img.vial,
   },
   {
     name: "Semaglutide Flex-Dose 2 mL",
@@ -261,7 +189,6 @@ const rawProducts: RawProduct[] = [
     doses: "2.5 mg/mL",
     form: "Injectable",
     blurb: "GLP-1 therapy in a 2 mL titration-friendly flex-dose vial.",
-    image: img.vial,
   },
   {
     name: "Tirzepatide Forte Flex-Dose 4 mL",
@@ -270,7 +197,6 @@ const rawProducts: RawProduct[] = [
     doses: "15 mg/mL",
     form: "Injectable",
     blurb: "High-strength dual-agonist in a 4 mL flex-dose vial.",
-    image: img.syringe,
   },
   {
     name: "Tirzepatide Flex-Dose 4 mL",
@@ -279,7 +205,6 @@ const rawProducts: RawProduct[] = [
     doses: "10 mg/mL",
     form: "Injectable",
     blurb: "Dual-agonist therapy in a 4 mL flex-dose vial.",
-    image: img.syringe,
   },
   {
     name: "Tirzepatide Flex-Dose 3 mL",
@@ -288,7 +213,6 @@ const rawProducts: RawProduct[] = [
     doses: "10 mg/mL",
     form: "Injectable",
     blurb: "Dual-agonist therapy in a 3 mL flex-dose vial.",
-    image: img.syringe,
   },
   {
     name: "Tirzepatide Flex-Dose 2 mL",
@@ -297,7 +221,6 @@ const rawProducts: RawProduct[] = [
     doses: "10 mg/mL",
     form: "Injectable",
     blurb: "Dual-agonist therapy in a 2 mL flex-dose vial.",
-    image: img.syringe,
   },
   {
     name: "Tirzepatide Flex-Dose 1 mL",
@@ -306,7 +229,6 @@ const rawProducts: RawProduct[] = [
     doses: "10 mg/mL",
     form: "Injectable",
     blurb: "Dual-agonist therapy in a 1 mL flex-dose vial.",
-    image: img.syringe,
   },
   // Hormone Replacement
   {
@@ -316,7 +238,6 @@ const rawProducts: RawProduct[] = [
     doses: "Patient-specific",
     form: "Cream, capsule, troche",
     blurb: "Bio-identical hormone support, dialed to lab-guided targets.",
-    image: img.cream,
   },
   {
     name: "Testosterone Cypionate",
@@ -325,7 +246,6 @@ const rawProducts: RawProduct[] = [
     doses: "50 – 200 mg/mL",
     form: "Intramuscular injection",
     blurb: "Consistent, precision-dosed testosterone replacement.",
-    image: img.vial,
   },
   {
     name: "DHEA",
@@ -334,7 +254,6 @@ const rawProducts: RawProduct[] = [
     doses: "Custom",
     form: "Capsule",
     blurb: "Adrenal hormone support tuned to individual lab work.",
-    image: img.capsule,
   },
   // Women's Health
   {
@@ -344,7 +263,6 @@ const rawProducts: RawProduct[] = [
     doses: "Custom",
     form: "Troche, capsule",
     blurb: "Balanced hormonal support for cycle and menopausal care.",
-    image: img.capsule,
   },
   {
     name: "Vaginal Estriol Cream",
@@ -353,7 +271,6 @@ const rawProducts: RawProduct[] = [
     doses: "Custom",
     form: "Topical cream",
     blurb: "Localized estrogen therapy for comfort and tissue health.",
-    image: img.cream,
   },
   // Men's Health
   {
@@ -363,7 +280,6 @@ const rawProducts: RawProduct[] = [
     doses: "12.5 – 25 mg",
     form: "Capsule",
     blurb: "Supports natural testosterone production and fertility.",
-    image: img.capsule,
   },
   {
     name: "Tadalafil / Oxytocin Troche",
@@ -372,7 +288,6 @@ const rawProducts: RawProduct[] = [
     doses: "Custom",
     form: "Troche",
     blurb: "Combination therapy for performance and confidence.",
-    image: img.capsule,
   },
   // Sexual Wellness
   {
@@ -382,7 +297,6 @@ const rawProducts: RawProduct[] = [
     doses: "Custom",
     form: "Subcutaneous injection",
     blurb: "Peptide therapy supporting libido for men and women.",
-    image: img.syringe,
   },
   {
     name: "Scream Cream",
@@ -391,7 +305,6 @@ const rawProducts: RawProduct[] = [
     doses: "Custom",
     form: "Topical cream",
     blurb: "Multi-agent topical formulated for enhanced sensation.",
-    image: img.cream,
   },
   // Dermatology
   {
@@ -401,7 +314,6 @@ const rawProducts: RawProduct[] = [
     doses: "Custom",
     form: "Topical",
     blurb: "Combination topicals for acne, pigmentation, and texture.",
-    image: img.topical,
   },
   {
     name: "Hair Restoration Blend",
@@ -410,7 +322,6 @@ const rawProducts: RawProduct[] = [
     doses: "Custom",
     form: "Topical / oral",
     blurb: "Minoxidil, finasteride, and biotin combinations for regrowth.",
-    image: img.topical,
   },
   // Peptide Therapy
   {
@@ -420,7 +331,6 @@ const rawProducts: RawProduct[] = [
     doses: "Custom",
     form: "Subcutaneous injection",
     blurb: "Peptide supporting tissue repair and recovery.",
-    image: img.syringe,
   },
   {
     name: "Sermorelin",
@@ -429,7 +339,6 @@ const rawProducts: RawProduct[] = [
     doses: "Custom",
     form: "Subcutaneous injection",
     blurb: "Growth-hormone-releasing peptide for vitality and sleep.",
-    image: img.syringe,
   },
   // IV Therapy & Supplements
   {
@@ -439,7 +348,6 @@ const rawProducts: RawProduct[] = [
     doses: "200 mg/mL",
     form: "IV / IM injection",
     blurb: "Master antioxidant infusion for detox and skin health.",
-    image: img.drip,
   },
   {
     name: "Myers' Cocktail",
@@ -448,7 +356,6 @@ const rawProducts: RawProduct[] = [
     doses: "Custom",
     form: "IV infusion",
     blurb: "Classic vitamin and mineral blend for energy and recovery.",
-    image: img.drip,
   },
   // Fertility
   {
@@ -458,7 +365,6 @@ const rawProducts: RawProduct[] = [
     doses: "Custom",
     form: "Subcutaneous injection",
     blurb: "Hormone support across fertility and hormone protocols.",
-    image: img.vial,
   },
   // Vitality
   {
@@ -468,7 +374,6 @@ const rawProducts: RawProduct[] = [
     doses: "Custom",
     form: "Subcutaneous / IV",
     blurb: "Cellular-energy coenzyme for longevity and focus.",
-    image: img.drip,
   },
   // Ophthalmology
   {
@@ -478,7 +383,6 @@ const rawProducts: RawProduct[] = [
     doses: "Custom",
     form: "Sterile ophthalmic",
     blurb: "Preservative-free sterile drops compounded to spec.",
-    image: img.vial,
   },
   // Nausea
   {
@@ -488,7 +392,6 @@ const rawProducts: RawProduct[] = [
     doses: "4 – 8 mg",
     form: "Troche",
     blurb: "Fast-dissolving anti-nausea therapy, easy to take.",
-    image: img.capsule,
   },
   // Custom Compound
   {
@@ -498,7 +401,6 @@ const rawProducts: RawProduct[] = [
     doses: "Per prescription",
     form: "Any",
     blurb: "Built exactly to your provider's script — dose, base, and form.",
-    image: img.topical,
   },
 ];
 
@@ -767,10 +669,9 @@ function buildProduct(raw: RawProduct, index: number): Product {
   return {
     ...raw,
     slug,
-    // The per-product render, not the shared `img` placeholder the raw entry
-    // carries — every entry has its own packshot keyed by this slug.
-    image: productImage(slug),
-    imageFit: "contain" as const,
+    // The category's photograph — no product has a picture of its own.
+    image: categoryImage(raw.categorySlug).src,
+    imageFit: categoryImage(raw.categorySlug).fit,
     detail: {
       // Deterministic catalog number — no randomness, so builds stay reproducible.
       productId: String(8510900 + index * 13),
@@ -790,9 +691,6 @@ function buildProduct(raw: RawProduct, index: number): Product {
 }
 
 export const products: Product[] = rawProducts.map(buildProduct);
-
-/** Slugs with a render in public/images/products/ — see `hasPackshot`. */
-const packshotSlugs = new Set(products.map((p) => p.slug));
 
 export function productsByCategory(slug: string): Product[] {
   return products.filter((p) => p.categorySlug === slug);

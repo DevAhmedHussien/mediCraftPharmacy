@@ -25,7 +25,7 @@ export default function CareersPage() {
         eyebrow="Careers"
         title={`Join the ${site.shortName} Team`}
         lead="Help others feel their best. Every role here sits inside a quality system built by people who have spent careers setting the standards others follow."
-        media={media.lab}
+        media={media.careersCover}
       />
 
       {/* ---- Culture ---- */}

@@ -31,7 +31,7 @@ import { site } from "@/lib/site";
  * marketing surfaces. Versioned filename, per the rule in next.config.js.
  */
 const DEFAULT_OG_IMAGE = {
-  src: "/images/site/mc-og-default-2026.jpg",
+  src: "/images/og/og-default-2026-10.jpg",
   width: 1200,
   height: 630,
   alt: "MediCraft Pharmacy — precision compounding, crafted for every patient",

@@ -153,9 +153,9 @@ precisely because it broke everything — so v8 is what this uses.
 
 ## SEO
 
-- `/opengraph-image` renders the hero vial render with the headline, 1200×630.
-  Satori cannot decode WebP, so `public/images/site/mc-home-hero-vials-og.jpg`
-  exists solely for this.
+- `/opengraph-image` renders the home hero photograph with the headline,
+  1200×630. Satori cannot decode WebP, so the JPEGs in `public/images/og/`
+  exist solely for share cards; every page image is WebP.
 - JSON-LD graph: `Pharmacy` + `WebSite` (with `knowsAbout`) site-wide,
   `BreadcrumbList` per page, `Product` on product pages, `FAQPage` on support,
   `BlogPosting` on articles.

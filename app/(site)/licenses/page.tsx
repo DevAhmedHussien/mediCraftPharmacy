@@ -104,14 +104,12 @@ export default function CoveragePage() {
             </Reveal>
 
             <Reveal delay={0.1} className="space-y-6">
-              {/* The real packaging, not a placeholder describing a shot
-                  nobody has taken. */}
               <BrandFigure
                 variant="framed"
-                src="/images/brand/stationery-box.webp"
-                alt="MediCraft Pharmacy packaging"
-                width={1600}
-                height={900}
+                src={media.shipping.src}
+                alt={media.shipping.alt}
+                width={media.shipping.width}
+                height={media.shipping.height}
                 sizes="(min-width: 1024px) 32rem, 92vw"
               />
               <NavyPanel

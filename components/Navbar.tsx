@@ -8,6 +8,7 @@ import { ChevronDown } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import type { IconName } from "@/components/icons/set";
 import { NavDrawer } from "@/components/nav/NavDrawer";
+import { media } from "@/lib/media";
 import { headerNav, type HeaderNavItem } from "@/lib/site";
 
 import { cn } from "@/lib/utils";
@@ -198,7 +199,7 @@ export function Navbar({
                     item.label === "The pharmacy"
                       ? {
                           href: "/quality",
-                          src: "/images/site/mc-hero-custody.webp",
+                          src: media.custody.src,
                           eyebrow: "Chain of custody",
                           title: "Every package filmed. Every shipment tracked.",
                         }
