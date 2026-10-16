@@ -102,18 +102,6 @@ export const hero = {
   },
 };
 
-export const trustBar = [
-  { icon: "mortar" as IconName, label: "503A Compounding Certified" },
-  { icon: "hourglass" as IconName, label: "PCAB Accreditation In Progress" },
-  { icon: "flask" as IconName, label: "USP 795/797/800 Compliant" },
-  { icon: "microscope" as IconName, label: "ISO Class Cleanrooms" },
-  { icon: "shield" as IconName, label: "Third-Party Tested Every Batch" },
-  { icon: "camera" as IconName, label: "Video-Verified Fulfillment" },
-  { icon: "clipboard" as IconName, label: "FDA-Registered Third-Party Testing" },
-  { icon: "stethoscope" as IconName, label: "Provider-Focused Clinical Support" },
-  { icon: "truck" as IconName, label: "Nationwide Shipping" },
-];
-
 /* ---------------------------------------------------------------------------
    About
 --------------------------------------------------------------------------- */
@@ -1162,6 +1150,3 @@ export const legal = {
   },
 };
 
-/** The footer's brand blurb. */
-export const footerBlurb =
-  "Precision compounding, crafted for every patient. Currently licensed in Florida and working toward licensure in all 49 eligible states, with PCAB accreditation in progress.";

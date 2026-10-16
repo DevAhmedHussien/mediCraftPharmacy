@@ -55,14 +55,3 @@ export function renderMarkdown(source: string): string {
   });
 }
 
-/** First ~160 characters of prose, for a meta description fallback. */
-export function excerptFromMarkdown(source: string, length = 160): string {
-  const text = source
-    .replace(/^#{1,6}\s+.*$/gm, "")
-    .replace(/[*_`>#\-]/g, "")
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
-    .replace(/\s+/g, " ")
-    .trim();
-
-  return text.length <= length ? text : `${text.slice(0, length).replace(/\s+\S*$/, "")}…`;
-}

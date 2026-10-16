@@ -108,10 +108,6 @@ export const careerSchema = z.object({
   relocate: required("Relocation preference"),
 });
 
-export type ContactSubmission = z.infer<typeof contactSchema>;
-export type RefillSubmission = z.infer<typeof refillSchema>;
-export type CareerSubmission = z.infer<typeof careerSchema>;
-
 /* --- The bridge between zod and the form components ---------------------- */
 
 /**

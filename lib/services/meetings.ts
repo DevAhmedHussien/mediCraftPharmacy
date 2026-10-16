@@ -53,28 +53,6 @@ export async function requestMeeting(partnerId: string, requestNotes: string) {
   return db.meeting.create({ data: { partnerId, requestNotes } });
 }
 
-/** The call about one change order, if there is one. */
-export async function getAmendmentMeeting(amendmentId: string) {
-  return db.meeting.findFirst({
-    where: { amendmentId },
-    orderBy: { requestedAt: "desc" },
-    select: {
-      id: true,
-      requestNotes: true,
-      requestedAt: true,
-      proposedSlots: true,
-      slotsOfferedAt: true,
-      scheduledAt: true,
-      confirmedAt: true,
-      partnerNote: true,
-      durationMinutes: true,
-      location: true,
-      conferenceUrl: true,
-      adminNotes: true,
-    },
-  });
-}
-
 /**
  * Put times on the table.
  *

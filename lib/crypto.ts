@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
+import { createHmac } from "node:crypto";
 
 import {
   decryptField as decryptWithKey,
@@ -48,23 +48,3 @@ export function visitorHash(ip: string, userAgent: string, date = new Date()): s
   return createHmac("sha256", `${env.ANALYTICS_SALT}:${day}`).update(`${ip}|${userAgent}`).digest("base64url");
 }
 
-/** SHA-256 for password-reset and verification tokens stored at rest. */
-export function hashToken(token: string): string {
-  return createHmac("sha256", env.AUTH_SECRET).update(token).digest("base64url");
-}
-
-/**
- * Constant-time compare, for anything an attacker can submit repeatedly.
- * A plain `===` on a token leaks its prefix through response timing.
- */
-export function safeEqual(a: string, b: string): boolean {
-  const bufA = Buffer.from(a);
-  const bufB = Buffer.from(b);
-  if (bufA.length !== bufB.length) return false;
-  return timingSafeEqual(bufA, bufB);
-}
-
-/** URL-safe random token for password resets and signed links. */
-export function randomToken(bytes = 32): string {
-  return randomBytes(bytes).toString("base64url");
-}

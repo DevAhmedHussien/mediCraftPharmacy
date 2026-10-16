@@ -149,14 +149,6 @@ export function isValidDate(input: string): boolean {
   return parseDate(input) !== null;
 }
 
-/** Not in the past — for licence and registration expiry fields. */
-export function isFutureDate(input: string): boolean {
-  const iso = parseDate(input);
-  if (!iso) return false;
-  const today = new Date().toISOString().slice(0, 10);
-  return iso >= today;
-}
-
 /* --- Other formats the account-setup form needs -------------------------- */
 
 /**

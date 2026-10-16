@@ -64,39 +64,6 @@ export const HANDLE_D =
 
 export const MOUTH = { cx: 44.748, cy: 24.027, rx: 25.326, ry: 4.547 };
 
-/**
- * The mark on its own, without the wordmark. Used for the favicon, the app
- * icon, and anywhere the name is already present in the surrounding copy.
- */
-export function LogoMark({
-  className,
-  tone = "light",
-  animate = "none",
-}: {
-  className?: string;
-  tone?: Tone;
-  animate?: Animate;
-}) {
-  const fill = markFills(tone);
-
-  return (
-    <svg
-      viewBox="0 0 89.5 62.43"
-      className={cn("logo-mark h-8 w-auto", className)}
-      data-animate={animate}
-      aria-hidden="true"
-      focusable="false"
-    >
-      <path className={cn("logo-bowl", fill.bowl)} d={BOWL_D} />
-      <g className={cn("logo-pestle", fill.pestle)}>
-        <path d={KNOB_D} />
-        <path d={HANDLE_D} />
-      </g>
-      <ellipse className={cn("logo-mouth", fill.pestle)} {...MOUTH} />
-    </svg>
-  );
-}
-
 /* --- Wordmark outlines ---------------------------------------------------
    Glyph paths as embedded in the deck, each drawn on its own baseline at
    y = 0 and placed by the `<use>` offsets below. "a" appears twice in

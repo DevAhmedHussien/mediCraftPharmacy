@@ -769,9 +769,8 @@ function logoImage(): string {
    * everywhere. */
   const src = `${site.url}/images/brand/medicraft-logo-2026.png`;
 
-  /* 150x51 is the lockup's own 2.92:1, not a guess. The asset is rendered at
-     876px wide from the SVG the site itself uses — see scripts/render-logo.ts
-     — so it stays sharp at 3x and cannot drift from the mark in the header.
+  /* 150x51 is the lockup's own 2.92:1, not a guess. The asset was rendered
+     at 876px wide from the SVG the site itself uses, so it stays sharp at 3x and cannot drift from the mark in the header.
 
      The file this replaced was a DIFFERENT LOGO: a blue cross with the
      wordmark in black, nothing like the mortar and pestle. It had been sitting

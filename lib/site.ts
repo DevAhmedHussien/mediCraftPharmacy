@@ -276,9 +276,6 @@ export const footerBadges = [
   */
 ];
 
-/** Flat list kept for any consumer that just wants every route. */
-export const footerLinks = footerColumns.flatMap((c) => c.links);
-
 /**
  * Is the phone number real?
  *

@@ -190,6 +190,3 @@ export async function archivePost(id: string) {
   return db.post.update({ where: { id }, data: { status: "ARCHIVED" } });
 }
 
-export async function deletePost(id: string) {
-  return db.post.delete({ where: { id } });
-}

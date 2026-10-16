@@ -692,18 +692,6 @@ function buildProduct(raw: RawProduct, index: number): Product {
 
 export const products: Product[] = rawProducts.map(buildProduct);
 
-export function productsByCategory(slug: string): Product[] {
-  return products.filter((p) => p.categorySlug === slug);
-}
-
-export function getCategory(slug: string): CategoryEditorial | undefined {
-  return categories.find((c) => c.slug === slug);
-}
-
-export function getProduct(slug: string): Product | undefined {
-  return products.find((p) => p.slug === slug);
-}
-
 /** Spec-sheet rows for the product detail page, in reference-site order. */
 export function productSpecs(p: Product): { label: string; value: string }[] {
   return [
@@ -718,51 +706,6 @@ export function productSpecs(p: Product): { label: string; value: string }[] {
     { label: "Route of Administration", value: p.detail.route },
   ];
 }
-
-/** Same-category products first, topped up from the wider catalog if sparse. */
-export function relatedProducts(p: Product, limit = 8): Product[] {
-  const sameCategory = products.filter(
-    (x) => x.categorySlug === p.categorySlug && x.slug !== p.slug
-  );
-  if (sameCategory.length >= limit) return sameCategory.slice(0, limit);
-
-  const filler = products.filter(
-    (x) => x.categorySlug !== p.categorySlug && x.slug !== p.slug
-  );
-  return [...sameCategory, ...filler].slice(0, limit);
-}
-
-
-/**
- * The label a therapeutic-area card closes with.
- *
- * Accepts either a category slug or the `/products/<slug>` href the content
- * layer stores, so a page can pass whichever it has. Categories with nothing
- * published yet say so honestly rather than showing "0" — the pharmacy does
- * compound in those specialties, the public listing just isn't written.
- */
-export function categoryMetaLabel(slugOrHref: string): string {
-  const slug = slugOrHref.replace(/^\/products\//, "");
-  const count = productsByCategory(slug).length;
-  if (count === 0) return "Available on request";
-  return `${count} ${count === 1 ? "formulation" : "formulations"}`;
-}
-
-/** Products featured on the home page (the flex-dose weight-management line). */
-export const featuredProducts: Product[] = productsByCategory("weight-management");
-
-/**
- * The static catalog grouped by category.
- *
- * Editorial data only — the live grouping the website renders is
- * `getProductsGrouped` in lib/catalogue.ts, which reads the product table
- * and carries each category's real count.
- */
-export const productsGrouped: { category: CategoryEditorial; items: Product[] }[] =
-  categories.map((category) => ({
-    category,
-    items: productsByCategory(category.slug),
-  }));
 
 export const careerBenefits = [
   {

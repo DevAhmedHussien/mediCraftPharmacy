@@ -62,11 +62,6 @@ export async function listNotifications(userId: string): Promise<{
   };
 }
 
-/** Just the count, for the poll that keeps the badge live. */
-export async function countUnread(userId: string) {
-  return db.notification.count({ where: { recipientId: userId, readAt: null, archivedAt: null } });
-}
-
 /**
  * Mark one read.
  *
@@ -87,7 +82,6 @@ export async function markAllRead(userId: string) {
     data: { readAt: new Date() },
   });
 }
-
 
 /* --- Events that are not transitions -------------------------------------- */
 

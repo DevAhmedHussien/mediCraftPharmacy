@@ -43,8 +43,6 @@ export const CONTACT_STAGE = {
   newInquiry: "New Inquiry",
 } as const;
 
-export type OpportunityStatus = "open" | "won" | "lost" | "abandoned";
-
 /** What an SMS template is given. */
 export type SmsContext = { firstName: string; portalUrl: string };
 

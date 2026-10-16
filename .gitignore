@@ -38,3 +38,6 @@ design_handoff/
 /.next-e2e
 /test-results
 /playwright-report
+
+# Python bytecode from the extractor scripts
+__pycache__/

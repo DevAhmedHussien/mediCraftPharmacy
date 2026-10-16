@@ -109,11 +109,6 @@ export function hasPermission(session: Session, permission: Permission): boolean
    So pages use these instead. Same checks, different failure: a redirect.
    ---------------------------------------------------------------------- */
 
-/** Where a signed-in user belongs, by role. */
-export function homeFor(role: Role): string {
-  return role === "PARTNER" ? "/portal" : "/admin";
-}
-
 /**
  * Staff-only page guard.
  *

@@ -72,8 +72,6 @@ export const leadSchema = z.object({
 });
 
 export type LeadValues = z.input<typeof leadSchema>;
-export type LeadData = z.output<typeof leadSchema>;
-
 export const emptyLead: LeadValues = {
   firstName: "",
   lastName: "",

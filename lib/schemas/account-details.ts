@@ -157,7 +157,6 @@ export const accountDetailsSchema = z.object({
     })
     .optional(),
 
-
   /* --- The trading entity ------------------------------------------------
      Who we invoice, where, and who may sign for them. None of this is asked
      on the public form because none of it exists until someone has decided to
@@ -229,9 +228,6 @@ export const accountDetailsSchema = z.object({
 
 /** What the form holds while being typed — masks still in display format. */
 export type AccountDetailsValues = z.input<typeof accountDetailsSchema>;
-/** What survives validation — phones E.164, dates ISO, EIN digits only. */
-export type AccountDetailsData = z.output<typeof accountDetailsSchema>;
-
 export const emptyPrescriber = {
   name: "",
   signature: "",

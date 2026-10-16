@@ -79,28 +79,6 @@ export function SectionTitle({ id, children, className }: { id?: string; childre
    solid in one of the four.
    ========================================================================= */
 
-/** Plex Mono, 10.5px, tracked out. The handoff's label register. */
-export function MonoLabel({
-  children,
-  className,
-  as: Tag = "span",
-}: {
-  children: React.ReactNode;
-  className?: string;
-  as?: "span" | "p" | "dt" | "div";
-}) {
-  return (
-    <Tag
-      className={cn(
-        "font-mono text-[10.5px] font-normal uppercase tracking-eyebrow text-ink-muted",
-        className
-      )}
-    >
-      {children}
-    </Tag>
-  );
-}
-
 /**
  * An outlined mono pill. `pending` dashes the border.
  *
@@ -133,15 +111,3 @@ export function BadgePill({
   );
 }
 
-/** The quiet surface: hairline, translucent white, 16px radius. */
-export function SurfaceCard({
-  className,
-  ...rest
-}: React.HTMLAttributes<HTMLDivElement>) {
-  return (
-    <div
-      className={cn("rounded-2xl border border-hair-soft bg-white/70 p-3.5", className)}
-      {...rest}
-    />
-  );
-}

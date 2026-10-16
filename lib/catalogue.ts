@@ -301,7 +301,3 @@ export const getCategoryMetaLabel = cache(async (slugOrHref: string): Promise<st
   return `${count} ${count === 1 ? "product" : "products"}`;
 });
 
-/** The home page's featured line. */
-export const getFeaturedProducts = cache(async (): Promise<CatalogueProduct[]> =>
-  getProductsByCategory("weight-management")
-);

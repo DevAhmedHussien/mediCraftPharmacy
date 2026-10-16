@@ -130,6 +130,3 @@ export async function setInquiryStatus(id: string, status: "NEW" | "HANDLED" | "
   });
 }
 
-export async function countNewInquiries() {
-  return db.siteInquiry.count({ where: { status: "NEW" } });
-}
