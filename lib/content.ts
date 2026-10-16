@@ -678,6 +678,29 @@ export const providers = {
   therapeuticAreas: {
     eyebrow: "Therapeutic Areas",
     title: "Formulations Across Every Specialty",
+    /* One line per formulary category, keyed by slug, for the category
+       cards on / and /providers. Names and counts come from the database;
+       only the description is written here. */
+    descriptions: {
+      "weight-management":
+        "GLP-1 receptor agonists, lipotropic injectables, and metabolic support compounds for evidence-based weight loss programs.",
+      hrt: "Bioidentical hormone replacement compounded to the individual — estradiol, progesterone, thyroid and combination preparations.",
+      trt: "Testosterone replacement in grape seed and cottonseed oil, with the ancillary preparations a protocol needs alongside it.",
+      "sexual-health":
+        "Troches, nasal sprays, creams and capsules supporting sexual function for men and women.",
+      "hair-loss":
+        "Topical foams, solutions and oral preparations for hair and scalp health, compounded by concentration and base.",
+      "pain-management":
+        "Topical analgesics, nerve agents, and custom pain formulations that place the drug where the pain is.",
+      "skin-care":
+        "Custom topicals for acne, hyperpigmentation, rosacea and anti-aging — tailored by concentration, base, and delivery mechanism.",
+      "wellness-vitality":
+        "Injectable and oral wellness preparations — glutathione, amino blends, and vitamin formulations.",
+      "wellness-longevity":
+        "Longevity-focused compounds including NAD+, sermorelin and peptide preparations.",
+      supplies:
+        "Syringes, needles, alcohol pads and the administration supplies a practice orders alongside a prescription.",
+    } as Record<string, string>,
   },
 };
 
