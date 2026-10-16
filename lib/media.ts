@@ -12,6 +12,7 @@
      public/images/cards/       1200x900  (4:3) cards and section figures
      public/images/categories/  1200x900  (4:3) one per formulary category
      public/images/portrait/    1024x1536 (2:3) the login aside
+     public/videos/             the home hero loop, WebM + MP4
 
    One file per photo, served as-is: there is no image optimiser (see
    next.config.js), so a replacement must already be WebP at the slot's size.
@@ -148,6 +149,19 @@ export const media = {
     alt: "Gloved hands holding printed laboratory reports with charts, beside an analytical balance and rows of sample vials",
   },
 } satisfies Record<string, Media>;
+
+/**
+ * The home hero loop: a scientist at a microscope (Pexels 4121322, free for
+ * commercial use — stock, so never captioned as MediCraft's lab).
+ *
+ * 11 s at 1280x720, no audio, the last second crossfaded into the first so
+ * the loop has no seam. VP9 WebM first (442 KB), H.264 MP4 for Safari before
+ * 16 (586 KB, faststart). The source was a 24 s, 4.6 MB 1080p file.
+ */
+export const heroVideo = {
+  webm: "/videos/hero-lab-microscope-720.webm",
+  mp4: "/videos/hero-lab-microscope-720.mp4",
+} as const;
 
 /**
  * Formulary category images.

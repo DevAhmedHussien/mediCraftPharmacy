@@ -9,7 +9,7 @@ import { site, telHref } from "@/lib/site";
 import { pageMetadata } from "@/lib/seo";
 import { getCategories } from "@/lib/catalogue";
 import { CategoryTiles } from "@/components/sections/CategoryTiles";
-import { media } from "@/lib/media";
+import { heroVideo, media } from "@/lib/media";
 import { cn } from "@/lib/utils";
 import { StepCard } from "@/components/sections/StepCard";
 
@@ -71,9 +71,13 @@ export default async function HomePage() {
             the plate follows it; from `sm` up it is the overlaid caption. */}
         <div className="relative">
         <div className="relative aspect-video overflow-hidden rounded-hero bg-stone sm:aspect-auto sm:h-[clamp(22.5rem,52vw,38.75rem)]">
-          {/* THE LCP IMAGE. The 1920px WebP straight off /images — no
-              optimiser anywhere on the site (see next.config.js) — with
-              `fetchPriority` so it is requested before anything else. */}
+          {/* THE BANNER, AND THE LCP. The hero photograph paints first —
+              requested ahead of everything with `fetchPriority` — and the
+              video plays over it once it can. The video's poster is the
+              same file, already in cache, so there is no blank frame and no
+              jump between the two. With reduced motion the video is hidden
+              and the photograph is the hero. No JavaScript: autoplay, mute
+              and loop are attributes. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={media.homeHero.src}
@@ -84,6 +88,19 @@ export default async function HomePage() {
             decoding="async"
             className="absolute inset-0 h-full w-full object-cover"
           />
+          <video
+            aria-hidden
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            poster={media.homeHero.src}
+            className="absolute inset-0 h-full w-full object-cover motion-reduce:hidden"
+          >
+            <source src={heroVideo.webm} type="video/webm" />
+            <source src={heroVideo.mp4} type="video/mp4" />
+          </video>
           <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 hidden h-2/5 bg-gradient-to-t from-white/30 to-transparent sm:block" />
         </div>
           {/* Pinned to the FOOT of the image, not the head. At the top the

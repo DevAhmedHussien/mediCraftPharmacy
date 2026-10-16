@@ -88,15 +88,15 @@ const nextConfig = {
    */
   async headers() {
     return [
-      {
-        source: "/images/:path*",
+      ...["/images/:path*", "/videos/:path*"].map((source) => ({
+        source,
         headers: [
           {
             key: "Cache-Control",
             value: "public, max-age=86400, stale-while-revalidate=604800",
           },
         ],
-      },
+      })),
     ];
   },
 };
