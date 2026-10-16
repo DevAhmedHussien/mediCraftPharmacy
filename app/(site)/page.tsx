@@ -9,7 +9,7 @@ import { hero, providers, quality } from "@/lib/content";
 import { site, telHref } from "@/lib/site";
 import { pageMetadata } from "@/lib/seo";
 import { getCategories } from "@/lib/catalogue";
-import { categoryImage, heroSrcSet, media } from "@/lib/media";
+import { categoryImage, media } from "@/lib/media";
 import { cn } from "@/lib/utils";
 import { StepCard } from "@/components/sections/StepCard";
 
@@ -64,40 +64,19 @@ export default async function HomePage() {
 
       {/* ---- Hero image + glass specification plate ---- */}
       <section aria-label={hero.spec.docLabel} className={`${container} pt-12 lg:pt-20`}>
-        <div className="relative h-[clamp(22.5rem,52vw,38.75rem)] overflow-hidden rounded-hero bg-stone">
-          {/* THE LCP IMAGE, AND THE ONE IMAGE ON THIS SITE THAT DOES NOT GO
-              THROUGH THE OPTIMISER.
-
-              What it was: a portrait photograph of a MediCraft-labelled
-              "Semaglutide Injection" vial, cropped into a 16:9 box — so it
-              named a drug in the hero, and shipped roughly twice the pixels
-              the box could show. Measured on production at 1440px: 75KB that
-              took 679ms to arrive, and an LCP of 1232ms.
-
-              Why a plain <img>. `next/image` routes through /_next/image,
-              which encodes on demand — AVIF first, and AVIF encoding on the
-              two-vCPU ARM instance this runs on is the slow part. The result
-              is cached for thirty days (see next.config.js), but the cache
-              lives in the container, so the FIRST visitor after every deploy
-              pays that encode on the largest element of the landing page.
-              These four derivatives are generated ahead of time and served
-              straight off /images, which next.config.js already gives a day
-              of freshness and a week of stale-while-revalidate.
-
-              `sizes` follows the measure: the container is `--measure` wide
-              less the 20px gutter each side — 1240 at 1280, 1400 at 2xl. The
-              old value said 1080, which is what the plate was before the
-              layout widened, so every desktop was being served an image
-              narrower than the box and upscaling it.
-
-              Versioned filename, per the rule in next.config.js: a replaced
-              file under a name that already shipped would be served stale
-              from a browser cache for a day. */}
+        {/* ON A PHONE THE PLATE GOES UNDER THE PHOTO, NOT ON IT. A 360px
+            minimum height turned a 16:9 frame into a near-square crop of the
+            middle of the photograph, and the plate then covered two thirds
+            of what was left. Below `sm` the photo shows whole at 16:9 and
+            the plate follows it; from `sm` up it is the overlaid caption. */}
+        <div className="relative">
+        <div className="relative aspect-video overflow-hidden rounded-hero bg-stone sm:aspect-auto sm:h-[clamp(22.5rem,52vw,38.75rem)]">
+          {/* THE LCP IMAGE. The 1920px WebP straight off /images — no
+              optimiser anywhere on the site (see next.config.js) — with
+              `fetchPriority` so it is requested before anything else. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={media.homeHero.src.replace(/\.webp$/, "-1280.webp")}
-            srcSet={heroSrcSet(media.homeHero)}
-            sizes="(min-width: 1536px) 1400px, (min-width: 1280px) 1240px, 100vw"
+            src={media.homeHero.src}
             alt={media.homeHero.alt}
             width={media.homeHero.width}
             height={media.homeHero.height}
@@ -105,7 +84,8 @@ export default async function HomePage() {
             decoding="async"
             className="absolute inset-0 h-full w-full object-cover"
           />
-          <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-white/30 to-transparent" />
+          <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 hidden h-2/5 bg-gradient-to-t from-white/30 to-transparent sm:block" />
+        </div>
           {/* Pinned to the FOOT of the image, not the head. At the top the
               plate covered the vial — the one thing the photograph is of —
               and sat directly under the floating header, so two frosted
@@ -142,7 +122,7 @@ export default async function HomePage() {
                facts. Uncommenting that field puts the fourth column back with
                no further edit. */
             className={cn(
-              "absolute inset-x-2.5 bottom-2.5 grid grid-cols-2 gap-px overflow-hidden rounded-2xl shadow-float motion-safe:animate-[reveal-up-sm_600ms_cubic-bezier(0.22,1,0.36,1)_200ms_both] sm:inset-x-5 sm:bottom-5 sm:rounded-[20px]",
+              "relative mt-3 grid grid-cols-2 gap-px overflow-hidden rounded-2xl shadow-float motion-safe:animate-[reveal-up-sm_600ms_cubic-bezier(0.22,1,0.36,1)_200ms_both] sm:absolute sm:inset-x-5 sm:bottom-5 sm:mt-0 sm:rounded-[20px]",
               hero.spec.fields.length === 3 ? "lg:grid-cols-3" : "lg:grid-cols-4"
             )}
           >
@@ -242,24 +222,26 @@ export default async function HomePage() {
             const art = categoryImage(c.slug);
             return (
               <li key={c.slug}>
-                {/* `.reveal-media` settles the packshot out of a 1.05 scale as
-                    the tile enters. The frame does not move — it clips — so
-                    the grid never reflows and CLS stays at 0. */}
+                {/* The photograph at its own 4:3, whole, with the name under
+                    it. These tiles used to be 3:4 with the name on glass over
+                    the image: a landscape photo cropped to a portrait frame
+                    lost nearly half its width, and a hover zoom then scaled
+                    what was left. A photo shown at its own shape and size is
+                    the one that looks sharp. */}
                 <Link
                   href={`/products/${c.slug}`}
-                  className="reveal-media group relative block aspect-[3/4] overflow-hidden rounded-card bg-stone"
+                  className="group flex flex-col gap-3 rounded-card focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-500"
                 >
-                  <Image
-                    src={art.src}
-                    alt=""
-                    fill
-                    sizes="(min-width: 1024px) 210px, (min-width: 640px) 30vw, 45vw"
-                    className={cn(
-                      "transition-transform duration-300 group-hover:scale-[1.03] motion-reduce:transition-none",
-                      art.fit === "contain" ? "object-contain p-3" : "object-cover"
-                    )}
-                  />
-                  <Glass as="span" className="absolute inset-x-3 top-3 flex items-baseline justify-between gap-2 rounded-[14px] px-3.5 py-[11px] text-[14.5px] font-medium shadow-none">
+                  <span className="relative block aspect-[4/3] overflow-hidden rounded-card border border-hair-soft bg-stone">
+                    <Image
+                      src={art.src}
+                      alt=""
+                      fill
+                      sizes="(min-width: 1536px) 270px, (min-width: 1024px) 240px, (min-width: 640px) 30vw, 45vw"
+                      className={art.fit === "contain" ? "object-contain p-3" : "object-cover"}
+                    />
+                  </span>
+                  <span className="flex items-baseline justify-between gap-2 px-1 text-[14.5px] font-medium text-navy transition-colors group-hover:text-brand-600 motion-reduce:transition-none">
                     <span className="min-w-0 truncate">{c.name}</span>
                     {/* The count is data beside a name, so mono and tabular —
                         ten tiles whose figures do not share a column read as
@@ -267,7 +249,7 @@ export default async function HomePage() {
                     <span className="shrink-0 font-mono text-[12px] tabular-nums text-ink-muted">
                       {c.count}
                     </span>
-                  </Glass>
+                  </span>
                 </Link>
               </li>
             );

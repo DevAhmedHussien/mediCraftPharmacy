@@ -491,12 +491,10 @@ function NavGroup({
             : "-translate-y-1.5 opacity-0 motion-reduce:translate-y-0"
         )}
       >
-        {/* `auto-fit` at 220px: four links land as 2x2 in the wide column and
-            as one column on a narrow one, with no breakpoint to maintain. */}
-        <ul
-          className="grid gap-1"
-          style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 13.75rem), 1fr))" }}
-        >
+        {/* Two columns, always — four links are a 2x2. An `auto-fit` track
+            fitted three once the measure widened, which left the fourth link
+            alone on a second row. One column below `lg`. */}
+        <ul className="grid gap-1 lg:grid-cols-2">
           {item.children?.map((child) => (
             <li key={child.href}>
               <Link
@@ -524,7 +522,7 @@ function NavGroup({
               alt=""
               fill
               sizes="22rem"
-              className="object-cover transition-transform duration-300 group-hover/promo:scale-[1.03] motion-reduce:transform-none"
+              className="object-cover"
             />
             {/* A caption CARD inset from the edges, as the reference draws it
                 — not a gradient washing the whole image. The gradient dimmed

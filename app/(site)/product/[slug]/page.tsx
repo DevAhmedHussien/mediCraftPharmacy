@@ -217,18 +217,18 @@ export default async function ProductPage({ params }: Params) {
             style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 26.25rem), 1fr))" }}
           >
             {/*
-             * `object-contain` on a plate rather than `cover`: the render is a
-             * tall packshot, so cropping it to a landscape frame would clip the
-             * vial. `priority` because this is the page's hero image.
+             * The category photograph at its own 4:3, filling the frame —
+             * contained in a square it sat as a small strip between two grey
+             * bands. `priority` because this is the page's hero image.
              */}
-            <div className="relative aspect-square overflow-hidden rounded-hero bg-stone">
+            <div className="relative aspect-[4/3] overflow-hidden rounded-hero bg-stone">
               <Image
                 src={product.image}
                 alt={`${product.name} — ${product.form}, ${product.doses}, ${product.detail.size} ${product.detail.packaging.toLowerCase()}`}
                 fill
                 priority
-                sizes="(min-width: 1024px) 600px, 100vw"
-                className="object-contain p-6"
+                sizes="(min-width: 1024px) 640px, 100vw"
+                className="object-cover"
               />
             </div>
 

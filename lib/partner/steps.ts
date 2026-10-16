@@ -96,11 +96,11 @@ export const STEPS: Step[] = [
   },
   {
     id: "meeting",
-    label: "Negotiation",
+    label: "Pricing Review",
     blurb: "Optional call",
     phase: "Pricing",
     publicDetail:
-      "Optional. If the rates do not work at your volumes, ask for a call and tell us which lines matter most.",
+      "Optional. If our standard pricing doesn’t align with your volume, request a call with our team. Share the products most important to your practice, and we’ll explore pricing options together.",
   },
   {
     id: "negotiation",

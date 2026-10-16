@@ -8,10 +8,12 @@
    no attribution required), pre-cropped to one of three sizes and served as
    WebP:
 
-     public/images/hero/        1920x1080 (16:9) page heroes, with -1280 and
-                                -640 derivatives for srcset
+     public/images/hero/        1920x1080 (16:9) page heroes
      public/images/cards/       1200x900  (4:3) cards and section figures
      public/images/categories/  1200x900  (4:3) one per formulary category
+
+   One file per photo, served as-is: there is no image optimiser (see
+   next.config.js), so a replacement must already be WebP at the slot's size.
 
    The source sheet's honesty rule applies to every alt text here: these are
    not MediCraft's facility or staff. Describe what is in the frame, never
@@ -54,12 +56,6 @@ const card = (file: string, alt: string): Media => ({
   height: 900,
   alt,
 });
-
-/** Responsive derivatives of a hero, for a hand-written `srcSet`. */
-export function heroSrcSet(m: Media): string {
-  const base = m.src.replace(/\.webp$/, "");
-  return [`${base}-640.webp 640w`, `${base}-1280.webp 1280w`, `${m.src} 1920w`].join(", ");
-}
 
 export const media = {
   /** Home hero. */

@@ -60,33 +60,17 @@ const nextConfig = {
   distDir: process.env.NEXT_DIST_DIR || ".next",
   images: {
     /*
-     * Every image is local now, so no remote hosts need allowing — the Unsplash
-     * and Pexels patterns that used to live here are gone along with the remote
-     * fetches they permitted.
+     * No image optimiser. Every image is a finished file in public/, already
+     * WebP and already at its display size, and the browser downloads exactly
+     * that file. `next/image` only writes the <img> tag (lazy loading,
+     * width/height to reserve space) and does nothing to the bytes.
      *
-     * AVIF first, WebP second: the optimizer serves the smallest format the
-     * requesting browser accepts, so modern browsers get AVIF (typically
-     * 20-30% under WebP) and anything older falls back to WebP.
+     * The optimiser re-encoded each photo on request on a 2-vCPU t4g.small:
+     * measured on production, 16 October 2026, one 1080px image took 6-13 s
+     * and came out softer than the file it was made from. Its cache lived in
+     * the container, so every deploy started the wait over.
      */
-    formats: ["image/avif", "image/webp"],
-
-    /*
-     * How long an optimised image stays fresh in a browser.
-     *
-     * The default is 60 SECONDS, and that is what every image on the site was
-     * being served with: `cache-control: public, max-age=60, must-revalidate`.
-     * A minute after a visitor loads a page, every photograph on it is stale,
-     * so the next page view re-requests all of them — and with no CDN in
-     * front, each of those round trips is ~400ms to a single small instance
-     * in us-east-1. That is the "images take a long time to appear".
-     *
-     * Thirty days instead. The optimiser keys its cache on the source URL,
-     * the width and the quality, so this is only unsafe if a file is REPLACED
-     * under a name it already had — which is the same trap the email logo fell
-     * into. The rule for this repo is already versioned filenames
-     * (medicraft-logo-2026.png); keep to it and this is free.
-     */
-    minimumCacheTTL: 2592000,
+    unoptimized: true,
   },
 
   /*
