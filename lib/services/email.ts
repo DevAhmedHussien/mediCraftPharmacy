@@ -685,6 +685,19 @@ export function renderTemplate(template: EmailTemplate, props: EmailProps): Rend
    ------------------------------------------------------------------ */
 
 /**
+ * A button or text link's address: the app's origin plus a path.
+ *
+ * Every `cta.path` is meant to be a path ("/portal", "/admin/…"). One caller
+ * passed a full URL, and prefixing the origin to it produced
+ * "https://…comhttps//…com/admin/…" — so a value that is already absolute is
+ * used as-is rather than doubled. That also repairs any message still
+ * sitting in the outbox from before the caller was fixed.
+ */
+function url(path: string): string {
+  return /^https?:\/\//i.test(path) ? path : `${env.APP_URL}${path}`;
+}
+
+/**
  * The plain-text part.
  *
  * Not a fallback nobody reads: a message sent without one scores worse with
@@ -693,8 +706,6 @@ export function renderTemplate(template: EmailTemplate, props: EmailProps): Rend
  * glance in a text-only reader.
  */
 function renderText(rendered: Rendered): string {
-  const url = (p: string) => `${env.APP_URL}${p}`;
-
   const steps = rendered.steps?.length
     ? "\n" +
       rendered.steps
@@ -947,8 +958,6 @@ function ctaButton(label: string, href: string): string {
 
 /** The whole message, as one table-based document. */
 function renderHtml(rendered: Rendered): string {
-  const url = (p: string) => `${env.APP_URL}${p}`;
-
   return `<!doctype html>
 <html lang="en">
 <head>

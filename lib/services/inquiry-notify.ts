@@ -3,7 +3,6 @@ import "server-only";
 import type { SiteInquiryKind } from "@prisma/client";
 
 import { db } from "@/lib/db";
-import { site } from "@/lib/site";
 import { kickOutboxes } from "@/lib/services/outbox-kick";
 
 /* ===========================================================================
@@ -43,7 +42,10 @@ const SUBJECTS: Record<SiteInquiryKind, { subject: string; body: string }> = {
  */
 export async function notifyStaffOfInquiry(inquiryId: string, kind: SiteInquiryKind) {
   const copy = SUBJECTS[kind];
-  const link = `${site.url}/admin/inquiries?open=${inquiryId}`;
+  /* A PATH, not a URL. The email layout puts the site's origin in front of
+     every button link itself; this used to pass `${site.url}/admin/…`, which
+     came out as https://…comhttps//…com/admin/… — a button to nowhere. */
+  const link = `/admin/inquiries?open=${inquiryId}`;
 
   const recipients = await db.user.findMany({
     where: { isActive: true, role: { in: ["ADMIN", "SUPER_ADMIN"] } },
