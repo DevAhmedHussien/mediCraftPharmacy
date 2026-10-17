@@ -143,7 +143,7 @@ export const about = {
       {
         year: "2026",
         title: "Pharmacy Opens — Built Right from Day One",
-        body: "MediCraft officially opens as a licensed 503A compounding pharmacy in Tampa, FL — operating from a facility previously home to one of the largest oncology infusion pharmacies in the nation, with USP 795/797/800 compliant processes, a full quality leadership team, and a proven infrastructure already in place.",
+        body: "MediCraft officially opens as a licensed 503A compounding pharmacy in Tampa, FL, with USP 795/797/800 compliant processes, a full quality leadership team, and a proven infrastructure already in place.",
       },
       {
         year: "2026",

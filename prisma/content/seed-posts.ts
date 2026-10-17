@@ -26,15 +26,18 @@ import { PrismaClient } from "@prisma/client";
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
 
+/* Stock photographs from the site's own set (public/images/cards), uploaded
+   to the bucket under these keys. Not MediCraft's facility or staff, so the
+   alt text describes the frame and never captions it as ours. */
 const COVERS = [
-  { key: "blog/2026/10/vial-clear-glass-shelf.webp", w: 1086, h: 1448, size: 115230,
-    alt: "A clear compounded preparation vial on a glass shelf" },
-  { key: "blog/2026/10/vial-blue-ice.webp", w: 1082, h: 1454, size: 198392,
-    alt: "A MediCraft vial chilled on ice, illustrating cold-chain handling" },
-  { key: "blog/2026/10/stationery-letterhead.webp", w: 1600, h: 900, size: 98352,
-    alt: "MediCraft letterhead and documentation" },
-  { key: "blog/2026/10/vial-clear-pair-glass.webp", w: 1086, h: 1448, size: 129878,
-    alt: "Two compounded preparation vials beside a glass of water" },
+  { key: "blog/2026/10/cover-cleanroom-cabinet.webp", w: 1200, h: 900, size: 82026,
+    alt: "A gowned technician holding a tablet beside a stainless pass-through cabinet in a cleanroom" },
+  { key: "blog/2026/10/cover-vials-ampoules.webp", w: 1200, h: 900, size: 35514,
+    alt: "Glass vials, ampoules and an infusion bottle lit against a dark ground" },
+  { key: "blog/2026/10/cover-pipette-vials.webp", w: 1200, h: 900, size: 144154,
+    alt: "A gloved hand pipetting into one of a tray of amber glass vials" },
+  { key: "blog/2026/10/cover-pharmacist-consult.webp", w: 1200, h: 900, size: 149794,
+    alt: "A pharmacist in a white coat explaining a prescription bottle to a patient at a pharmacy counter" },
 ];
 
 const POSTS = [
