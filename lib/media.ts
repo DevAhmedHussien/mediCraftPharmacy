@@ -123,13 +123,13 @@ export const media = {
   ),
   /** Quality — the SOP / testing figure. */
   sopPlate: card(
-    "card-01-sterile-testing",
-    "A gowned technician using a touchscreen instrument at a cleanroom bench of testing equipment"
+    "card-15-analytical-lab",
+    "Two scientists in lab coats working at analytical instruments in a blue and white laboratory"
   ),
   /** Quality — the sourcing figure. */
   microscope: card(
-    "card-05-lab-equipment",
-    "A gloved hand placing a sample on a laboratory instrument with a digital display"
+    "card-16-analytical-balance",
+    "A gloved hand opening the glass draft shield of an analytical balance with a weight on the pan"
   ),
   /** Providers — the onboarding figure. */
   consult: card(
@@ -138,8 +138,8 @@ export const media = {
   ),
   /** Licenses — the shipping figure. */
   shipping: card(
-    "card-08-pharmacy-shelves",
-    "A pharmacist in a white coat checking a package between rows of pharmacy shelving"
+    "card-20-shipping-box",
+    "A navy MediCraft shipping box and a single vial on a white and blue surface"
   ),
   /** Login — the tall aside, 2:3 portrait. */
   login: {
@@ -170,6 +170,12 @@ export const heroVideo = {
  * cover both the ten Schedule A-1 slugs the formulary uses and the legacy
  * slugs the editorial catalogue in lib/data.ts still carries, so every
  * product resolves to a photograph whichever list it was filed under.
+ *
+ * The 2026 brand set (blue grounds, MediCraft-labelled vials) replaced the
+ * Unsplash stills on 24 October 2026 under NEW file names: images are cached
+ * for a day plus a week of stale-while-revalidate, so reusing a name would
+ * have kept serving the old photo to returning visitors. Skin care and IV
+ * therapy have no brand shot yet and still use the stock files.
  */
 export type CategoryMedia = Media & {
   /** Photographs fill the tile. Kept so a cut-out can be contained later. */
@@ -185,17 +191,48 @@ const category = (file: string, alt: string): CategoryMedia => ({
 });
 
 const art = {
-  weightManagement: category("weight-management", "Rows of sealed sample vials in a white laboratory rack"),
-  hormoneTherapy: category("hormone-therapy", "A clear jar of blue and white capsules on a pale grey surface"),
-  mensHealth: category("mens-health", "White tablets scattered across a blue surface"),
-  sexualWellness: category("sexual-wellness", "White capsules in a round dish between two green leaves"),
-  womensHealth: category("womens-health", "Two overlapping discs of clear and golden serum on a blush surface"),
-  painManagement: category("pain-management", "A white bottle standing in folds of brown linen"),
+  weightManagement: category(
+    "weight-management-2026",
+    "Bare feet on a white bathroom scale between two white dumbbells on a blue ground"
+  ),
+  hormoneTherapy: category(
+    "hrt",
+    "A woman in white resting in a blue armchair with a hand to her forehead, cooling herself with a fan"
+  ),
+  mensHealth: category(
+    "trt",
+    "A man with a muscular torso giving himself an injection at the waist with a syringe"
+  ),
+  sexualWellness: category(
+    "sexual-health",
+    "A smiling woman holding a banana beside a bed made up in blue and white"
+  ),
+  hairLoss: category(
+    "hair-loss",
+    "A woman holding a hairbrush in one hand and a clump of shed hair in the other palm"
+  ),
+  painManagement: category(
+    "pain-management-2026",
+    "A man holding his lower back while a clinician points to a model of the spine on the desk"
+  ),
   dermatology: category("dermatology", "A swatch of white cream on a peach surface"),
-  vitalityLongevity: category("vitality-longevity", "Discs of oil, serum and cream beside green leaves on a blush surface"),
-  peptideTherapy: category("peptide-therapy", "A white molecular model against a pale grey ground"),
+  vitalityLongevity: category(
+    "wellness-vitality",
+    "A woman doing a squat holding two blue dumbbells in a bright studio"
+  ),
+  longevity: category(
+    "wellness-longevity",
+    "An older couple dressed in white walking hand in hand along a sunny street"
+  ),
   ivTherapy: category("iv-therapy", "An IV bag and drip chamber hanging from a stand"),
-  customFormulations: category("custom-formulations", "A pipette tip above a rack of clear sample tubes"),
+  supplies: category(
+    "supplies",
+    "A row of blue-capped MediCraft vials, one lying on its side, on a white surface"
+  ),
+  customFormulations: category(
+    "compounding",
+    "A gloved hand grinding white powder with a pestle in a mortar, beside a flask of clear liquid"
+  ),
 };
 
 export const categoryMedia: Record<string, CategoryMedia> = {
@@ -204,20 +241,20 @@ export const categoryMedia: Record<string, CategoryMedia> = {
   hrt: art.hormoneTherapy,
   trt: art.mensHealth,
   "sexual-health": art.sexualWellness,
-  "hair-loss": art.womensHealth,
+  "hair-loss": art.hairLoss,
   "pain-management": art.painManagement,
   "skin-care": art.dermatology,
   "wellness-vitality": art.vitalityLongevity,
-  "wellness-longevity": art.peptideTherapy,
-  supplies: art.customFormulations,
+  "wellness-longevity": art.longevity,
+  supplies: art.supplies,
   // Legacy editorial slugs
   "hormone-therapy": art.hormoneTherapy,
   "mens-health": art.mensHealth,
   "sexual-wellness": art.sexualWellness,
-  "womens-health": art.womensHealth,
+  "womens-health": art.hairLoss,
   dermatology: art.dermatology,
   "vitality-longevity": art.vitalityLongevity,
-  "peptide-therapy": art.peptideTherapy,
+  "peptide-therapy": art.longevity,
   "iv-therapy": art.ivTherapy,
   "custom-formulations": art.customFormulations,
 };
@@ -229,23 +266,32 @@ export function categoryImage(slug: string): CategoryMedia {
 
 /** Delivery-method cards on /compounding, keyed by title. 4:3. */
 export const deliveryMedia: Record<string, Media> = {
-  Injectables: card("card-04-vials", "Glass vials, ampoules and an infusion bottle lit against a dark ground"),
+  Injectables: card(
+    "card-17-vial-in-glove",
+    "A gloved hand holding a small MediCraft vial up against a blue ground"
+  ),
   "Topical Creams & Gels": art.dermatology,
-  "Oral Capsules & Tablets": art.hormoneTherapy,
+  "Oral Capsules & Tablets": card(
+    "card-18-capsule-filler",
+    "A technician in white gloves operating a manual capsule-filling machine on a steel bench"
+  ),
   "Nasal Sprays": card("card-02-lab-glassware", "Shelves of clear laboratory glassware and reagent bottles"),
-  "Troches & Sublingual": art.sexualWellness,
+  "Troches & Sublingual": card(
+    "card-19-mortar-and-vial",
+    "A gloved hand setting down a MediCraft vial beside a mortar and pestle and a measuring cylinder"
+  ),
   "IV Solutions": art.ivTherapy,
 };
 
 /** Facility & automation cards on /quality, keyed by title. 4:3. */
 export const automationMedia: Record<string, Media> = {
   "Automated Cleanroom Cleaning Systems": card(
-    "card-07-cleanroom-passthrough",
-    "A gowned technician passing an instrument through a stainless cleanroom cabinet"
+    "card-13-cleanroom-cleaning",
+    "A worker in a white protective suit and respirator wiping down a glass laboratory door"
   ),
   "Automated Vial Crimping Machines": card(
-    "card-04-vials",
-    "Glass vials, ampoules and an infusion bottle lit against a dark ground"
+    "card-14-vial-line",
+    "Blue-capped vials moving along a curved filling and capping line"
   ),
   "Environmental Monitoring Technology": card(
     "card-10-environment-monitoring",
