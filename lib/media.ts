@@ -1,18 +1,16 @@
 /* ===========================================================================
    Imagery manifest — every image slot on the site, in one place.
 
-   THE CURRENT SET IS LICENSED STOCK
-   ---------------------------------
-   The renders and brand stills that used to fill these slots have been
-   removed. Every photograph below is from Unsplash (free for commercial use,
-   no attribution required), pre-cropped to one of three sizes and served as
-   WebP:
+   THE CURRENT SET IS THE 2026 BRAND PHOTOGRAPHY
+   ---------------------------------------------
+   Blue grounds and MediCraft-labelled vials, supplied October 2026. Only the
+   login portrait and the nasal-spray card are still Unsplash stock. Every
+   file is pre-cropped to one of four sizes and served as WebP:
 
      public/images/hero/        1920x1080 (16:9) page heroes
      public/images/cards/       1200x900  (4:3) cards and section figures
      public/images/categories/  1200x900  (4:3) one per formulary category
      public/images/portrait/    1024x1536 (2:3) the login aside
-     public/videos/             the home hero loop, WebM + MP4
 
    One file per photo, served as-is: there is no image optimiser (see
    next.config.js), so a replacement must already be WebP at the slot's size.
@@ -62,64 +60,64 @@ const card = (file: string, alt: string): Media => ({
 export const media = {
   /** Home hero. */
   homeHero: hero(
-    "hero-01-home",
-    "Two technicians in cleanroom gowns, masks and goggles reviewing a tablet beside a bench of culture plates"
+    "hero-11-home-vials",
+    "Six blue-capped MediCraft vials on a white surface against a blue wall, one lying on its side"
   ),
   /** /products masthead. */
   formulary: hero(
-    "hero-10-blog",
-    "A gloved hand placing a sample on a laboratory instrument with a digital display"
+    "hero-12-formulary-vials",
+    "Gloved hands arranging small MediCraft vials on a white bench beside a measuring cylinder"
   ),
   /** /quality masthead. */
   lab: hero(
-    "hero-02-quality",
-    "A gowned technician holding a tablet beside a stainless pass-through cabinet in a cleanroom"
+    "hero-13-quality-lab",
+    "Two scientists in lab coats working at analytical instruments in a blue and white laboratory"
   ),
   /** /compounding masthead. */
   compoundingCover: hero(
-    "hero-03-compounding",
-    "A gloved hand pipetting into one of a tray of amber glass vials"
+    "hero-14-compounding-mortar",
+    "A gloved hand grinding white powder in a mortar beside a flask of clear liquid on a blue ground"
   ),
   /** /about masthead. */
   aboutCover: hero(
-    "hero-04-about",
-    "A cleanroom seen through an observation window, with a gowned technician working at a bench in the next room"
+    "hero-15-about-vial-line",
+    "Blue-capped vials moving along a curved filling and capping line"
   ),
   /** /providers and /work-with-us mastheads. */
   reception: hero(
-    "hero-05-providers",
-    "A pharmacist in a white coat taking a box from a stocked pharmacy shelf"
+    "hero-16-providers-handoff",
+    "A gloved hand placing a MediCraft vial into another person's open palm"
   ),
   /** /licenses masthead. */
   licensesCover: hero(
-    "hero-06-state-coverage",
-    "A gowned technician opening the door of a stainless pass-through cabinet in a cleanroom"
+    "hero-17-coverage-shipping",
+    "A navy MediCraft shipping box and a single vial on a white and blue surface"
   ),
   /** /contact masthead. */
   contactCover: hero(
-    "hero-07-contact",
-    "A gowned technician handling culture plates at a cleanroom bench beside a blue door"
+    "hero-18-contact-vial",
+    "A gloved hand holding a MediCraft vial up against a blue ground"
   ),
   /** /careers masthead. */
   careersCover: hero(
-    "hero-08-careers",
-    "Two scientists in lab coats and blue gloves working at computer workstations in a laboratory"
+    "hero-19-careers-capsule-filler",
+    "A technician in white gloves operating a manual capsule-filling machine on a steel bench"
   ),
   /** /support masthead. */
   supportCover: hero(
-    "hero-09-refill",
-    "A pharmacist in a white coat reaching for a box on a pharmacy shelf"
+    "hero-20-refill-vial-flask",
+    "A gloved hand setting a MediCraft vial on a glass tray beside a round flask and a mortar"
   ),
 
   /** About — the facility panel. */
   facilityPanel: card(
-    "card-09-team-cleanroom",
-    "Two technicians in cleanroom gowns reviewing a tablet together beside a bench of culture plates"
+    "card-15-analytical-lab",
+    "Two scientists in lab coats working at analytical instruments in a blue and white laboratory"
   ),
   /** Quality — chain of custody; also the navbar's pharmacy promo. */
   custody: card(
-    "card-08-pharmacy-shelves",
-    "A pharmacist in a white coat checking a package between rows of pharmacy shelving"
+    "card-21-vial-handoff",
+    "A gloved hand placing a MediCraft vial into another person's open palm"
   ),
   /** Quality — the SOP / testing figure. */
   sopPlate: card(
@@ -133,8 +131,8 @@ export const media = {
   ),
   /** Providers — the onboarding figure. */
   consult: card(
-    "card-03-clinical-consult",
-    "A pharmacist in a white coat explaining a prescription bottle to a patient at a pharmacy counter"
+    "card-22-spine-consult",
+    "A clinician pointing to a model of the spine while a patient beside him holds his lower back"
   ),
   /** Licenses — the shipping figure. */
   shipping: card(
@@ -151,19 +149,6 @@ export const media = {
 } satisfies Record<string, Media>;
 
 /**
- * The home hero loop: a scientist at a microscope (Pexels 4121322, free for
- * commercial use — stock, so never captioned as MediCraft's lab).
- *
- * 11 s at 1280x720, no audio, the last second crossfaded into the first so
- * the loop has no seam. VP9 WebM first (442 KB), H.264 MP4 for Safari before
- * 16 (586 KB, faststart). The source was a 24 s, 4.6 MB 1080p file.
- */
-export const heroVideo = {
-  webm: "/videos/hero-lab-microscope-720.webm",
-  mp4: "/videos/hero-lab-microscope-720.mp4",
-} as const;
-
-/**
  * Formulary category images.
  *
  * The files are named for the therapeutic areas they were shot for. The keys
@@ -174,8 +159,7 @@ export const heroVideo = {
  * The 2026 brand set (blue grounds, MediCraft-labelled vials) replaced the
  * Unsplash stills on 24 October 2026 under NEW file names: images are cached
  * for a day plus a week of stale-while-revalidate, so reusing a name would
- * have kept serving the old photo to returning visitors. Skin care and IV
- * therapy have no brand shot yet and still use the stock files.
+ * have kept serving the old photo to returning visitors.
  */
 export type CategoryMedia = Media & {
   /** Photographs fill the tile. Kept so a cut-out can be contained later. */
@@ -215,7 +199,10 @@ const art = {
     "pain-management-2026",
     "A man holding his lower back while a clinician points to a model of the spine on the desk"
   ),
-  dermatology: category("dermatology", "A swatch of white cream on a peach surface"),
+  dermatology: category(
+    "skin-care",
+    "White pump bottles, a dropper bottle, a tube and a jar of cream on a stone plinth against a blue ground"
+  ),
   vitalityLongevity: category(
     "wellness-vitality",
     "A woman doing a squat holding two blue dumbbells in a bright studio"
@@ -224,7 +211,10 @@ const art = {
     "wellness-longevity",
     "An older couple dressed in white walking hand in hand along a sunny street"
   ),
-  ivTherapy: category("iv-therapy", "An IV bag and drip chamber hanging from a stand"),
+  ivTherapy: category(
+    "iv-therapy-2026",
+    "Gloved hands measuring a syringe inside a laminar-flow hood beside IV bags and vials"
+  ),
   supplies: category(
     "supplies",
     "A row of blue-capped MediCraft vials, one lying on its side, on a white surface"
@@ -293,12 +283,9 @@ export const automationMedia: Record<string, Media> = {
     "card-14-vial-line",
     "Blue-capped vials moving along a curved filling and capping line"
   ),
-  "Environmental Monitoring Technology": card(
-    "card-10-environment-monitoring",
-    "A gowned technician logging culture plates on a touchscreen at a cleanroom bench"
-  ),
+  "Environmental Monitoring Technology": art.ivTherapy,
   "Video-Verified Fulfillment": card(
-    "card-11-pharmacist-review",
-    "A pharmacist in a white coat reviewing a box taken from a pharmacy shelf"
+    "card-20-shipping-box",
+    "A navy MediCraft shipping box and a single vial on a white and blue surface"
   ),
 };

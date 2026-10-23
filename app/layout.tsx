@@ -26,8 +26,7 @@ const satoshi = localFont({
        application, all pre-redesign leftovers, and they have been moved to
        weights already here. A 23 kB woff2 on the critical path of every page
        to serve five headings was the wrong trade — fonts are render-blocking,
-       and FCP is the floor LCP cannot beat. The file stays in public/fonts as
-       part of the supplied family. */
+       and FCP is the floor LCP cannot beat. */
   ],
   variable: "--font-satoshi",
   display: "swap",
@@ -79,11 +78,8 @@ const mono = IBM_Plex_Mono({
  * have left a variable whose name says "a different face" pointing at the
  * same one, which is the kind of thing that is true for a year and then
  * quietly wrong. `font-display` and `--font-display` now name
- * `--font-satoshi` directly.
- *
- * The Lato woff2 files stay in public/fonts: they are part of the supplied
- * identity package, weigh nothing unreferenced, and deleting them would make
- * reverting this a hunt for files rather than an edit.
+ * `--font-satoshi` directly. The Lato files and Satoshi 900 were removed
+ * from public/fonts on 24 October 2026; git history has them.
  */
 
 export const metadata: Metadata = {

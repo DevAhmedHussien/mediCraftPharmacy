@@ -6,7 +6,6 @@ import { db } from "@/lib/db";
 import type { FormState } from "@/lib/forms";
 import { requireAdmin } from "@/lib/guard";
 import {
-  findTransition,
   PARTNER_STATUS,
   type PartnerStatus,
 } from "@/lib/partner/status";
@@ -88,19 +87,6 @@ export async function movePartner(
     console.error("[partners] transition failed", error);
     return { ok: false, message: "That change could not be applied." };
   }
-}
-
-/** The moves this admin may make from the partner's current status. */
-export async function availableMoves(from: PartnerStatus) {
-  const session = await requireAdmin();
-  const isSuper = session.user.role === "SUPER_ADMIN";
-
-  return (["ADMIN"] as const).flatMap(() =>
-    Object.values(PARTNER_STATUS)
-      .map((to) => findTransition(from, to))
-      .filter((t): t is NonNullable<typeof t> => Boolean(t) && t!.actor === "ADMIN")
-      .filter((t) => isSuper || !t.permission || session.user.permissions.includes(t.permission))
-  );
 }
 
 /**

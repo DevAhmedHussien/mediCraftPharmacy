@@ -126,17 +126,9 @@ const config: Config = {
       },
       fontFamily: {
         /*
-         * Two families, as the branding guideline packages them.
-         *
-         * Satoshi carries the lockup and the display type — it is the face the
-         * logo is drawn in, so headings set in it tie the page to the mark.
-         * Lato carries running text: it was built for body copy, holds its
-         * colour at 15px where Satoshi's wide apertures start to feel loose,
-         * and is the second family the guideline itself uses.
-         *
-         * `sans` is what every unstyled element inherits, so that is Lato.
-         * `display` is opt-in through `font-display`, which the heading
-         * classes apply.
+         * One family. Satoshi carries the lockup, display type, body and UI;
+         * `sans` and `display` both point at it (see app/layout.tsx for why
+         * Lato was dropped). Mono is the only second face.
          */
         sans: ["var(--font-satoshi)", "system-ui", "sans-serif"],
         display: ["var(--font-satoshi)", "system-ui", "sans-serif"],
@@ -196,11 +188,6 @@ const config: Config = {
         eyebrow: "0.12em",
       },
       keyframes: {
-        "fade-up": {
-          "0%": { opacity: "0", transform: "translateY(20px)" },
-          "100%": { opacity: "1", transform: "translateY(0)" },
-        },
-
         /* ---- Logo motion ----------------------------------------------
            The mark is a mortar and pestle, so it animates the way one is
            actually used: the pestle drops in and grinds. Rotation happens
@@ -243,9 +230,6 @@ const config: Config = {
           "0%": { opacity: "0", transform: "translateY(4px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
-      },
-      animation: {
-        "fade-up": "fade-up 0.7s cubic-bezier(0.22,1,0.36,1) forwards",
       },
     },
   },

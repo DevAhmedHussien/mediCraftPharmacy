@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createHash, randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
 
 import { DOCUMENT_MIME_TYPES, MAX_DOCUMENT_BYTES } from "@/lib/uploads";
 import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
@@ -153,10 +153,6 @@ export class StorageError extends Error {
     super(message);
     this.name = "StorageError";
   }
-}
-
-export function checksum(body: Buffer): string {
-  return createHash("sha256").update(body).digest("hex");
 }
 
 /* --- S3 ------------------------------------------------------------------ */

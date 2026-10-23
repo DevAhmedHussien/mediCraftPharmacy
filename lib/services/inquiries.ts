@@ -58,18 +58,6 @@ export async function recordInquiry(input: InquiryInput) {
   });
 }
 
-export type InquiryRow = {
-  id: string;
-  kind: SiteInquiryKind;
-  name: string | null;
-  email: string | null;
-  phone: string | null;
-  subject: string | null;
-  isPhi: boolean;
-  status: string;
-  createdAt: Date;
-};
-
 export async function listInquiries(params: { kind?: SiteInquiryKind; status?: string } = {}) {
   return db.siteInquiry.findMany({
     where: {

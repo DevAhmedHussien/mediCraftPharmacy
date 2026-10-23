@@ -14,14 +14,7 @@
    ========================================================================= */
 
 :root {
-  /* Two faces, both from the branding folder, split by what each one ships.
-   *
-   * Satoshi is packaged with a Regular, so it carries running text — every
-   * paragraph, label, table cell and control inherits this.
-   *
-   * Lato is packaged as Bold and Black only. That is no use for body copy and
-   * exactly right for headings, so it takes those. The split is the fonts'
-   * own, not a preference. */
+  /* Satoshi for everything — running text and headings alike. */
   --font-sans: var(--font-satoshi), system-ui, -apple-system, sans-serif;
   --font-display: var(--font-satoshi), system-ui, -apple-system, sans-serif;
 
@@ -197,9 +190,6 @@ h3 {
   .band {
     @apply bg-transparent;
   }
-  .band-navy {
-    @apply bg-navy text-white;
-  }
 
   /* ---------------------------------------------------------------------
      The section head device.
@@ -222,20 +212,10 @@ h3 {
   }
 
   /* On navy the accessible cyan is too dark — use the artwork value. */
-  .band-navy .eyebrow,
   .eyebrow-invert {
     @apply text-cyan-400;
   }
 
-  /*
-   * Headings carry the identity blue.
-   *
-   * The deck sets the entire "MediCraft Pharmacy" wordmark in #1B54FB, so the
-   * display type follows it rather than defaulting to near-black. Body copy
-   * stays on the ink ramp — putting prose in blue as well would cost legibility
-   * across pages this long and leave nothing for the headings to contrast with.
-   * brand-500 is the exact logo blue and clears 4.5:1 on white (5.66:1).
-   */
   /* Headings are ink, not brand blue.
    *
    * Every section title on the site used to be set in brand-500. At display
@@ -246,16 +226,6 @@ h3 {
    *
    * The hero keeps a single blue word, deliberately, because it is the only
    * one on the page. */
-  /* BOLD, NOT BLACK.
-   *
-   * Every section title on the site was set in Lato Black — nine or ten
-   * blocks of 900-weight display type per page, each as loud as the last. At
-   * that density the weight stops being emphasis and becomes the page's
-   * normal voice, which leaves the hero nothing to be louder than and reads,
-   * on a page about laboratory procedure, as shouting.
-   *
-   * 700 is still unmistakably a heading at 36–46px. Black is now spent in one
-   * place: the home page headline. */
   /* Satoshi 400, large, pulled in hard.
      
      This was Lato Bold. The redesign sets the whole page in one family at
@@ -271,15 +241,8 @@ h3 {
   .section-title-sm {
     @apply font-display text-[clamp(1.6rem,3vw,2.25rem)] font-normal leading-[1.12] tracking-title text-navy;
   }
-  .band-navy .section-title,
-  .band-navy .section-title-sm {
-    @apply text-white;
-  }
   .section-lead {
     @apply max-w-[62ch] text-intro text-ink-soft;
-  }
-  .band-navy .section-lead {
-    @apply text-white/70;
   }
   /* Standard head block: eyebrow, title, lead, stacked with fixed gaps. */
   .section-head {
@@ -661,18 +624,6 @@ h3 {
   .step {
     @apply flex gap-5;
   }
-  .step-num {
-    @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-500 text-meta font-black text-white;
-  }
-  .process-card {
-    @apply relative rounded-tile border border-line bg-white p-6;
-  }
-  .process-num {
-    @apply mb-3 block font-mono text-caption font-bold text-cyan-700;
-  }
-  .process-title {
-    @apply mb-2 text-meta font-bold text-brand-600;
-  }
 
   /* ---------------------------------------------------------------------
      Chips, pills, badges
@@ -691,17 +642,6 @@ h3 {
   .chip-active {
     @apply border-navy bg-navy text-white hover:border-navy hover:text-white;
   }
-  /* Both badges were drawn for a navy footer — translucent white on dark, and
-     a pale amber that only reads against it. On the light footer they were
-     invisible and washed out respectively. */
-  .badge-pill {
-    @apply inline-flex items-center rounded-full border border-hair bg-white px-3 py-1 text-caption font-medium text-ink-soft;
-  }
-  /* "In progress" needs to read as honest rather than as an accreditation
-     already held — amber, not cyan, and the copy always says so. */
-  .badge-progress {
-    @apply inline-flex items-center gap-1.5 rounded-full border border-warning-fg/35 bg-warning-bg px-3 py-1 text-caption font-semibold text-warning-fg;
-  }
 
   /* Callout — a tinted aside with a brand rule down the left edge. */
   /* On the `info` / `success` pairs rather than raw palette steps, so a
@@ -713,10 +653,6 @@ h3 {
   }
   .callout-cyan {
     @apply rounded-r-[1.25rem] border-l-[3px] border-success bg-success-bg px-6 py-5 text-meta text-ink-soft;
-  }
-
-  .hairline {
-    @apply border-t border-line;
   }
   .fine-print {
     @apply text-caption text-ink-muted;
@@ -889,69 +825,6 @@ h3 {
     @apply relative overflow-hidden bg-navy text-white;
     background-image: linear-gradient(180deg, #0a1330 0%, #0d193e 55%, #101f4d 100%);
   }
-  /*
-   * The landing hero, and only the landing hero, fills the first screen.
-   *
-   * Scoped to its own class rather than put on `.hero`, which the interior
-   * page mastheads and the closing CTA also wear — on `.hero` it made every
-   * page open with a screen-height navy band.
-   *
-   * `svh` rather than `vh`: on iOS `vh` is the tallest the viewport ever gets,
-   * so with the browser bars showing a `100vh` hero is taller than the screen
-   * and the calls to action start below the fold. `min-h` rather than `h`
-   * because a long headline at 320px must still be allowed to grow.
-   */
-  .hero-full {
-    @apply flex flex-col;
-    min-height: calc(100svh - var(--chrome-h));
-  }
-  /* The copy and product take whatever height is left and centre inside it, so
-     the ticker below them sits on the hero's bottom edge rather than floating
-     with the group. */
-  .hero-full > .container-x {
-    @apply flex w-full flex-1 items-center;
-  }
-  /*
-   * One height for every interior masthead.
-   *
-   * They used to be sized by their own copy, so /about (a five-line lead) and
-   * /licenses (a two-line one) opened at visibly different heights and the
-   * band read as a different component on each page.
-   */
-  .page-masthead {
-    @apply flex items-center;
-    /* Two jobs. It clears the tallest copy-only masthead (/about, at a
-       five-line lead) so every text-only page opens at the same height. And
-       it is deep enough that a 16:9 cover is shown nearly whole: at 1440px a
-       1600x900 photograph renders 810px tall, so a 40rem band crops about a
-       fifth rather than a third. Shallower than this and the covers read as
-       zoomed-in crops rather than photographs. */
-    min-height: 40rem;
-  }
-  .page-masthead > .container-x {
-    @apply w-full;
-  }
-  /*
-   * The HEPA ceiling grid as a CSS texture, shared by the hero and the custody
-   * band. Brief §4.5 asks for this pattern as a material ground; drawn rather
-   * than photographed, it costs nothing and cannot misrepresent the facility.
-   */
-  .hero-grid {
-    @apply pointer-events-none absolute inset-0 z-0;
-    background-image:
-      repeating-linear-gradient(
-        to right,
-        rgba(255, 255, 255, 0.06) 0 1px,
-        transparent 1px 52px
-      ),
-      repeating-linear-gradient(
-        to bottom,
-        rgba(255, 255, 255, 0.06) 0 1px,
-        transparent 1px 52px
-      );
-    -webkit-mask-image: radial-gradient(120% 90% at 78% 20%, #000 0%, transparent 72%);
-    mask-image: radial-gradient(120% 90% at 78% 20%, #000 0%, transparent 72%);
-  }
 
   /* One faint bloom, low and off-centre. Everything else is flat. */
   .hero::after {
@@ -959,302 +832,11 @@ h3 {
     @apply pointer-events-none absolute -bottom-52 left-[8%] h-[30rem] w-[30rem] rounded-full;
     background: radial-gradient(circle, rgba(35, 220, 225, 0.13) 0%, transparent 70%);
   }
-  /* ---------------------------------------------------------------------
-     Chain of custody — the recorded frame and its tracked sequence.
-
-     A bezel, a burn-in bar and a reticle, because what is being claimed is
-     not "we have a nice packing bench" but "there is footage, and it is
-     filed against a prescription number". The screen furniture is the
-     argument; see components/media/CustodyFilm.tsx.
-     ------------------------------------------------------------------ */
-  .custody-monitor {
-    @apply overflow-hidden rounded-panel border border-white/15 bg-navy-deep;
-  }
-  .custody-monitor-bar {
-    @apply flex items-center gap-3 border-b border-white/10 px-4 py-2.5 font-mono text-[0.625rem] uppercase tracking-[0.1em] text-cyan-300/80;
-    background: rgba(255, 255, 255, 0.04);
-  }
-  .custody-monitor-screen {
-    @apply relative aspect-[16/9] overflow-hidden bg-navy-deep;
-  }
-  /* Scanlines at 3px pitch — visible as a texture, invisible as stripes. */
-  .custody-scan {
-    @apply pointer-events-none absolute inset-0;
-    background-image: repeating-linear-gradient(
-      to bottom,
-      rgba(255, 255, 255, 0.045) 0 1px,
-      transparent 1px 3px
-    );
-  }
-  /* Framing brackets: eight hairlines on one element, two per corner, so a
-     purely decorative overlay costs no markup. */
-  .custody-reticle {
-    --bracket: rgba(35, 220, 225, 0.55);
-    @apply pointer-events-none absolute inset-5;
-    background-image:
-      linear-gradient(var(--bracket), var(--bracket)),
-      linear-gradient(var(--bracket), var(--bracket)),
-      linear-gradient(var(--bracket), var(--bracket)),
-      linear-gradient(var(--bracket), var(--bracket)),
-      linear-gradient(var(--bracket), var(--bracket)),
-      linear-gradient(var(--bracket), var(--bracket)),
-      linear-gradient(var(--bracket), var(--bracket)),
-      linear-gradient(var(--bracket), var(--bracket));
-    background-size:
-      18px 1px, 1px 18px,
-      18px 1px, 1px 18px,
-      18px 1px, 1px 18px,
-      18px 1px, 1px 18px;
-    background-position:
-      left top, left top,
-      right top, right top,
-      left bottom, left bottom,
-      right bottom, right bottom;
-    background-repeat: no-repeat;
-  }
-  .custody-monitor-tc {
-    @apply absolute bottom-3 left-4 font-mono text-[0.625rem] tracking-[0.1em] text-white/70;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
-  }
-
-  /* The four checkpoints, as a tracked sequence rather than four more cards.
-     One continuous rule runs the height of the list and each node sits on it,
-     which is the part a row of boxes could not say: you do not reach
-     checkpoint three without passing checkpoint two. */
-  .custody-track {
-    @apply relative grid gap-6 sm:grid-cols-2 lg:grid-cols-1 lg:gap-0;
-  }
-  .custody-node {
-    @apply relative pl-11;
-  }
-  /* The connector, drawn per node so it stops cleanly at the last one and
-     never has to know how many there are. Suppressed at `sm`, where the list
-     is two columns and a rule running down each column would connect
-     checkpoints that do not follow each other. */
-  .custody-node:not(:last-child)::before {
-    content: "";
-    @apply absolute bottom-0 left-[0.6875rem] top-8 w-px bg-white/15 sm:hidden lg:block;
-  }
-  .custody-node-mark {
-    @apply absolute left-0 top-0 flex h-[1.375rem] w-[1.375rem] items-center justify-center rounded-[0.25rem] border border-cyan-400/40 bg-navy-deep font-mono text-[0.625rem] font-medium text-cyan-300;
-  }
-  .custody-node-stamp {
-    @apply font-mono text-[0.625rem] uppercase tracking-[0.1em] text-white/40;
-  }
-  @media (min-width: 1024px) {
-    .custody-node {
-      @apply pb-7;
-    }
-    .custody-node:last-child {
-      @apply pb-0;
-    }
-  }
-
-  /* ---------------------------------------------------------------------
-     Page cover — the rendered ground behind an interior page's <PageHero>.
-
-     Same principle as the hero stage: the render is cut away on the left
-     rather than washed over with a translucent navy. A flat wash across the
-     whole frame is what makes a background image read as faded stock — it
-     mutes the subject and the ground by the same amount, so nothing in the
-     band is either crisp or clean. Masking instead gives the heading solid
-     navy and the rendering its full contrast, with the handover happening in
-     the empty middle of the frame.
-
-     Below `md` there is no left to hand over to, so the render drops to a
-     tint behind the copy and the scrim goes flat.
-     ------------------------------------------------------------------ */
-  .page-cover {
-    @apply pointer-events-none absolute inset-0 opacity-30;
-  }
-  .page-cover-scrim {
-    @apply pointer-events-none absolute inset-0 bg-navy/70;
-  }
-  /* Closes the seam where the band meets the white section below it. The stop
-     colour is the hero gradient's own last stop, so the fade lands exactly. */
-  .page-cover-foot {
-    @apply pointer-events-none absolute inset-x-0 bottom-0 h-24;
-    background: linear-gradient(to top, #101f4d 0%, rgba(16, 31, 77, 0) 100%);
-  }
-
-  @media (min-width: 768px) {
-    .page-cover {
-      @apply opacity-90;
-      -webkit-mask-image: linear-gradient(
-        to right,
-        transparent 6%,
-        rgba(0, 0, 0, 0.55) 30%,
-        #000 58%
-      );
-      mask-image: linear-gradient(
-        to right,
-        transparent 6%,
-        rgba(0, 0, 0, 0.55) 30%,
-        #000 58%
-      );
-    }
-    .page-cover-scrim {
-      background: linear-gradient(
-        to right,
-        rgba(13, 25, 62, 0.96) 0%,
-        rgba(13, 25, 62, 0.9) 36%,
-        rgba(13, 25, 62, 0.58) 58%,
-        rgba(13, 25, 62, 0.3) 82%
-      );
-    }
-  }
-
-  /* ---------------------------------------------------------------------
-     Hero stage — the rendered injectable line.
-
-     The render (lib/media.ts `homeHero`) is built on the same navy the hero
-     sits on and composes its vials into the right 45% of the frame, so on a
-     desktop it is not put in a box: the frame is masked away on its left and
-     along its bottom and the rendering simply dissolves into the document
-     ground. Its top row samples #08112d against the hero's #0a1330, which is
-     why only two edges need the treatment — the third matches already, and the
-     fourth runs off the viewport.
-
-     Two nested masks rather than one `mask-composite` declaration: nesting
-     multiplies the two gradients in every engine, where compositing degrades
-     to a union — and a union here would leave a hard vertical edge straight
-     down the middle of the headline.
-
-     Below `lg` the same element is an ordinary figure in the flow, cropped
-     tighter (4:3) so the vials still read at 375px, with the border and radius
-     the rest of the card system uses.
-     ------------------------------------------------------------------ */
-  /* Capped rather than full-bleed: at `w-full` of its column the vials ran to
-     the container edge and crowded the headline. The cap keeps the product
-     inside its half with air on both sides at every width. */
-  /* The hero vial: tilted, and breathing.
-   *
-   * One piece of non-user-triggered motion on the whole site, on the single
-   * object the page is about. It animates `transform` only, so it never
-   * triggers layout or paint — the cost is a composited transform per frame
-   * and nothing else.
-   *
-   * Reduced motion stops it dead and keeps the tilt, because the rotation is
-   * composition rather than animation. */
-  .hero-vial {
-    animation: hero-float 6s ease-in-out infinite;
-    transform: rotate(20deg);
-    will-change: transform;
-  }
-  @keyframes hero-float {
-    0%, 100% { transform: rotate(20deg) translateY(0); }
-    50%      { transform: rotate(20deg) translateY(-14px); }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .hero-vial {
-      animation: none;
-    }
-  }
-
-  .hero-product {
-    @apply relative z-10 mx-auto w-full max-w-[22rem] sm:max-w-[26rem] lg:mr-0 lg:max-w-[28rem] xl:max-w-[32rem];
-  }
-  /* The one cyan bloom the hero is allowed, sitting behind the glass so it
-     reads as light through the vials rather than a glow pasted on top. */
-  .hero-product-glow {
-    @apply pointer-events-none absolute left-1/2 top-[48%] -z-10 h-[86%] w-[104%] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl;
-    /* Two stops, not one. The vials are dark navy glass on a dark navy ground,
-       so a cyan bloom alone does not separate them — the wider, cooler wash
-       underneath is what lifts the silhouette off the background. */
-    background:
-      radial-gradient(
-        ellipse 44% 40% at 50% 46%,
-        rgba(35, 220, 225, 0.2) 0%,
-        rgba(35, 220, 225, 0.07) 54%,
-        transparent 78%
-      ),
-      radial-gradient(
-        ellipse 60% 56% at 50% 52%,
-        rgba(96, 165, 250, 0.13) 0%,
-        transparent 72%
-      );
-  }
-  /* The contact shadow. The cut-out has no floor of its own, and without this
-     the vials hang in the middle of the section; an ellipse under the bases
-     is what puts them on a surface. */
-  .hero-product-img {
-    @apply h-auto w-full;
-    filter: drop-shadow(0 26px 30px rgba(2, 10, 28, 0.55));
-  }
   /* Lifts the hero's content above the background layers. Elements marked
      `data-layer` opt out — those are the video and the scrims, which have to
      stay behind. */
   .hero > *:not([data-layer]) {
     @apply relative z-10;
-  }
-
-  /* ---------------------------------------------------------------------
-     Specification plate — the site's signature.
-
-     The four figures the owner puts in his hero are credentials, not growth
-     metrics, so they are set the way this pharmacy actually issues a fact:
-     as a specification sheet. A header strip identifies the document, mono
-     column heads label each field, hairline rules divide the cells, and the
-     value sits in the pestle cyan. It is the same information a stat row
-     would carry, in the register of the business that issues it.
-     ------------------------------------------------------------------ */
-  /* The plate sits on a flat tint of its own rather than a translucent white,
-     so the cell rules below can be drawn deterministically. */
-  /* Light. The plate is a specification sheet, and a sheet is white — the
-     navy ground was the one thing making it read as a widget rather than as
-     the document it is modelled on. */
-  .spec-plate {
-    @apply overflow-hidden rounded-tile border border-line bg-white;
-  }
-  .spec-plate-head {
-    @apply flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-b border-line bg-sand px-5 py-2.5;
-    background: #16255a;
-  }
-  .spec-plate-head-label {
-    @apply inline-flex items-center gap-2.5 font-mono text-label font-medium uppercase text-brand-600;
-  }
-  /* The mortar's mouth again, as the document's bullet. */
-  .spec-plate-head-label::before {
-    content: "";
-    @apply block h-[4px] w-[15px] shrink-0 rounded-full bg-cyan-400;
-  }
-  .spec-plate-head-meta {
-    @apply font-mono text-label uppercase text-ink-muted;
-  }
-  /*
-   * Hairline cell grid, drawn with a 1px gap over a rule-coloured ground
-   * rather than per-cell borders. That way the rules are exact at any column
-   * count and at every breakpoint, with no nth-child arithmetic to get wrong
-   * when the grid reflows from four columns to two.
-   */
-  .spec-plate-grid {
-    @apply grid grid-cols-2 gap-px md:grid-cols-4;
-    background: rgba(255, 255, 255, 0.14);
-  }
-  .spec-plate-grid-3 {
-    @apply grid grid-cols-1 gap-px sm:grid-cols-3;
-    background: rgba(255, 255, 255, 0.14);
-  }
-  .spec-cell {
-    @apply px-5 py-5;
-    background: #111e49;
-  }
-  .spec-cell-label {
-    @apply block font-mono text-label font-medium uppercase text-ink-muted;
-  }
-  .spec-cell-value {
-    @apply mt-2.5 block text-[1.75rem] font-black leading-none text-brand-600;
-  }
-  .spec-cell-note {
-    @apply mt-1.5 block text-caption leading-snug text-ink-muted;
-  }
-
-  /* Trust bar — the strip of accreditation signals under the hero. */
-  .trust-item {
-    @apply flex items-center gap-3 text-meta font-medium text-ink-soft;
-  }
-  .trust-icon {
-    @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-500/10 text-[0.95rem];
   }
 }
 
@@ -1364,23 +946,6 @@ h3 {
       .reveal-group > *:nth-child(4) { animation-range: entry 24% entry 84%; }
       .reveal-group > *:nth-child(5) { animation-range: entry 32% entry 92%; }
       .reveal-group > *:nth-child(n + 6) { animation-range: entry 40% entry 100%; }
-
-      /* Media, which gets depth instead of travel.
-      
-         A photograph that slides up reads as a photograph sliding up. One
-         that settles out of a slight over-scale reads as the page having
-         depth, which is the thing "smooth" usually means — and it is the
-         same two compositor properties, so it costs nothing extra.
-         
-         The scale is on the IMAGE inside the frame, never on the frame: a
-         frame that scales would move its neighbours and that is a layout
-         shift. The frame already clips. */
-      .reveal-media > img,
-      .reveal-media > picture > img {
-        animation: reveal-media var(--reveal-ease) both;
-        animation-timeline: view();
-        animation-range: entry 0% entry 60%;
-      }
     }
   }
 
@@ -1388,19 +953,6 @@ h3 {
     from {
       opacity: 0;
       transform: translateY(18px);
-    }
-    to {
-      opacity: 1;
-      transform: none;
-    }
-  }
-
-  /* 1.05 is deliberately small. Past about 1.08 the settle reads as a zoom
-     effect; at 1.05 it reads as the image arriving. */
-  @keyframes reveal-media {
-    from {
-      opacity: 0.55;
-      transform: scale(1.05);
     }
     to {
       opacity: 1;
@@ -1750,13 +1302,6 @@ h3 {
     line-height: 1.45;
     background: #f0f5fa;
   }
-  .portal-card {
-    background: #fff;
-    border: 0;
-    border-radius: 0.875rem;
-    box-shadow: 0 4px 24px 0 rgb(16 31 77 / 0.08);
-    padding: 1.5rem;
-  }
 
   /* Lift the marketing tiles the portal pages are built from.
    *
@@ -1802,16 +1347,6 @@ h3 {
     background: var(--admin-surface);
     border: 1px solid var(--admin-border-soft);
     border-radius: var(--admin-card-radius);
-  }
-
-  /* The emphasis panel — one per screen, for the thing the partner is being
-     asked to do next. The gradient is the reference's; it is what separates
-     "act on this" from the panels merely reporting state around it. */
-  .admin-panel-lead {
-    background: linear-gradient(180deg, #ffffff 0%, #f1f3f8 100%);
-    border: 1px solid var(--admin-border-soft);
-    border-radius: 1.75rem;
-    box-shadow: inset 0 1px 0 #fff;
   }
 
   /* Identifiers line up when they are tabular and monospaced. Comparing two

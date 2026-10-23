@@ -7,7 +7,7 @@ import { requirePermission } from "@/lib/guard";
 import { PARTNER_STATUS } from "@/lib/partner/status";
 import { db } from "@/lib/db";
 import { sendEmail } from "@/lib/services/email";
-import { offerMeetingSlots, scheduleMeeting } from "@/lib/services/meetings";
+import { offerMeetingSlots } from "@/lib/services/meetings";
 import { saveDraftLines, sendDraft, startDraft } from "@/lib/services/pricing";
 import { applyTransition } from "@/lib/services/transition";
 import { fromLocalInputValue } from "@/lib/services/calendar";
@@ -110,67 +110,6 @@ export async function offerMeetingSlotsAction(
     ok: true,
     message: `${unique.length} ${unique.length === 1 ? "time" : "times"} offered. The applicant has been emailed to pick one.`,
   };
-}
-
-/** Put a time on a requested meeting, then move the partner to PRICING_MEETING. */
-export async function scheduleMeetingAction(
-  partnerId: string,
-  meetingId: string,
-  _prev: FormState,
-  data: FormData
-): Promise<FormState> {
-  const session = await requirePermission("pricing.review");
-
-  const when = String(data.get("scheduledAt") ?? "");
-  const duration = Number(data.get("durationMinutes") ?? 30);
-  const location = String(data.get("location") ?? "").trim();
-  const adminNotes = String(data.get("adminNotes") ?? "").trim();
-
-  const scheduledAt = new Date(when);
-  if (!when || Number.isNaN(scheduledAt.getTime())) {
-    return { ok: false, errors: { scheduledAt: "Pick a date and time." } };
-  }
-  if (scheduledAt.getTime() < Date.now()) {
-    // A meeting in the past is always a typo, and the applicant would be
-    // emailed a time that has already passed.
-    return { ok: false, errors: { scheduledAt: "That time is in the past." } };
-  }
-
-  await scheduleMeeting({
-    meetingId,
-    scheduledAt,
-    durationMinutes: Number.isFinite(duration) ? duration : 30,
-    location,
-    adminNotes,
-    scheduledById: session.user.id,
-  });
-
-  try {
-    await applyTransition({
-      partnerId,
-      to: PARTNER_STATUS.PRICING_MEETING,
-      actor: "ADMIN",
-      actorId: session.user.id,
-      actorEmail: session.user.email ?? undefined,
-      actorRole: session.user.role,
-      isSuperAdmin: session.user.role === "SUPER_ADMIN",
-      permissions: session.user.permissions,
-      note: `Meeting set for ${scheduledAt.toLocaleString("en-US")}${location ? ` (${location})` : ""}.`,
-      emailProps: {
-        scheduledAt: scheduledAt.toLocaleString("en-US", {
-          dateStyle: "full",
-          timeStyle: "short",
-        }),
-        location,
-      },
-    });
-  } catch (error) {
-    if (error instanceof Error && "httpStatus" in error) return fail(error.message);
-    throw error;
-  }
-
-  revalidatePath(`/admin/partners/${partnerId}`);
-  return { ok: true, message: "Meeting scheduled and the applicant has been emailed." };
 }
 
 /** Open (or reopen) the draft the admin edits. */

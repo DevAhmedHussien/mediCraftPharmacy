@@ -136,12 +136,6 @@ export const site = {
   },
 };
 
-/** The utility strip above the header. */
-export const topbar = {
-  location: "Tampa, Florida",
-  hours: "Mon–Fri 9 AM–6 PM  ·  Sat 9 AM–12 PM",
-};
-
 /**
  * Every primary route, in the section order of the owner's document: who we
  * are → how we prove it → where we can serve → who we serve → what we make.

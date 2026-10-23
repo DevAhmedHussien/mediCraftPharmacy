@@ -88,7 +88,7 @@ const nextConfig = {
    */
   async headers() {
     return [
-      ...["/images/:path*", "/videos/:path*"].map((source) => ({
+      ...["/images/:path*"].map((source) => ({
         source,
         headers: [
           {

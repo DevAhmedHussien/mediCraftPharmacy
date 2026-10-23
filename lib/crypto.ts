@@ -1,7 +1,5 @@
 import "server-only";
 
-import { createHmac } from "node:crypto";
-
 import {
   decryptField as decryptWithKey,
   encryptField as encryptWithKey,
@@ -32,19 +30,3 @@ export const decryptField = (envelope: string) => decryptWithKey(envelope, KEY);
 export const sealField = (plaintext: string) => sealWithKey(plaintext, KEY);
 
 export { last4 };
-
-/* --- Hashing (one-way, not encryption) ----------------------------------- */
-
-/**
- * Stable per-visitor key for analytics, unlinkable after the salt rotates.
- *
- * The salt carries the UTC date, so the same visitor hashes the same way all
- * day and differently tomorrow. That is exactly enough to count unique
- * visitors per day and not enough to follow anyone across days — which is why
- * no IP address is stored and no cookie is set.
- */
-export function visitorHash(ip: string, userAgent: string, date = new Date()): string {
-  const day = date.toISOString().slice(0, 10);
-  return createHmac("sha256", `${env.ANALYTICS_SALT}:${day}`).update(`${ip}|${userAgent}`).digest("base64url");
-}
-
