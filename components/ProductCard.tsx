@@ -59,9 +59,9 @@ export function ProductCard({
         href={`/product/${p.slug}`}
         className="flex h-full flex-col gap-3.5 rounded-card border border-hair-soft bg-white/70 p-3 transition-colors duration-200 hover:bg-white focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 motion-reduce:transition-none"
       >
-        {/* 4:3, the photographs' own shape — square cropped a quarter off
-            every one. No hover zoom: scaling a bitmap up is what softens it. */}
-        <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-stone">
+        {/* Square, the card photographs' own shape. No hover zoom: scaling a
+            bitmap up is what softens it. */}
+        <div className="relative aspect-square overflow-hidden rounded-2xl bg-stone">
           <Image
             src={p.image}
             alt={`${p.name} — ${p.form}, ${p.doses}`}

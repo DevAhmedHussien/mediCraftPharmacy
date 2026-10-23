@@ -88,6 +88,8 @@ export function InfoCard({
   href,
   status,
   media,
+  leadIcon,
+  index,
   headingLevel = 3,
   className,
 }: {
@@ -121,10 +123,32 @@ export function InfoCard({
    * per-page prop.
    */
   media?: Media;
+  /**
+   * The image-less treatment: a tinted icon chip with a mono running number
+   * opposite it. Used where a grid of photographs would repeat the page's
+   * imagery (/compounding delivery forms, /quality automation). Ignored when
+   * `media` is set — a card carries one lead element, not two.
+   */
+  leadIcon?: IconName;
+  /** 1-based position in the grid, shown as "01", "02"… beside `icon`. */
+  index?: number;
   className?: string;
 }) {
+  const showIcon = Boolean(leadIcon) && !media;
   const inner = (
     <>
+      {showIcon && (
+        <div className="mb-8 flex items-start justify-between">
+          <span className="flex size-12 items-center justify-center rounded-2xl bg-tint text-brand-500 ring-1 ring-inset ring-brand-100">
+            <Icon name={leadIcon!} className="h-[22px] w-[22px]" strokeWidth={1.75} />
+          </span>
+          {index !== undefined && (
+            <span aria-hidden className="font-mono text-label uppercase text-ink-muted">
+              {String(index).padStart(2, "0")}
+            </span>
+          )}
+        </div>
+      )}
       {media && (
         <div
           className="relative -mx-7 -mt-7 mb-6 overflow-hidden bg-sand"
@@ -201,10 +225,7 @@ export function InfoCard({
   );
 }
 
-/**
- * Kept as an alias while the content objects still carry an `icon` key.
- * @deprecated Use `InfoCard` — the icon plate is gone.
- */
+/** The name the icon-led grids use; the same component as `InfoCard`. */
 export const IconCard = InfoCard;
 
 /** Responsive card grid — `cols` is the count at the widest breakpoint. */

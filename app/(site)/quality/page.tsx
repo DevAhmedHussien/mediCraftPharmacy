@@ -20,7 +20,7 @@ import { CardsBesideFigure } from "@/components/sections/CardsBesideFigure";
 import { ProcessSequence } from "@/components/media/ProcessSequence";
 import { Reveal } from "@/components/ui/Reveal";
 import { closingCta, quality } from "@/lib/content";
-import { automationMedia, media } from "@/lib/media";
+import { media } from "@/lib/media";
 
 export const metadata: Metadata = pageMetadata({
   title: "Quality Standards",
@@ -122,9 +122,9 @@ export default function QualityPage() {
               cascade negative where 797 runs it positive. */}
 
           <Stagger className="mt-14 grid gap-6 md:grid-cols-2">
-            {quality.automation.items.map((item) => (
+            {quality.automation.items.map((item, i) => (
               <StaggerItem key={item.title} className="h-full">
-                <IconCard {...item} media={automationMedia[item.title]} className="h-full" />
+                <IconCard {...item} leadIcon={item.icon} index={i + 1} className="h-full" />
               </StaggerItem>
             ))}
           </Stagger>

@@ -103,7 +103,7 @@ export default async function CategoryPage({ params }: Params) {
         eyebrow="Formulary"
         title={category.name}
         lead={category.blurb}
-        media={categoryImage(category.slug)}
+        media={categoryImage(category.slug).hero}
       >
         <Link
           href="/products"

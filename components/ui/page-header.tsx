@@ -75,7 +75,7 @@ export function PageHeaderImage({
 }) {
   return (
     <section className={cn("container-x pt-14", className)}>
-      <div className="relative aspect-video overflow-hidden rounded-hero bg-stone sm:aspect-auto sm:h-[clamp(18.75rem,42vw,32.5rem)]">
+      <div className="relative aspect-video overflow-hidden rounded-hero bg-stone">
         <Image
           src={src}
           alt={alt}

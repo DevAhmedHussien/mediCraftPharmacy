@@ -12,7 +12,7 @@ import {
 import { Stagger, StaggerItem } from "@/components/motion/Motion";
 import { Reveal } from "@/components/ui/Reveal";
 import { closingCta, compounding } from "@/lib/content";
-import { deliveryMedia, media } from "@/lib/media";
+import { media } from "@/lib/media";
 
 export const metadata: Metadata = pageMetadata({
   title: "Our Compounding",
@@ -80,9 +80,9 @@ export default function CompoundingPage() {
             />
           </Reveal>
           <Stagger className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {compounding.delivery.items.map((item) => (
+            {compounding.delivery.items.map((item, i) => (
               <StaggerItem key={item.title} className="h-full">
-                <IconCard {...item} media={deliveryMedia[item.title]} className="h-full" />
+                <IconCard {...item} leadIcon={item.icon} index={i + 1} className="h-full" />
               </StaggerItem>
             ))}
           </Stagger>

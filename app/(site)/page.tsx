@@ -70,7 +70,7 @@ export default async function HomePage() {
             of what was left. Below `sm` the photo shows whole at 16:9 and
             the plate follows it; from `sm` up it is the overlaid caption. */}
         <div className="relative">
-        <div className="relative aspect-video overflow-hidden rounded-hero bg-stone sm:aspect-auto sm:h-[clamp(22.5rem,52vw,38.75rem)]">
+        <div className="relative aspect-video overflow-hidden rounded-hero bg-stone">
           {/* THE BANNER, AND THE LCP. A still photograph, requested ahead of
               everything with `fetchPriority`. The stock video loop that used
               to play over it was retired for the brand photo set. */}
