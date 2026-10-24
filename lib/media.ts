@@ -46,7 +46,7 @@ export type Media = {
  * new URL a returning visitor keeps seeing the old file — which is how the
  * owner saw last night's crop after this morning's rebuild.
  */
-const V = "2026-10-24b";
+const V = "2026-10-24c";
 
 const HERO = "/images/hero";
 const CARD = "/images/cards";
@@ -72,8 +72,10 @@ const figure = (file: string, alt: string): Media => ({
  * The owner's asset folder ("Website Assets Final matching website
  * locations", 23 October 2026) names each photo for the slot it fills —
  * "6-Main Page Hero Image", "12-Quality is built" — and the numbers in the
- * comments below are those file numbers. Slots the folder does not name
- * (providers, contact, careers, support) take the "Other Pictures" set.
+ * comments below are those file numbers. Slots the folder does not name take
+ * a numbered photo that has a full-resolution master (2752px); the "Other
+ * Pictures" files exist only as upscaled 1920px JPEGs and showed pixelated.
+ * /support still uses one of them (hd web-18) until a master is supplied.
  */
 export const media = {
   /** Home hero. #6 */
@@ -98,20 +100,20 @@ export const media = {
     "page-about-16x9",
     "Gloved hands measuring a syringe inside a laminar-flow hood beside IV bags and vials"
   ),
-  /** /providers and /work-with-us mastheads. */
+  /** /providers and /work-with-us mastheads. #16 */
   reception: hero(
     "page-providers-16x9",
-    "Gloved hands arranging small MediCraft vials on a white bench beside a measuring cylinder"
+    "Blue-capped vials moving along a curved filling and capping line"
   ),
   /** /licenses masthead — "Currently Serving Florida". #18 */
   licensesCover: hero(
     "page-licenses-16x9",
     "A gloved hand placing a MediCraft vial into another person's open palm"
   ),
-  /** /contact masthead. */
+  /** /contact masthead. #19 */
   contactCover: hero(
     "page-contact-16x9",
-    "A gloved hand setting down a MediCraft vial beside a mortar and pestle and a measuring cylinder"
+    "A navy MediCraft shipping box and a single vial on a white and blue surface"
   ),
   /** /careers masthead. */
   careersCover: hero(
