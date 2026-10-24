@@ -84,7 +84,6 @@ export default async function HomePage() {
             decoding="async"
             className="absolute inset-0 h-full w-full object-cover"
           />
-          <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 hidden h-2/5 bg-gradient-to-t from-white/30 to-transparent sm:block" />
         </div>
           {/* Pinned to the FOOT of the image, not the head. At the top the
               plate covered the vial — the one thing the photograph is of —

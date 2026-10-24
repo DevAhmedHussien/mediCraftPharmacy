@@ -40,13 +40,21 @@ export type Media = {
   alt: string;
 };
 
+/**
+ * Bump when photographs are replaced at the same file name. Images are served
+ * with a day of max-age and a week of stale-while-revalidate, so without a
+ * new URL a returning visitor keeps seeing the old file — which is how the
+ * owner saw last night's crop after this morning's rebuild.
+ */
+const V = "2026-10-24b";
+
 const HERO = "/images/hero";
 const CARD = "/images/cards";
 const CATEGORY = "/images/categories";
 
 /** 16:9 — every page hero, including each category's own page. */
 const hero = (file: string, alt: string): Media => ({
-  src: `${HERO}/${file}.webp`,
+  src: `${HERO}/${file}.webp?v=${V}`,
   width: 1920,
   height: 1080,
   alt,
@@ -54,7 +62,7 @@ const hero = (file: string, alt: string): Media => ({
 
 /** 4:3 — figures that sit beside copy inside a section. */
 const figure = (file: string, alt: string): Media => ({
-  src: `${CARD}/${file}.webp`,
+  src: `${CARD}/${file}.webp?v=${V}`,
   width: 1200,
   height: 900,
   alt,
@@ -176,7 +184,7 @@ export type CategoryMedia = Media & {
 };
 
 const category = (file: string, alt: string): CategoryMedia => ({
-  src: `${CATEGORY}/category-${file}-1x1.webp`,
+  src: `${CATEGORY}/category-${file}-1x1.webp?v=${V}`,
   width: 1080,
   height: 1080,
   alt,
