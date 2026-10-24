@@ -10,7 +10,7 @@
      public/images/categories/  1080x1080 (1:1)  category cards
      public/images/cards/       1080x1080 (1:1)  delivery-method cards
                                 1200x900  (4:3)  figures beside copy
-     public/images/portrait/    1024x1536 (2:3)  the login aside
+     public/images/portrait/     864x1080 (4:5)  the login half-page
 
    One file per photo, served as-is: there is no image optimiser (see
    next.config.js), so a replacement must already be WebP at the slot's size.
@@ -155,12 +155,12 @@ export const media = {
     "figure-growing-reach-4x3",
     "A navy MediCraft shipping box and a single vial on a white and blue surface"
   ),
-  /** Login — the tall aside, 2:3 portrait. #8 */
+  /** Login — the right half of the sign-in page, 4:5 portrait. #17 */
   login: {
-    src: `/images/portrait/login-lab-scientists-2x3.webp?v=${V}`,
-    width: 1024,
-    height: 1536,
-    alt: "A scientist in a white lab coat at an analytical instrument, with a colleague reading results behind her in a blue and white laboratory",
+    src: `/images/portrait/login-mortar-4x5.webp?v=${V}`,
+    width: 864,
+    height: 1080,
+    alt: "Gloved hands grinding white powder with a pestle in a mortar, beside a flask of clear liquid on a blue and marble bench",
   },
 } satisfies Record<string, Media>;
 
