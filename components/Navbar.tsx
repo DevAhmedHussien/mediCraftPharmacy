@@ -199,7 +199,7 @@ export function Navbar({
                     item.label === "The pharmacy"
                       ? {
                           href: "/quality",
-                          src: media.custody.src,
+                          src: media.navPromo.src,
                           eyebrow: "Chain of custody",
                           title: "Every package filmed. Every shipment tracked.",
                         }

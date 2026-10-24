@@ -45,7 +45,7 @@ export type Media = {
  * new URL a returning visitor keeps seeing the old file — which is how the
  * owner saw last night's crop after this morning's rebuild.
  */
-const V = "2026-10-24c";
+const V = "2026-10-24d";
 
 const HERO = "/images/hero";
 const CARD = "/images/cards";
@@ -130,7 +130,7 @@ export const media = {
     "figure-batch-tested-4x3",
     "Two scientists in lab coats working at analytical instruments in a blue and white laboratory"
   ),
-  /** Quality — chain of custody; also the navbar's pharmacy promo. */
+  /** Quality — chain of custody. */
   custody: figure(
     "figure-vial-handoff-4x3",
     "A gloved hand placing a MediCraft vial into another person's open palm"
@@ -155,6 +155,13 @@ export const media = {
     "figure-growing-reach-4x3",
     "A navy MediCraft shipping box and a single vial on a white and blue surface"
   ),
+  /** The "The pharmacy" dropdown's image card in the main nav. 5:2, the band of vials. #5 */
+  navPromo: {
+    src: `${CARD}/nav-vials-5x2.webp?v=${V}`,
+    width: 1080,
+    height: 432,
+    alt: "",
+  },
   /** Login — the right half of the sign-in page, 4:5 portrait. #17 */
   login: {
     src: `/images/portrait/login-mortar-4x5.webp?v=${V}`,
