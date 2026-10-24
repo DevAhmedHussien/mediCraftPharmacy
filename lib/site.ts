@@ -91,11 +91,11 @@ export const site = {
   legalEmail: "legal@medicraftpharmacy.com",
 
   /** One line, for a footer or an email signature. */
-  address: "12320 Race Track Rd, Tampa, FL 33626-3115",
+  address: "12320 Race Track Rd, Building #5, Suite 2, Tampa, FL 33626-3115",
   /** The same address short, where a street line would crowd the layout. */
   addressShort: "Tampa, Florida",
   addressParts: {
-    street: "12320 Race Track Rd",
+    street: "12320 Race Track Rd, Building #5, Suite 2",
     city: "Tampa",
     state: "FL",
     postalCode: "33626-3115",
