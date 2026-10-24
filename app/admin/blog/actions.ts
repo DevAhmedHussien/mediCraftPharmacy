@@ -3,10 +3,20 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+import { db } from "@/lib/db";
 import type { FormState } from "@/lib/forms";
 import { requireAdmin } from "@/lib/guard";
+import { RATE_LIMITS, rateLimit } from "@/lib/rate-limit";
 import { recordAudit } from "@/lib/services/audit";
-import { archivePost, createPost, postSchema, slugifyTitle, updatePost } from "@/lib/services/posts";
+import {
+  archivePost,
+  createPost,
+  postSchema,
+  setCoverAlt,
+  slugifyTitle,
+  updatePost,
+} from "@/lib/services/posts";
+import { StorageError, assertUploadAllowed, buildKey, storage } from "@/lib/services/storage";
 
 /* Blog mutations.
 
@@ -74,6 +84,10 @@ export async function savePost(
     throw error;
   }
 
+  if (parsed.coverMediaId) {
+    await setCoverAlt(parsed.coverMediaId, String(data.get("coverAlt") ?? ""));
+  }
+
   await recordAudit({
     actorId: session.user.id,
     actorEmail: session.user.email,
@@ -105,4 +119,80 @@ export async function archive(id: string): Promise<void> {
 
   revalidatePath("/admin/blog");
   revalidatePath("/blog");
+}
+
+/* --- Cover image ----------------------------------------------------------
+
+   Same three steps as the partner document uploader: the server grants a
+   short-lived upload URL, the browser PUTs the bytes straight to storage, and
+   the server records the Media row. The file never passes through this
+   process. Covers live under `blog/`, the one prefix the uploads route
+   serves publicly. */
+
+const COVER_PREFIX = "blog/covers";
+
+export type CoverGrant =
+  | { ok: true; url: string; headers: Record<string, string>; key: string }
+  | { ok: false; message: string };
+
+export async function requestCoverUpload(input: {
+  filename: string;
+  mime: string;
+  size: number;
+}): Promise<CoverGrant> {
+  const session = await requireAdmin();
+
+  const limit = rateLimit(`cover-upload:${session.user.id}`, RATE_LIMITS.upload);
+  if (!limit.ok) return { ok: false, message: "Too many uploads at once. Please wait a few minutes." };
+
+  try {
+    assertUploadAllowed(input.mime, input.size, "image");
+  } catch (error) {
+    if (error instanceof StorageError) return { ok: false, message: error.message };
+    throw error;
+  }
+
+  const key = buildKey(COVER_PREFIX, input.filename);
+  const presigned = await storage.presignUpload(key, input.mime, input.size);
+  return { ok: true, url: presigned.url, headers: presigned.headers, key: presigned.key };
+}
+
+export async function confirmCoverUpload(input: {
+  key: string;
+  filename: string;
+  mime: string;
+  size: number;
+  width?: number;
+  height?: number;
+}): Promise<{ ok: true; id: string; key: string } | { ok: false; message: string }> {
+  const session = await requireAdmin();
+
+  // The key went out to the browser and came back, so it is client input now.
+  if (!input.key.startsWith(`${COVER_PREFIX}/`) || input.key.includes("..")) {
+    return { ok: false, message: "That upload is not a blog cover." };
+  }
+  try {
+    assertUploadAllowed(input.mime, input.size, "image");
+  } catch (error) {
+    if (error instanceof StorageError) return { ok: false, message: error.message };
+    throw error;
+  }
+
+  const dimension = (n?: number) => (Number.isInteger(n) && n! > 0 && n! < 20000 ? n : null);
+  const media = await db.media.create({
+    data: {
+      driver: storage.name,
+      key: input.key,
+      bucket: storage.name === "S3" ? process.env.S3_BUCKET ?? null : null,
+      filename: input.filename.slice(0, 255),
+      mime: input.mime,
+      size: input.size,
+      width: dimension(input.width),
+      height: dimension(input.height),
+      uploadedById: session.user.id,
+    },
+    select: { id: true, key: true },
+  });
+
+  return { ok: true, id: media.id, key: media.key };
 }

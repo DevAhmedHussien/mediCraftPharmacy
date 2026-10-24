@@ -2,7 +2,7 @@ import "server-only";
 
 import { randomUUID } from "node:crypto";
 
-import { DOCUMENT_MIME_TYPES, MAX_DOCUMENT_BYTES } from "@/lib/uploads";
+import { DOCUMENT_MIME_TYPES, IMAGE_MIME_TYPES, MAX_DOCUMENT_BYTES, MAX_IMAGE_BYTES } from "@/lib/uploads";
 import { mkdir, readFile, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 
@@ -45,21 +45,12 @@ import { env } from "@/lib/env";
    ========================================================================= */
 
 /** Images only, and only formats a browser will render as an image. */
-export const IMAGE_MIME_TYPES = [
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/avif",
-  "image/gif",
-] as const;
-
-export const MAX_IMAGE_BYTES = 10 * 1024 * 1024; // 10 MB
 
 /* Document rules come from lib/uploads, which the browser can import too. They
    must be one set of numbers: a form that allows what the server refuses is a
    round trip spent to display an error. Re-exported so existing importers of
    this module keep working. */
-export { DOCUMENT_MIME_TYPES, MAX_DOCUMENT_BYTES } from "@/lib/uploads";
+export { DOCUMENT_MIME_TYPES, IMAGE_MIME_TYPES, MAX_DOCUMENT_BYTES, MAX_IMAGE_BYTES } from "@/lib/uploads";
 
 /** Presigned URLs expire in five minutes, per the security requirements. */
 const SIGNED_URL_TTL_SECONDS = 300;

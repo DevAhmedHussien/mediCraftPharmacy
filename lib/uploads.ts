@@ -21,6 +21,19 @@ export const MAX_DOCUMENT_BYTES = 25 * 1024 * 1024; // 25 MB
 /** What the file picker filters on. */
 export const DOCUMENT_ACCEPT = DOCUMENT_MIME_TYPES.join(",");
 
+/** Images (blog covers). Shared by the picker and the server's check. */
+export const IMAGE_MIME_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/avif",
+  "image/gif",
+] as const;
+
+export const MAX_IMAGE_BYTES = 10 * 1024 * 1024; // 10 MB
+export const MAX_IMAGE_MB = MAX_IMAGE_BYTES / 1024 / 1024;
+export const IMAGE_ACCEPT = IMAGE_MIME_TYPES.join(",");
+
 /** Said out loud in the UI, so nobody discovers the rule by breaking it. */
 export const DOCUMENT_RULE = "PDF, JPG, PNG or WebP · up to 25 MB";
 

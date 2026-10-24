@@ -6,6 +6,7 @@ import type { Category, PostStatus } from "@prisma/client";
 
 import { savePost } from "@/app/admin/blog/actions";
 import { AdminAlert } from "@/components/admin/AdminAlert";
+import { CoverField } from "@/components/admin/CoverField";
 import { AdminField, AdminSubmit, AdminTextArea } from "@/components/admin/form";
 import { Panel } from "@/components/admin/ui";
 import { initialFormState } from "@/lib/forms";
@@ -21,6 +22,7 @@ type Post = {
   seoTitle: string | null;
   seoDescription: string | null;
   categories: { categoryId: string }[];
+  cover: { id: string; key: string; alt: string | null } | null;
 };
 
 const STATUSES: { value: PostStatus; label: string; hint: string }[] = [
@@ -164,6 +166,10 @@ export function PostForm({ post, categories }: { post?: Post; categories: Catego
                 </div>
               </fieldset>
             )}
+          </Panel>
+
+          <Panel title="Cover image" description="The photograph on the blog index and at the top of the article.">
+            <CoverField cover={post?.cover ?? null} />
           </Panel>
 
           <Panel title="Search appearance">

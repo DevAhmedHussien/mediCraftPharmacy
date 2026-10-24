@@ -109,8 +109,20 @@ export async function listPosts({ q, status = "all", limit = 30, cursor }: PostL
 export async function getPost(id: string) {
   return db.post.findUnique({
     where: { id },
-    include: { categories: { select: { categoryId: true } } },
+    include: {
+      categories: { select: { categoryId: true } },
+      cover: { select: { id: true, key: true, alt: true } },
+    },
   });
+}
+
+/**
+ * The cover's alt text lives on the Media row, not the post, so the editor
+ * saves it separately. Blank is stored as null rather than as "", which the
+ * blog renders as an empty (decorative) alt.
+ */
+export async function setCoverAlt(mediaId: string, alt: string) {
+  await db.media.update({ where: { id: mediaId }, data: { alt: alt.trim().slice(0, 300) || null } });
 }
 
 export async function listAllCategories() {
