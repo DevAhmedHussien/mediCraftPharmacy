@@ -632,7 +632,9 @@ export function PageHero({
       <PageHeader eyebrow={eyebrow} title={title} lead={lead}>
         {children}
       </PageHeader>
-      {media && <PageHeaderImage src={media.src} alt={media.alt} />}
+      {media && (
+        <PageHeaderImage src={media.src} srcSet={media.srcSet} blur={media.blur} alt={media.alt} />
+      )}
     </>
   );
 }

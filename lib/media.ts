@@ -28,6 +28,8 @@
    3. Point the slot at it — <Figure media={media.yourKey} />.
    ========================================================================= */
 
+import { heroBlur } from "@/lib/media-blur";
+
 export type Media = {
   src: string;
   width: number;
@@ -37,7 +39,21 @@ export type Media = {
    * never editorialised ("world-class facility").
    */
   alt: string;
+  /**
+   * Heroes only: the pre-cut smaller widths, for an `<img srcSet>`. There is
+   * no optimiser to make them on request, so scripts/hero-variants.py does.
+   */
+  srcSet?: string;
+  /** Heroes only: a ~24px blurred copy, painted while the file loads. */
+  blur?: string;
 };
+
+/**
+ * How wide a page hero is drawn: the content measure, or the viewport less
+ * the 20px gutters below it. Lets the browser pick the smallest variant that
+ * is still sharp — a phone takes the 640 or 1080, not the 2560.
+ */
+export const HERO_SIZES = "(min-width: 1536px) 1440px, (min-width: 1320px) 1280px, calc(100vw - 40px)";
 
 /**
  * Bump when photographs are replaced at the same file name. Images are served
@@ -57,6 +73,11 @@ const hero = (file: string, alt: string): Media => ({
   width: 1920,
   height: 1080,
   alt,
+  srcSet: [
+    ...[640, 1080, 1600].map((w) => `${HERO}/${file}-${w}.webp?v=${V} ${w}w`),
+    `${HERO}/${file}.webp?v=${V} 2560w`,
+  ].join(", "),
+  blur: heroBlur[file],
 });
 
 /** 4:3 — figures that sit beside copy inside a section. */
@@ -290,4 +311,27 @@ export const categoryMedia: Record<string, CategoryMedia> = {
 /** A category's image, or the custom-formulations one for a new category. */
 export function categoryImage(slug: string): CategoryMedia {
   return categoryMedia[slug] ?? art.customFormulations;
+}
+
+/** Each route's hero, for warming the next page's image on link hover. */
+const routeHero: Record<string, Media> = {
+  "/": media.homeHero,
+  "/about": media.aboutCover,
+  "/careers": media.careersCover,
+  "/compounding": media.compoundingCover,
+  "/contact": media.contactCover,
+  "/licenses": media.licensesCover,
+  "/products": media.formulary,
+  "/providers": media.reception,
+  "/quality": media.lab,
+  "/support": media.supportCover,
+  "/work-with-us": media.reception,
+};
+
+/** The hero a path will paint first, or null if it has none. */
+export function heroForPath(pathname: string): Media | null {
+  const path = pathname.replace(/\/+$/, "") || "/";
+  const category = path.match(/^\/products\/([^/]+)$/);
+  if (category) return categoryMedia[category[1]]?.hero ?? null;
+  return routeHero[path] ?? null;
 }

@@ -1,6 +1,6 @@
-import Image from "next/image";
 import type { ReactNode } from "react";
 
+import { HERO_SIZES } from "@/lib/media";
 import { cn } from "@/lib/utils";
 
 /* ===========================================================================
@@ -60,12 +60,18 @@ export function PageHeader({
  */
 export function PageHeaderImage({
   src,
+  srcSet,
+  blur,
   alt,
   plate,
   priority = true,
   className,
 }: {
   src: string;
+  /** The pre-cut widths (see `Media.srcSet`); the browser picks the smallest sharp one. */
+  srcSet?: string;
+  /** Painted behind the image so the frame shows its colours before it loads. */
+  blur?: string;
   /** Empty only when the image is decorative and the header says everything. */
   alt: string;
   /** The glass specification plate, at the foot of the image. */
@@ -75,14 +81,25 @@ export function PageHeaderImage({
 }) {
   return (
     <section className={cn("container-x pt-14", className)}>
-      <div className="relative aspect-video overflow-hidden rounded-hero bg-stone">
-        <Image
+      <div
+        className="relative aspect-video overflow-hidden rounded-hero bg-stone bg-cover bg-center"
+        style={blur ? { backgroundImage: `url("${blur}")` } : undefined}
+      >
+        {/* A plain <img>, not next/image: with the optimiser off (see
+            next.config.js) next/image cannot emit a srcset, so every screen
+            downloaded the 2560px file. The variants are cut ahead of time. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
           src={src}
+          srcSet={srcSet}
+          sizes={srcSet ? HERO_SIZES : undefined}
           alt={alt}
-          fill
-          priority={priority}
-          sizes="(min-width: 1120px) 1080px, 100vw"
-          className="object-cover"
+          width={1920}
+          height={1080}
+          fetchPriority={priority ? "high" : undefined}
+          loading={priority ? "eager" : "lazy"}
+          decoding="async"
+          className="absolute inset-0 h-full w-full object-cover"
         />
         {plate && plate.length > 0 && (
           <dl className="absolute inset-x-5 bottom-5 grid grid-cols-2 gap-px overflow-hidden rounded-[20px] border border-white/90 bg-white/60 shadow-float backdrop-blur-xl backdrop-saturate-150 lg:grid-cols-4">

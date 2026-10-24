@@ -4,6 +4,7 @@ import { Footer } from "@/components/Footer";
 import { MotionProvider } from "@/components/motion/MotionProvider";
 import { Navbar } from "@/components/Navbar";
 import { CookieConsent } from "@/components/CookieConsent";
+import { HeroWarmer } from "@/components/HeroWarmer";
 import { site, hasRealPhone } from "@/lib/site";
 import { auth } from "@/lib/auth";
 import { getCategories, getProductsByCategory } from "@/lib/catalogue";
@@ -258,6 +259,8 @@ export default async function SiteLayout({ children }: { children: ReactNode }) 
       {/* Client-only: the stored choice is in localStorage, which the server
           cannot read, so the banner mounts hidden and appears once checked. */}
       <CookieConsent />
+      {/* Preloads the next page's hero on link hover; renders nothing. */}
+      <HeroWarmer />
     </div>
   );
 }

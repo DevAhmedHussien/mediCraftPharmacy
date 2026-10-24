@@ -9,7 +9,7 @@ import { site, telHref } from "@/lib/site";
 import { pageMetadata } from "@/lib/seo";
 import { getCategories } from "@/lib/catalogue";
 import { CategoryTiles } from "@/components/sections/CategoryTiles";
-import { media } from "@/lib/media";
+import { HERO_SIZES, media } from "@/lib/media";
 import { cn } from "@/lib/utils";
 import { StepCard } from "@/components/sections/StepCard";
 
@@ -70,13 +70,18 @@ export default async function HomePage() {
             of what was left. Below `sm` the photo shows whole at 16:9 and
             the plate follows it; from `sm` up it is the overlaid caption. */}
         <div className="relative">
-        <div className="relative aspect-video overflow-hidden rounded-hero bg-stone">
+        <div
+          className="relative aspect-video overflow-hidden rounded-hero bg-stone bg-cover bg-center"
+          style={media.homeHero.blur ? { backgroundImage: `url("${media.homeHero.blur}")` } : undefined}
+        >
           {/* THE BANNER, AND THE LCP. A still photograph, requested ahead of
               everything with `fetchPriority`. The stock video loop that used
               to play over it was retired for the brand photo set. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={media.homeHero.src}
+            srcSet={media.homeHero.srcSet}
+            sizes={HERO_SIZES}
             alt={media.homeHero.alt}
             width={media.homeHero.width}
             height={media.homeHero.height}
