@@ -1531,6 +1531,18 @@ h3 {
     border: 1px solid var(--admin-border-strong);
     color: var(--admin-ink);
   }
+  /* The browser's own select arrow sits hard against the right border and
+     ignores padding. Drawn instead, 14px in — the same inset as the text on
+     the left — with room reserved so a long option never runs under it.
+     The stroke is --admin-ink-50 (#636e89); a data URI cannot read a CSS
+     variable, so the value is repeated here and nowhere else. */
+  select.admin-input {
+    @apply appearance-none pr-10;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23636e89' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m4 6 4 4 4-4'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.875rem center;
+    background-size: 1rem;
+  }
   .admin-input::placeholder {
     color: var(--admin-ink-50);
   }
