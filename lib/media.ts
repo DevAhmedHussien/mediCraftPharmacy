@@ -3,9 +3,8 @@
 
    THE CURRENT SET IS THE 2026 BRAND PHOTOGRAPHY
    ---------------------------------------------
-   Blue grounds and MediCraft-labelled vials, supplied October 2026. Only the
-   login portrait is still Unsplash stock. Every file is pre-cropped to the
-   shape of its slot and served as WebP:
+   Blue grounds and MediCraft-labelled vials, supplied October 2026. Every file is
+   pre-cropped to the shape of its slot and served as WebP:
 
      public/images/hero/        1920x1080 (16:9) page heroes and category-page heroes
      public/images/categories/  1080x1080 (1:1)  category cards
@@ -156,12 +155,12 @@ export const media = {
     "figure-growing-reach-4x3",
     "A navy MediCraft shipping box and a single vial on a white and blue surface"
   ),
-  /** Login — the tall aside, 2:3 portrait. */
+  /** Login — the tall aside, 2:3 portrait. #8 */
   login: {
-    src: "/images/portrait/login-lab-reports.webp",
+    src: `/images/portrait/login-lab-scientists-2x3.webp?v=${V}`,
     width: 1024,
     height: 1536,
-    alt: "Gloved hands holding printed laboratory reports with charts, beside an analytical balance and rows of sample vials",
+    alt: "A scientist in a white lab coat at an analytical instrument, with a colleague reading results behind her in a blue and white laboratory",
   },
 } satisfies Record<string, Media>;
 
