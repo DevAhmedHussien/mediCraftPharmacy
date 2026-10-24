@@ -53,6 +53,7 @@ export default async function AdminBlogPage({
             filters={[
               {
                 name: "status",
+                label: "Filter by status",
                 value: searchParams.status,
                 options: [
                   { value: "", label: "All statuses" },

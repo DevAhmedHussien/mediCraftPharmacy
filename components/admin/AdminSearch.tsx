@@ -1,3 +1,8 @@
+"use client";
+
+import Link from "next/link";
+import { X } from "lucide-react";
+
 /**
  * Server-side filters, as a GET form.
  *
@@ -7,17 +12,27 @@
  * user types into whichever they see first and cannot tell why the results
  * differ.
  *
- * No client state and no debounced fetch — the form submits to the same route
- * with query parameters, the server component re-renders, and the URL is
- * shareable and back-button-correct.
+ * A filter applies the moment an option is picked — the form submits itself
+ * on change, so there is no "Apply" step to forget. It is still a plain GET
+ * form: the server component re-renders, the URL is shareable and
+ * back-button-correct, and without JavaScript the visually hidden submit
+ * button keeps it working.
  */
 export function AdminSearch({
   basePath,
   filters = [],
 }: {
   basePath: string;
-  filters?: { name: string; value?: string; options: { value: string; label: string }[] }[];
+  filters?: {
+    name: string;
+    /** Shown to screen readers; defaults to the field name. */
+    label?: string;
+    value?: string;
+    options: { value: string; label: string }[];
+  }[];
 }) {
+  const active = filters.some((filter) => filter.value);
+
   return (
     <form action={basePath} className="flex flex-wrap items-center gap-1.5">
       {filters.map((filter) => (
@@ -25,7 +40,8 @@ export function AdminSearch({
           key={filter.name}
           name={filter.name}
           defaultValue={filter.value ?? ""}
-          aria-label={filter.name}
+          aria-label={filter.label ?? filter.name}
+          onChange={(event) => event.currentTarget.form?.requestSubmit()}
           className="admin-input w-auto"
         >
           {filter.options.map((option) => (
@@ -36,9 +52,19 @@ export function AdminSearch({
         </select>
       ))}
 
-      <button type="submit" className="admin-btn admin-btn-secondary">
-        Apply
+      <button type="submit" className="sr-only">
+        Apply filters
       </button>
+
+      {active && (
+        <Link
+          href={basePath}
+          className="inline-flex items-center gap-1 rounded-full px-2.5 py-1.5 text-[0.8125rem] font-medium text-[color:var(--admin-ink-70)] transition-colors hover:text-[color:var(--admin-ink)]"
+        >
+          <X className="size-3.5" aria-hidden />
+          Clear
+        </Link>
+      )}
     </form>
   );
 }

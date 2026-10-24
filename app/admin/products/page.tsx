@@ -67,6 +67,7 @@ export default async function AdminProductsPage({
             filters={[
               {
                 name: "status",
+                label: "Filter by status",
                 value: searchParams.status,
                 options: [
                   { value: "", label: "All statuses" },
@@ -76,6 +77,7 @@ export default async function AdminProductsPage({
               },
               {
                 name: "category",
+                label: "Filter by category",
                 value: searchParams.category,
                 options: [
                   {
