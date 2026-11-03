@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ClosingCta, PageHero } from "@/components/blocks";
 import { FormularyLock } from "@/components/sections/FormularyLock";
-import { ProductCard } from "@/components/ProductCard";
+import { ProductList } from "@/components/ProductCard";
 import { closingCta } from "@/lib/content";
 import { getCategory, getProductsByCategory } from "@/lib/catalogue";
 import { canBrowseFormulary } from "@/lib/guard";
@@ -124,13 +124,11 @@ export default async function CategoryPage({ params }: Params) {
           </p>
 
           {unlocked ? (
-            /* `headingLevel={2}`: on this page the grid is the content directly
-               under the h1, with no category heading between, so the cards' own
+            /* `headingLevel={2}`: on this page the list is the content directly
+               under the h1, with no category heading between, so the rows' own
                titles are the second level. */
-            <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {items.map((p) => (
-                <ProductCard key={p.slug} product={p} headingLevel={2} />
-              ))}
+            <div className="mt-6">
+              <ProductList products={items} headingLevel={2} />
             </div>
           ) : (
             <FormularyLock

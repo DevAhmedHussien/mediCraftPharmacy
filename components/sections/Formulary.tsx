@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { FormularyProduct } from "@/lib/catalogue";
-import { ProductCard } from "@/components/ProductCard";
+import { ProductList } from "@/components/ProductCard";
 import type { Category } from "@/lib/data";
 import type { CategoryMedia } from "@/lib/media";
 import { fieldClass } from "@/components/ui/input";
@@ -162,15 +162,8 @@ export function Formulary({
                 </span>
               </header>
 
-              <div
-                className="mt-8 grid gap-4"
-                style={{
-                  gridTemplateColumns: "repeat(auto-fill, minmax(min(100%, 15.625rem), 1fr))",
-                }}
-              >
-                {g.items.map((p) => (
-                  <ProductCard key={p.slug} product={p} />
-                ))}
+              <div className="mt-8">
+                <ProductList products={g.items} />
               </div>
 
               {/* Only when there is more than what is shown — otherwise the
