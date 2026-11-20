@@ -7,12 +7,13 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { Prisma, PrismaClient } from "@prisma/client";
 
 /* ===========================================================================
-   Load the 2026 catalogue into the database.
+   Load the formulary catalogue into the database.
 
        npm run import:catalogue
 
-   Reads prisma/data/catalogue-2026.json, which scripts/extract-catalogue.py
-   produces from the spreadsheet. Idempotent: keyed on the product slug, so
+   Reads prisma/data/catalogue-2027.json — the 2026 catalogue that
+   scripts/extract-catalogue.py produced from the spreadsheet, repriced from
+   MSA v2027.1 by scripts/reprice-catalogue.py. Idempotent: keyed on the product slug, so
    re-running after a catalogue reissue updates prices in place rather than
    creating a second copy of everything.
 
@@ -55,7 +56,7 @@ type Row = {
 const nullable = (value: string) => (value.trim() ? value.trim() : null);
 
 async function main() {
-  const file = path.resolve(process.cwd(), "prisma/data/catalogue-2026.json");
+  const file = path.resolve(process.cwd(), "prisma/data/catalogue-2027.json");
   const rows = JSON.parse(readFileSync(file, "utf8")) as Row[];
 
   const categories = await prisma.productCategory.findMany({

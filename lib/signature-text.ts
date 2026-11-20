@@ -5,8 +5,8 @@ import { BUD_ROWS, MSA_TERMS, term, type MsaTerms } from "@/lib/msa-terms";
 /* ===========================================================================
    The agreement text and its fingerprint.
 
-   This is MediCraft Pharmacy's Master Service Agreement, MSA v2026.1, as
-   supplied. The prose is the document's own; the only changes are the ones a
+   This is MediCraft Pharmacy's Master Service Agreement, MSA v2027.1 (issued
+   20 November 2026), as supplied. The prose is the document's own; the only changes are the ones a
    plain-text rendering forces — no page furniture, and the two-column BUD and
    shipping tables laid out as lists.
 
@@ -24,8 +24,8 @@ import { BUD_ROWS, MSA_TERMS, term, type MsaTerms } from "@/lib/msa-terms";
    over the body — so a stale copy here would purport to override the live
    one. The agreement references them instead, which is what the PDF does.
 
-   The thirty-six INSERT fields are in lib/msa-terms.ts. Unfilled ones render
-   as a visible blank rather than a plausible-looking default.
+   The operational and commercial terms are in lib/msa-terms.ts. An unfilled
+   one renders as a visible blank rather than a plausible-looking default.
 
    Split from lib/services/signature.ts, which carries `server-only` and binds
    the driver, so a seed script or a test can produce the same hash the app
@@ -49,7 +49,7 @@ export function hashAgreement(text: string): string {
 const PHARMACY = "MediCraft Precision LLC, d/b/a MediCraft Pharmacy";
 
 /**
- * The Master Service Agreement, MSA v2026.1.
+ * The Master Service Agreement, MSA v2027.1.
  *
  * `companyName` is the Client. Every other party detail — addresses, permit
  * number, entity type — is captured on the signature page of the executed
@@ -67,7 +67,7 @@ export function agreementText(companyName: string, terms: MsaTerms = MSA_TERMS):
   }).join("\n\n");
 
   return `MASTER SERVICE AGREEMENT
-MSA v2026.1 · Pharmacy Services for Provider Practices and Clinics
+MSA v2027.1 · Pharmacy Services for Provider Practices and Clinics
 
 This Master Service Agreement (this "Agreement") is entered into as of the
 Effective Date by and between the parties below. The Effective Date is the
@@ -75,6 +75,7 @@ date on which the last party signs, as recorded on the electronic signature
 certificate.
 
   Pharmacy ("MediCraft," "we," "us"):  ${PHARMACY}
+  Pharmacy address:                    710 1st Ave SW, Largo, FL 33770
   Client ("Client," "you"):            ${companyName}
 
 MediCraft is a licensed pharmacy compounding under section 503A of the Federal
@@ -263,7 +264,7 @@ it.
     · We shipped to the wrong address
     · The product arrived damaged or defective
     · A cold-ship item was outside range on arrival
-    · Dating on arrival is shorter than Exhibit A allows
+    · Dating on arrival is shorter than Section 7 allows
 
   Client is responsible when:
     · The address given to us was wrong or incomplete
@@ -349,7 +350,7 @@ ${budTable}
     accounts, and personnel access.
 
 9.3 Breach notice. Each party will notify the other without unreasonable delay,
-    and in any event within ${t("breachNoticeDays")} days, of a breach of
+    and in any event within ${t("breachNoticeDays")}, of a breach of
     unsecured PHI affecting the other party's patients or records.
 
 9.4 Communications and electronic signature. You consent to receive
@@ -451,9 +452,8 @@ Except for the exclusions below, neither party is liable to the other for lost
 profits, lost revenue, lost data, or indirect, incidental, special,
 consequential, exemplary, or punitive damages, however arising, and each
 party's total aggregate liability arising out of this Agreement will not exceed
-the greater of (a) the total amounts paid or payable by Client to MediCraft in
-the twelve months preceding the event giving rise to the claim, or (b)
-${t("liabilityFloor")}.
+the total amounts paid or payable by Client to MediCraft in the twelve months
+preceding the event giving rise to the claim.
 
 These limits do not apply to: personal injury or death; a party's
 indemnification obligations under Section 13; breach of confidentiality or of
@@ -522,8 +522,8 @@ It does not limit any right a patient may have.
 
 16.4 Force majeure. Neither party is liable for a delay or failure caused by
      events beyond its reasonable control (natural disaster, hurricane, fire,
-     epidemic, war, civil unrest, government action, embargo, utility or
-     telecommunications failure, or ingredient or supply unavailability) other
+     epidemic, war, civil unrest, government action, embargo, labor disruption,
+     utility or telecommunications failure, or ingredient or supply unavailability) other
      than the obligation to pay amounts due. The affected party will give
      notice and resume performance as soon as practicable.
 
@@ -540,8 +540,8 @@ It does not limit any right a patient may have.
      conflict-of-law principles. Before filing suit, the parties will attempt
      to resolve any dispute through a good-faith discussion between senior
      representatives within thirty days of written notice, and then non-binding
-     mediation in Pinellas County. Any action may be brought in the state or
-     federal courts serving Pinellas County, Florida, and each party consents
+     mediation in Hillsborough County. Any action may be brought in the state or
+     federal courts serving Hillsborough County, Florida, and each party consents
      to that jurisdiction. The prevailing party in any action to enforce this
      Agreement is entitled to reasonable attorneys' fees and costs at all
      levels.
@@ -632,7 +632,7 @@ export function changeOrderText(input: {
     .join("\n\n");
 
   return `CHANGE ORDER No. ${number}
-Exhibit B to the Master Service Agreement, MSA v2026.1
+Exhibit B to the Master Service Agreement, MSA v2027.1
 
   Pharmacy ("MediCraft," "we," "us"):  ${PHARMACY}
   Client ("Client," "you"):            ${companyName}

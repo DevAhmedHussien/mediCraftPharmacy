@@ -6,7 +6,7 @@ import { BLANK, BUD_ROWS, MSA_TERMS, missingTerms, type MsaTerms } from "@/lib/m
 
    This is the one piece of text in the codebase with legal effect, so it gets
    a test that is about the text and not about the code around it: every
-   section of MSA v2026.1 is present, nothing has been quietly added, and an
+   section of MSA v2027.1 is present, nothing has been quietly added, and an
    unfilled commercial term is impossible to mistake for a filled one.
 
    The hash assertions are the reason the rest matters. A signature stores the
@@ -31,11 +31,11 @@ const text = agreementText("Coastal Primary Care");
 const flat = (value: string) => value.replace(/\s+/g, " ").trim();
 const flatText = flat(text);
 
-console.log("\n  MSA v2026.1\n");
+console.log("\n  MSA v2027.1\n");
 
 /* --- It is the real document -------------------------------------------- */
 
-check("it is MSA v2026.1, not a placeholder", text.includes("MSA v2026.1"));
+check("it is MSA v2027.1, not a placeholder", text.includes("MSA v2027.1"));
 check(
   "no draft or placeholder language survives",
   !/PLACEHOLDER|not been reviewed by counsel|— DRAFT/i.test(text),
@@ -77,7 +77,9 @@ const CLAUSES: [string, string][] = [
   ["thirty days to terminate", "terminate on thirty days' written notice"],
   ["no minimum, no exclusivity, no termination fee", "no minimum order commitment, no exclusivity, and no termination fee"],
   ["Florida law governs", "Florida law governs"],
-  ["Pinellas County venue", "Pinellas County"],
+  ["Hillsborough County venue", "mediation in Hillsborough County"],
+  ["liability cap has no floor", "will not exceed the total amounts paid or payable by Client to MediCraft in the twelve months"],
+  ["pharmacist line", "reachable at (727) 309-6666 during business hours"],
   ["order of precedence", "a signed amendment controls"],
   ["card details never reach us", "we do not receive or store full account numbers"],
 ];
@@ -109,15 +111,19 @@ check(
   BUD_ROWS.every((row) => flatText.includes(flat(row.typical)))
 );
 
-/* Filling a term must actually change the document. */
-const filled: MsaTerms = {
+check("v2027.1 fills every term", stillMissing.length === 0, stillMissing.join(", "));
+
+/* Clearing a term must print a blank, and filling it must reach the text. */
+const cleared: MsaTerms = {
   ...MSA_TERMS,
-  orderCutoff: "2:00 PM ET",
+  orderCutoff: null,
   budTable: { ...MSA_TERMS.budTable },
 };
-const filledText = agreementText("Coastal Primary Care", filled);
-check("filling a term reaches the agreement", filledText.includes("2:00 PM ET"));
-check("and removes exactly one blank", filledText.split(BLANK).length === blanksInText);
+const clearedText = agreementText("Coastal Primary Care", cleared);
+check("a cleared term prints exactly one blank", clearedText.split(BLANK).length - 1 === blanksInText + 1);
+check("filling a term reaches the agreement", text.includes("Orders received by 4:00 PM ET"));
+const filledText = text;
+const blankText = clearedText;
 
 /* --- The fingerprint ----------------------------------------------------- */
 
@@ -132,7 +138,7 @@ check(
 );
 check(
   "filling in a commercial term does",
-  hashAgreement(text) !== hashAgreement(filledText)
+  hashAgreement(blankText) !== hashAgreement(filledText)
 );
 check(
   "a different client is a different agreement",

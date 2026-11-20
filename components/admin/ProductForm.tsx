@@ -143,7 +143,7 @@ export function ProductForm({
 
       <Panel
         title="Formulary detail"
-        description="What the 2026 Partner Formulary records for an orderable item. Optional, but a partner's price list reads from it."
+        description="What the Partner Formulary records for an orderable item. Optional, but a partner's price list reads from it."
       >
         <div className="grid gap-4 sm:grid-cols-3">
           <AdminSelect

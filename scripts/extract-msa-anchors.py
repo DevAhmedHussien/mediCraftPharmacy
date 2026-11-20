@@ -2,7 +2,7 @@
 """
 Find the e-signature anchor tags in the MSA template and record where they are.
 
-    python3 scripts/extract-msa-anchors.py assets/msa/msa-2026-template.pdf \
+    python3 scripts/extract-msa-anchors.py assets/msa/msa-2027-template.pdf \
         lib/msa-anchors.json
 
 WHY A BUILD STEP
@@ -105,6 +105,11 @@ def main():
 
             for _, line_words in lines.items():
                 line_words.sort(key=lambda w: float(w.get("xMin")))
+                # The running footer ends in a number too. While the template
+                # was 64 pages its "of 66" was out of range and fell out below;
+                # at 66 pages it is a valid page number, so skip the line.
+                if any((w.text or "").strip() == "Page" for w in line_words):
+                    continue
                 numeric = [w for w in line_words if (w.text or "").strip().isdigit()]
                 if not numeric:
                     continue

@@ -22,7 +22,12 @@ class Workbook:
         wb = ET.fromstring(self.z.read("xl/workbook.xml"))
         rels = ET.fromstring(self.z.read("xl/_rels/workbook.xml.rels"))
         rmap = {r.get("Id"): r.get("Target") for r in rels}
-        self.sheets = [(sh.get("name"), "xl/" + rmap[sh.get(R + "id")].lstrip("/"))
+        # A target is relative to xl/ ("worksheets/sheet1.xml") or, in files
+        # written by some exporters, absolute from the package root
+        # ("/xl/worksheets/sheet1.xml").
+        def part(target):
+            return target.lstrip("/") if target.startswith("/") else "xl/" + target
+        self.sheets = [(sh.get("name"), part(rmap[sh.get(R + "id")]))
                        for sh in wb.find(M + "sheets")]
 
     def rows(self, part):

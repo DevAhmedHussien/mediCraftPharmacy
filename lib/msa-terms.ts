@@ -1,9 +1,11 @@
 /* ===========================================================================
    The blanks in the Master Service Agreement.
 
-   The signed PDF (MSA v2026.1) ships with thirty-six INSERT fields. They are
-   not drafting oversights — they are the operational and commercial terms the
-   pharmacy fills in before the document goes out. Every one of them lives
+   MSA v2026.1 shipped with thirty-six INSERT fields — the operational and
+   commercial terms the pharmacy fills in before the document goes out. MSA
+   v2027.1 (issued 20 November 2026) prints a value for every one of them, and
+   the values below are copied from it. v2027.1 also drops the floor on the
+   §14 liability cap, so that term is gone rather than filled. Every one of them lives
    here, in one file, rather than scattered through the agreement prose, so
    filling them in is one edit and not a search-and-replace through a contract.
 
@@ -55,7 +57,7 @@ export type MsaTerms = {
   safetyReportChannel: Term;
   /** §8.1 — hours within which a serious adverse event must reach us. */
   seriousAdverseEventHours: Term;
-  /** §9.3 — days to notify the other party of a PHI breach. */
+  /** §9.3 — how soon to notify the other party of a PHI breach, e.g. "1 day". */
   breachNoticeDays: Term;
   /** §10.5 — minimum record retention, in years. */
   recordRetentionYears: Term;
@@ -67,8 +69,6 @@ export type MsaTerms = {
   insuranceAggregate: Term;
   /** §12 — notice of cancellation or material reduction in coverage. */
   insuranceNoticeDays: Term;
-  /** §14 — the floor on the liability cap, whichever is greater. */
-  liabilityFloor: Term;
   /** §15.5 — months of inactivity before an account may be deactivated. */
   inactivityMonths: Term;
   /** §16.2 — notice before an operational change takes effect. */
@@ -104,45 +104,44 @@ export const BUD_ROWS: { key: BudRowKey; label: string; typical: string }[] = [
 
 /**
  * ─────────────────────────────────────────────────────────────────────────
- *  FILL THESE IN.  Every `null` prints as a blank line in the agreement a
- *  partner is asked to sign.
+ *  As printed in MSA v2027.1. A `null` would print as a blank line in the
+ *  agreement a partner is asked to sign.
  * ─────────────────────────────────────────────────────────────────────────
  */
 export const MSA_TERMS: MsaTerms = {
-  orderCutoff: null,
-  standardisationDays: null,
-  pharmacistPhone: null,
-  afterHoursPhone: null,
-  credentialChangeNoticeDays: null,
-  priceHoldDays: null,
-  priceIncreaseNoticeDays: null,
-  pastDueDays: null,
-  lateChargePercent: null,
-  billingQueryDays: null,
-  formularyCancellationWindow: null,
-  cancellationChannel: null,
-  claimWindow: null,
-  claimChannel: null,
-  safetyReportChannel: null,
-  seriousAdverseEventHours: null,
-  breachNoticeDays: null,
-  recordRetentionYears: null,
-  confidentialitySurvivalYears: null,
-  insurancePerClaim: null,
-  insuranceAggregate: null,
-  insuranceNoticeDays: null,
-  liabilityFloor: null,
-  inactivityMonths: null,
-  operationalChangeNoticeDays: null,
+  orderCutoff: "4:00 PM ET",
+  standardisationDays: "3",
+  pharmacistPhone: "(727) 309-6666",
+  afterHoursPhone: "(727) 309-6666",
+  credentialChangeNoticeDays: "3",
+  priceHoldDays: "180",
+  priceIncreaseNoticeDays: "7",
+  pastDueDays: "30",
+  lateChargePercent: "3%",
+  billingQueryDays: "7",
+  formularyCancellationWindow: "24 hours",
+  cancellationChannel: "your Slack channel",
+  claimWindow: "24 hours",
+  claimChannel: "your Slack channel",
+  safetyReportChannel: "your Slack channel",
+  seriousAdverseEventHours: "24",
+  breachNoticeDays: "1 day",
+  recordRetentionYears: "3",
+  confidentialitySurvivalYears: "3",
+  insurancePerClaim: "$1,000,000",
+  insuranceAggregate: "$3,000,000",
+  insuranceNoticeDays: "7",
+  inactivityMonths: "12",
+  operationalChangeNoticeDays: "7",
 
   budTable: {
-    oralSolids: { suggestedMaxPerOrder: null, minimumDatingOnArrival: null },
-    sublingualDrops: { suggestedMaxPerOrder: null, minimumDatingOnArrival: null },
-    topicals: { suggestedMaxPerOrder: null, minimumDatingOnArrival: null },
-    nasalSprays: { suggestedMaxPerOrder: null, minimumDatingOnArrival: null },
-    sterileVials: { suggestedMaxPerOrder: null, minimumDatingOnArrival: null },
+    oralSolids: { suggestedMaxPerOrder: "300 each", minimumDatingOnArrival: "170 days" },
+    sublingualDrops: { suggestedMaxPerOrder: "120 mL", minimumDatingOnArrival: "80 days" },
+    topicals: { suggestedMaxPerOrder: "240 g", minimumDatingOnArrival: "80 days" },
+    nasalSprays: { suggestedMaxPerOrder: "120 mL", minimumDatingOnArrival: "30 days" },
+    sterileVials: { suggestedMaxPerOrder: "4 vials", minimumDatingOnArrival: "70 days" },
     // "n/a" in the PDF — a manufactured product has no per-order suggestion.
-    commercial: { suggestedMaxPerOrder: "n/a", minimumDatingOnArrival: null },
+    commercial: { suggestedMaxPerOrder: "n/a", minimumDatingOnArrival: "Per manufacturer expiration date" },
   },
 };
 

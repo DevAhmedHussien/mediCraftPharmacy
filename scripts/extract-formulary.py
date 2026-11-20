@@ -2,7 +2,7 @@
 """
 Extract Schedule A-1 — the 2026 Partner Formulary — from the signed MSA PDF.
 
-    python3 scripts/extract-formulary.py <msa.pdf> prisma/data/formulary-2026.json
+    python3 scripts/extract-formulary.py <msa.pdf> prisma/data/formulary-2027.json
 
 Requires poppler (`brew install poppler`) for pdftotext and pdftoppm.
 

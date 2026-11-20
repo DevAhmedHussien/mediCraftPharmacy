@@ -14,7 +14,7 @@ import anchorData from "@/lib/msa-anchors.json";
 /* ===========================================================================
    The partner's own copy of the agreement.
 
-   The template is 64 pages, and 47 of them are the full Partner Formulary —
+   The template is 66 pages, and 48 of them are the full Partner Formulary —
    the reference catalogue every partner gets.
 
    THEIR PRICES COME FIRST, THEN THE CATALOGUE. An earlier version of this file
@@ -149,7 +149,7 @@ export type SignatureFields = {
 };
 
 const templatePath = () =>
-  path.resolve(process.cwd(), "assets/msa/msa-2026-template.pdf");
+  path.resolve(process.cwd(), "assets/msa/msa-2027-template.pdf");
 
 /* ---------------------------------------------------------------------------
    Making arbitrary text safe for a standard PDF font.
@@ -559,7 +559,7 @@ export async function buildMsaPdf(raw: BuildOptions): Promise<Uint8Array> {
      This maps a template page number onto the page that now holds it, which
      keeps every `ANCHORS[name].page` lookup honest.
 
-     Nothing maps to null any more: because the insert keeps all 64 template
+     Nothing maps to null any more: because the insert keeps all 66 template
      pages, every anchor still has a page to land on. The null case is kept in
      the type because `draw` must still refuse rather than guess if that ever
      stops being true. */
