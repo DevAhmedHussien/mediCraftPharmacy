@@ -199,10 +199,19 @@ export const headerNav: HeaderNavItem[] = [
         href: "/licenses",
         blurb: "Where we hold a permit and where one is pending.",
       },
+      {
+        label: "Compounding notes",
+        href: "/blog",
+        blurb: "Articles on compounding, quality and prescribing.",
+      },
+      {
+        label: "Careers",
+        href: "/careers",
+        blurb: "Open roles at our Florida facility, and how to apply.",
+      },
     ],
   },
   { label: "For providers", href: "/providers" },
-  { label: "Compounding notes", href: "/blog" },
   { label: "Contact", href: "/contact" },
 ];
 

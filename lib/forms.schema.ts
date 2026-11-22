@@ -3,6 +3,7 @@ import "server-only";
 import { z } from "zod";
 
 import type { FormState } from "@/lib/forms";
+import { isValidUsPhone } from "@/lib/masks";
 
 /* ===========================================================================
    Form validation.
@@ -103,7 +104,10 @@ export const careerSchema = z.object({
   firstName: required("First name"),
   lastName: required("Last name"),
   email,
-  phone: required("Phone"),
+  phone: required("Phone").refine(isValidUsPhone, "Enter a valid US phone number."),
+  /* Which opening. Optional — "General application" is the default — and
+     the action already writes it into the inquiry subject. */
+  role: optionalText,
   referral: required("Referral source"),
   relocate: required("Relocation preference"),
 });

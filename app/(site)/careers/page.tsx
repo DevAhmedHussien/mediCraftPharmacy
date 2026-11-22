@@ -2,10 +2,9 @@ import type { Metadata } from "next";
 import { media } from "@/lib/media";
 import { breadcrumbJsonLd, jsonLdProps, pageMetadata } from "@/lib/seo";
 import { Building2, Clock, MapPin } from "lucide-react";
-import { PageHero, SectionHead } from "@/components/blocks";
+import { Figure, PageHero, SectionHead } from "@/components/blocks";
 import { Stagger, StaggerItem } from "@/components/motion/Motion";
 import { CareerForm } from "@/components/forms/CareerForm";
-import { GradientPlate } from "@/components/media/GradientPlate";
 import { Reveal } from "@/components/ui/Reveal";
 import { careerBenefits, careers } from "@/lib/data";
 import { site } from "@/lib/site";
@@ -46,12 +45,7 @@ export default function CareersPage() {
           </Reveal>
 
           <Reveal delay={0.1}>
-            <GradientPlate
-              ratio="4/3"
-              icon="building"
-              label="Facility — Phase 2"
-              subject="4190 Corporate Ct at blue hour with interior lights on and signage installed, shot straight-on or slight three-quarter."
-            />
+            <Figure media={media.careersCulture} ratio="4/3" sizes="(min-width: 1024px) 40rem, 92vw" />
           </Reveal>
         </div>
       </section>
@@ -138,7 +132,7 @@ export default function CareersPage() {
           </Reveal>
           <Reveal delay={0.1} className="mt-12">
             <div className="rounded-card border border-hair-soft bg-white p-7 md:p-10">
-              <CareerForm />
+              <CareerForm roles={careers.map((job) => job.title)} />
             </div>
           </Reveal>
         </div>

@@ -166,6 +166,11 @@ export const media = {
     "figure-mortar-vial-4x3",
     "A gloved hand setting down a MediCraft vial beside a mortar and pestle and a measuring cylinder"
   ),
+  /** Careers — beside "Great talent, one shared standard." */
+  careersCulture: figure(
+    "figure-vial-handoff-4x3",
+    "A gloved hand placing a MediCraft vial into another person's open palm"
+  ),
   /** Providers — the onboarding figure. */
   consult: figure(
     "figure-vial-handoff-4x3",
