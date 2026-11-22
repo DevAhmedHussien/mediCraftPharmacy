@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, Loader2, ShieldAlert } from "lucide-react";
 
-import { readInquiry, triageInquiry } from "@/app/admin/inquiries/actions";
+import { inquiryResumeUrl, readInquiry, triageInquiry } from "@/app/admin/inquiries/actions";
 import { Cell, DataTable, Pill, Row, type Tone } from "@/components/admin/ui";
 
 /* ===========================================================================
@@ -159,9 +159,13 @@ export function InquiryList({ rows }: { rows: InquiryRow[] }) {
                 <div key={key} className="grid grid-cols-[10rem_1fr] gap-3">
                   <dt className="admin-label">{key.replace(/([A-Z])/g, " $1").toLowerCase()}</dt>
                   <dd className="text-[0.8125rem] [overflow-wrap:anywhere]">
-                    {typeof value === "object" && value !== null
-                      ? JSON.stringify(value)
-                      : String(value || "—")}
+                    {key === "resume" && openId && isResume(value) ? (
+                      <ResumeField inquiryId={openId} resume={value} />
+                    ) : typeof value === "object" && value !== null ? (
+                      JSON.stringify(value)
+                    ) : (
+                      String(value || "—")
+                    )}
                   </dd>
                 </div>
               ))}
@@ -170,5 +174,68 @@ export function InquiryList({ rows }: { rows: InquiryRow[] }) {
         </div>
       )}
     </>
+  );
+}
+
+type Resume = { name: string; size?: number; key?: string };
+
+const isResume = (value: unknown): value is Resume =>
+  typeof value === "object" && value !== null && typeof (value as Resume).name === "string";
+
+/**
+ * The attached resume: its name, and a button that fetches a short-lived
+ * signed link and opens it. Applications from before resumes were stored have
+ * a name but no key, and say so instead of offering a link that cannot work.
+ */
+function ResumeField({ inquiryId, resume }: { inquiryId: string; resume: Resume }) {
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+  const size = resume.size ? ` · ${Math.max(1, Math.round(resume.size / 1024))} KB` : "";
+
+  /* The tab is opened inside the click and pointed at the link once it
+     arrives. Opening it after the await is no longer a user gesture, and a
+     popup blocker swallows it without a word. */
+  const openResume = () => {
+    const tab = window.open("", "_blank");
+    if (tab) tab.opener = null;
+    startTransition(async () => {
+      setError(null);
+      const result = await inquiryResumeUrl(inquiryId);
+      if (result.ok && tab) tab.location.href = result.url;
+      else if (result.ok) window.location.href = result.url;
+      else {
+        tab?.close();
+        setError(result.message);
+      }
+    });
+  };
+
+  return (
+    <div className="flex flex-col items-start gap-2">
+      <span>
+        {resume.name}
+        <span className="text-ink-muted">{size}</span>
+      </span>
+      {resume.key ? (
+        <button
+          type="button"
+          onClick={openResume}
+          disabled={pending}
+          className="admin-btn admin-btn-secondary"
+        >
+          {pending && <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />}
+          Open resume
+        </button>
+      ) : (
+        <span className="text-ink-muted">
+          Not saved — sent before resumes were stored. Ask the applicant to send it again.
+        </span>
+      )}
+      {error && (
+        <span role="alert" className="text-ink-muted">
+          {error}
+        </span>
+      )}
+    </div>
   );
 }

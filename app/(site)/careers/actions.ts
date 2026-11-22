@@ -7,6 +7,7 @@ import { RESUME_MAX_BYTES, RESUME_TYPES, type FormState } from "@/lib/forms";
 import { careerSchema, validate } from "@/lib/forms.schema";
 import { clientIp, RATE_LIMITS, rateLimit } from "@/lib/rate-limit";
 import { recordInquiry } from "@/lib/services/inquiries";
+import { buildKey, storage } from "@/lib/services/storage";
 import { notifyStaffOfInquiry } from "@/lib/services/inquiry-notify";
 
 /**
@@ -73,12 +74,15 @@ export async function submitApplication(
     };
   }
 
-  /* Stored, not logged. The resume itself is not kept here: a CV is personal
-     data with its own retention question, and the honest thing is to record
-     that one was attached and ask the candidate for it when someone picks the
-     application up, rather than quietly warehousing files nobody has decided
-     how long to keep. */
+  /* The resume is kept, in the private uploads bucket beside partner
+     documents, and the inquiry records where. It used to be validated and then
+     thrown away — the row kept only its name and size — which left staff
+     opening an application whose one attachment had never been saved. Admins
+     open it through a short-lived signed link; see `inquiryResumeUrl`. */
   try {
+    const key = buildKey("careers/resumes", resume.name);
+    await storage.put(key, Buffer.from(await resume.arrayBuffer()), resume.type);
+
     const inquiry = await recordInquiry({
       kind: "CAREER",
       name: [result.data.firstName, result.data.lastName].filter(Boolean).join(" "),
@@ -87,7 +91,13 @@ export async function submitApplication(
       subject: `Application — ${String((result.data as Record<string, unknown>).role ?? "general")}`,
       payload: {
         ...result.data,
-        resume: { name: resume.name, type: resume.type, size: resume.size },
+        resume: {
+          name: resume.name,
+          type: resume.type,
+          size: resume.size,
+          key,
+          driver: storage.name,
+        },
       },
       ip: clientIp(headers()),
     });
